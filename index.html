@@ -1,0 +1,2357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MARS XTRA — Portal Vendedores</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+:root {
+  --red: #CC0000;
+  --red-dark: #990000;
+  --red-light: #E53935;
+  --black: #F0F2F5;
+  --dark: #FFFFFF;
+  --card: #FFFFFF;
+  --card2: #F5F7FA;
+  --border: #E4E9F0;
+  --text: #1A2340;
+  --muted: #8A94A6;
+  --white: #FFFFFF;
+  --yellow: #FFB800;
+  --green: #00C48C;
+  --orange: #FF7D00;
+  --purple: #7C3AED;
+  --blue: #2196F3;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--black);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* SIDEBAR */
+.sidebar {
+  position: fixed;
+  top: 0; left: 0;
+  width: 240px;
+  height: 100vh;
+  background: var(--dark);
+  border-right: 1px solid var(--border);
+  box-shadow: 2px 0 16px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+}
+
+.sidebar-logo {
+  padding: 28px 24px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo-mars {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 42px;
+  color: var(--red);
+  letter-spacing: 4px;
+  line-height: 1;
+}
+
+.logo-sub {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 20px 0;
+  overflow-y: auto;
+}
+
+.nav-section-label {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 12px 24px 8px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  border-left: 3px solid transparent;
+}
+
+.nav-item:hover {
+  color: var(--text);
+  background: rgba(255,255,255,0.04);
+}
+
+.nav-item.active {
+  color: var(--red-light);
+  background: rgba(204,0,0,0.08);
+  border-left-color: var(--red);
+}
+
+.nav-icon { font-size: 18px; width: 20px; text-align: center; }
+
+.sidebar-footer {
+  padding: 20px 24px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--muted);
+  background: #FAFBFD;
+}
+
+/* MAIN */
+.main {
+  margin-left: 240px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.topbar {
+  background: var(--dark);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 36px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.topbar-title {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 22px;
+  color: var(--text);
+  letter-spacing: 2px;
+}
+
+.topbar-chain {
+  background: var(--red);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.content {
+  flex: 1;
+  padding: 36px;
+  max-width: 1400px;
+  width: 100%;
+  overflow-y: auto;
+}
+
+/* CARDS */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.kpi-card {
+  background: #FFFFFF;
+  border: none;
+  border-radius: 14px;
+  padding: 20px 20px 18px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.kpi-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: var(--red);
+}
+.kpi-card.kpi-color-green::before { background: #00C48C; }
+.kpi-card.kpi-color-blue::before { background: #2196F3; }
+.kpi-card.kpi-color-yellow::before { background: #FFB800; }
+.kpi-card.kpi-color-purple::before { background: #7C3AED; }
+.kpi-card.kpi-color-red::before { background: #E53935; }
+.kpi-card.kpi-color-orange::before { background: #FF7D00; }
+
+.kpi-icon {
+  font-size: 26px;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.kpi-label {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.kpi-value {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 34px;
+  color: #1A2340;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.kpi-sub { font-size: 12px; color: var(--muted); }
+
+.kpi-alert .kpi-value { color: #E53935; }
+.kpi-warn .kpi-value { color: #FF7D00; }
+.kpi-ok .kpi-value { color: #00C48C; }
+.kpi-sub { font-size: 12px; color: var(--muted); }
+
+/* SECTION HEADER */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 20px;
+  letter-spacing: 2px;
+  color: #1A2340;
+}
+
+/* FILTER BAR */
+.filter-bar {
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  padding: 18px 22px;
+  margin-bottom: 22px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.filter-group { display: flex; flex-direction: column; gap: 6px; min-width: 180px; flex: 1; }
+.filter-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); }
+
+select, input[type="text"] {
+  background: #F5F7FA;
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+
+select:focus, input[type="text"]:focus { border-color: var(--red); background: #FFFFFF; }
+
+/* TABLE */
+.table-wrapper {
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+
+.table-header-row {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.table-count {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+table { width: 100%; border-collapse: collapse; }
+
+thead th {
+  background: #F5F7FA;
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+tbody td {
+  padding: 12px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid #F0F2F5;
+  color: var(--text);
+}
+
+tbody tr:hover { background: #FAFBFC; }
+tbody tr:last-child td { border-bottom: none; }
+
+/* BADGES */
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.badge-ok { background: rgba(0,200,83,0.15); color: #00C853; }
+.badge-warn { background: rgba(255,107,0,0.15); color: #FF6B00; }
+.badge-danger { background: rgba(204,0,0,0.15); color: #FF4444; }
+.badge-zero { background: rgba(136,136,136,0.15); color: #888; }
+.badge-brand { background: rgba(204,0,0,0.15); color: var(--red-light); font-size: 10px; }
+
+/* VENDEDOR PROFILE */
+.vendedor-profile {
+  background: linear-gradient(135deg, #CC0000 0%, #990000 50%, #1A1A2E 100%);
+  border: none;
+  border-radius: 14px;
+  padding: 32px;
+  margin-bottom: 28px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(204,0,0,0.25);
+}
+
+.vendedor-profile::before {
+  content: 'MARS';
+  position: absolute;
+  right: -20px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Bebas Neue', cursive;
+  font-size: 180px;
+  color: rgba(204,0,0,0.07);
+  line-height: 1;
+  pointer-events: none;
+}
+
+.vendedor-name {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 32px;
+  color: var(--white);
+  letter-spacing: 3px;
+  margin-bottom: 6px;
+}
+
+.vendedor-role {
+  font-size: 12px;
+  color: var(--red-light);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 28px;
+}
+
+.vendedor-stats {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.vstat { text-align: left; }
+.vstat-value {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 32px;
+  color: var(--white);
+  line-height: 1;
+}
+.vstat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+
+/* AUDIT SCORE */
+.audit-score-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.score-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 3px solid;
+}
+
+.score-number {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 32px;
+  line-height: 1;
+}
+
+.score-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+
+.score-high { border-color: var(--green); color: var(--green); }
+.score-mid { border-color: var(--orange); color: var(--orange); }
+.score-low { border-color: var(--red-light); color: var(--red-light); }
+
+/* OFERTA CARDS */
+.ofertas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.oferta-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.oferta-card:hover { border-color: var(--red); }
+
+.oferta-tipo {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.oferta-nombre {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.oferta-desc {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 22px;
+  color: var(--red-light);
+  letter-spacing: 1px;
+  margin-bottom: 14px;
+}
+
+.oferta-periodo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.oferta-mensual::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--red), var(--orange));
+}
+
+.oferta-quincenal::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--red);
+}
+
+/* VIEWS */
+.view { display: none; }
+.view.active { display: block; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--dark); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* PAGINATION */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.page-btn {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 7px 13px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+}
+
+.page-btn:hover, .page-btn.active { background: var(--red); border-color: var(--red); color: white; }
+.page-info { font-size: 13px; color: var(--muted); padding: 0 10px; }
+
+/* COBERTURA BAR */
+.cob-bar-wrap { display: flex; align-items: center; gap: 8px; }
+.cob-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  flex: 1;
+  max-width: 80px;
+  overflow: hidden;
+}
+.cob-fill { height: 100%; border-radius: 3px; }
+
+/* ADMIN DATA TABLE */
+#data-input-table input, #data-input-table select {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  width: 100%;
+  min-width: 80px;
+}
+#data-input-table input:focus { border-color: var(--red); outline: none; }
+.del-row-btn {
+  background: rgba(204,0,0,0.2);
+  border: 1px solid var(--red);
+  color: var(--red-light);
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/* HAMBURGER */
+.hamburger {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 22px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  line-height: 1;
+}
+.hamburger:hover { background: #F5F7FA; }
+
+/* SIDEBAR OVERLAY */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 99;
+}
+.sidebar-overlay.active { display: block; }
+
+/* RESPONSIVE */
+@media (max-width: 1100px) {
+  .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+  .hamburger { display: flex; align-items: center; }
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    z-index: 200;
+  }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; }
+  .topbar { padding: 0 16px; gap: 8px; }
+  .topbar-title { font-size: 15px; }
+  .topbar-chain { font-size: 11px; }
+  .filter-bar { flex-direction: column; gap: 10px; }
+  .filter-group { min-width: unset; width: 100%; }
+  .section-header { flex-direction: column; align-items: flex-start; gap: 6px; }
+  .table-wrapper { border-radius: 8px; }
+  table { font-size: 12px; }
+  th, td { padding: 8px 10px; }
+  .ofertas-grid { grid-template-columns: 1fr; }
+  .login-box { padding: 1.75rem 1.25rem; }
+}
+/* LOGIN SCREEN */
+#login-screen { display:flex; align-items:center; justify-content:center; min-height:100vh; background:linear-gradient(135deg,#CC0000 0%,#990000 40%,#1A1A2E 100%); padding:1rem; }
+.login-box { width:100%; max-width:420px; background:#FFFFFF; border:none; border-radius:20px; padding:2.5rem; box-shadow:0 20px 60px rgba(0,0,0,0.3); }
+.login-title { font-family:'Bebas Neue',cursive; font-size:52px; color:var(--red); letter-spacing:4px; text-align:center; line-height:1; margin-bottom:4px; }
+.login-sub { text-align:center; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:2px; margin-bottom:28px; }
+.vendor-option { padding:10px 16px; border-radius:8px; border:1.5px solid var(--border); background:#F5F7FA; color:var(--text); cursor:pointer; font-size:14px; margin-bottom:4px; transition:all .15s; }
+.vendor-option:hover { background:#FFF5F5; border-color:var(--red); }
+.vendor-option.selected { background:rgba(204,0,0,.1); border-color:var(--red); color:var(--red); font-weight:700; }
+.kpi-ok { border-color:var(--green); }
+#app-container { display:flex; }
+
+/* GREETING HEADER */
+.greeting-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 0 10px;
+  margin-bottom: 8px;
+}
+.greeting-avatar {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--red), #FF6B6B);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  color: white;
+  font-weight: 700;
+}
+.greeting-text-top {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.greeting-text-name {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 22px;
+  color: var(--text);
+  letter-spacing: 2px;
+  line-height: 1.1;
+}
+
+/* BOTTOM NAV */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 64px;
+  background: #FFFFFF;
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
+  z-index: 200;
+  padding: 0 8px;
+  align-items: center;
+  justify-content: space-around;
+}
+.bn-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 12px;
+  cursor: pointer;
+  color: var(--muted);
+  border-radius: 12px;
+  transition: all 0.2s;
+  flex: 1;
+  max-width: 72px;
+}
+.bn-item:hover { color: var(--text); background: #F5F7FA; }
+.bn-item.active { color: var(--red); }
+.bn-icon { font-size: 20px; line-height: 1; }
+.bn-label { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* TOPBAR GREETING (mobile) */
+.topbar-greeting {
+  display: none;
+  flex-direction: column;
+  line-height: 1.1;
+}
+.topbar-greeting-sub { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; }
+.topbar-greeting-name { font-family: 'Bebas Neue', cursive; font-size: 18px; color: var(--text); letter-spacing: 1.5px; }
+
+/* MOBILE OVERRIDES (light theme) */
+@media (max-width: 768px) {
+  body { padding-bottom: 64px; }
+  .bottom-nav { display: flex; }
+  .topbar-greeting { display: flex; }
+  .kpi-grid { grid-template-columns: repeat(2,1fr); gap: 12px; }
+  .kpi-card { padding: 16px; }
+  .kpi-value { font-size: 28px; }
+  .content { padding: 14px; }
+  .greeting-header { padding: 10px 0 6px; }
+}
+@media (max-width: 480px) {
+  .kpi-grid { grid-template-columns: repeat(2,1fr); gap: 10px; }
+  .kpi-value { font-size: 26px; }
+  .kpi-icon { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-title">MARS</div>
+    <div class="login-sub">Portal Vendedores &middot; XTRA</div>
+    <div style="margin-bottom:16px">
+      <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px;font-weight:600">Usuario</label>
+      <input id="login-username" type="text" placeholder="Ej: avazquez" autocomplete="username"
+        style="width:100%;background:#F5F7FA;border:1.5px solid var(--border);color:var(--text);padding:12px 14px;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box;transition:border-color .2s"
+        onfocus="this.style.borderColor='#CC0000'" onblur="this.style.borderColor='#E4E9F0'"
+        onkeydown="if(event.key==='Enter')document.getElementById('login-password').focus()">
+    </div>
+    <div style="margin-bottom:20px">
+      <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px;font-weight:600">Contrasena</label>
+      <input id="login-password" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" autocomplete="current-password"
+        style="width:100%;background:#F5F7FA;border:1.5px solid var(--border);color:var(--text);padding:12px 14px;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box;transition:border-color .2s"
+        onfocus="this.style.borderColor='#CC0000'" onblur="this.style.borderColor='#E4E9F0'"
+        onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div id="login-error" style="display:none;background:#FFF0F0;border:1px solid #FFCCCC;color:#CC0000;border-radius:8px;padding:10px 14px;font-size:13px;text-align:center;margin-bottom:16px;font-weight:600">
+      &#128683; Usuario o contrasena incorrectos
+    </div>
+    <button id="login-btn" onclick="doLogin()"
+      style="width:100%;background:var(--red);color:white;border:none;padding:14px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(204,0,0,0.35);letter-spacing:1px;">
+      Entrar
+    </button>
+    <p style="text-align:center;color:var(--muted);font-size:11px;margin-top:16px">MARS XTRA &copy; 2025</p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-container" style="display:none">
+  <!-- BOTTOM NAV (mobile) -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <div class="bn-item active" id="bn-dashboard" onclick="showView('dashboard', this, 'bn')"><span class="bn-icon">&#128202;</span><span class="bn-label">Dashboard</span></div>
+    <div class="bn-item" id="bn-tiendas" onclick="showView('tiendas', this, 'bn')"><span class="bn-icon">&#128204;</span><span class="bn-label">Tiendas</span></div>
+    <div class="bn-item" id="bn-inventario" onclick="showView('inventario', this, 'bn')"><span class="bn-icon">&#128230;</span><span class="bn-label">Inventario</span></div>
+    <div class="bn-item" id="bn-ofertas" onclick="showView('ofertas', this, 'bn')"><span class="bn-icon">&#127873;</span><span class="bn-label">Ofertas</span></div>
+    <div class="bn-item" id="bn-menu" onclick="toggleSidebar()"><span class="bn-icon">&#9776;</span><span class="bn-label">Menu</span></div>
+  </nav>
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mars">MARS</div>
+      <div class="logo-sub">Portal Vendedores</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Principal</div>
+      <div class="nav-item active" onclick="showView('dashboard', this)"><span class="nav-icon">📊</span> Dashboard</div>
+      <div class="nav-item" onclick="showView('vendedor', this)"><span class="nav-icon">👤</span> Vendedor</div>
+      <div class="nav-item" onclick="showView('tiendas', this)"><span class="nav-icon">🏪</span> Tiendas</div>
+      <div class="nav-item" onclick="showView('inventario', this)"><span class="nav-icon">📦</span> Inventario por Cadena</div>
+      <div class="nav-item" onclick="showView('bodega', this)"><span class="nav-icon">🏭</span> Inventario en Bodega</div>
+      <div class="nav-item" onclick="showView('ofertas', this)"><span class="nav-icon">🎁</span> Ofertas</div>
+      <div class="nav-section-label">Ingresos</div>
+      <div class="nav-item" onclick="showView('ingreso', this)"><span class="nav-icon">📝</span> Inventario</div>
+      <div class="nav-item" onclick="showView('machetazo-react', this)"><span class="nav-icon">🛒</span> Machetazo</div>
+    </nav>
+    <div class="sidebar-footer">
+      <div style="color:var(--yellow);font-weight:700;font-size:13px;margin-bottom:6px" id="sidebar-vendor-name"></div>
+      <div style="font-size:11px;color:var(--muted)" id="footer-date"></div>
+      <button onclick="cerrarSesion()" style="margin-top:10px;background:none;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:11px;">&#8592; Salir</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="hamburger" onclick="toggleSidebar()" aria-label="Menú">&#9776;</button>
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+        <div class="topbar-greeting" id="topbar-greeting">
+          <span class="topbar-greeting-sub">Sales Dashboard</span>
+          <span class="topbar-greeting-name" id="topbar-greeting-name">BIENVENIDO</span>
+        </div>
+      </div>
+      <div class="topbar-chain">&#128100; <span id="topbar-vendor"></span></div>
+    </div>
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="view active" id="view-dashboard">
+        <div class="greeting-header" id="dash-greeting" style="display:none">
+          <div class="greeting-avatar" id="dash-avatar">&#128100;</div>
+          <div>
+            <div class="greeting-text-top">Sales Dashboard</div>
+            <div class="greeting-text-name" id="dash-greeting-name">BIENVENIDO</div>
+          </div>
+        </div>
+        <div class="kpi-grid" id="kpi-grid"></div>
+        <div class="section-header">
+          <div class="section-title">Inventario por Tienda</div>
+          <span class="table-count" id="dash-count"></span>
+        </div>
+        <div class="table-wrapper">
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>Tienda</th><th>Productos</th><th>Inv. Total</th><th>Venta Prom 3M</th><th>Cobertura Prom</th><th>Estado</th></tr></thead>
+              <tbody id="dash-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- VENDEDOR -->
+      <div class="view" id="view-vendedor"><div id="vendedor-content"></div></div>
+
+      <!-- TIENDAS -->
+      <div class="view" id="view-tiendas"><div id="tiendas-content"></div></div>
+
+      <!-- INVENTARIO -->
+      <div class="view" id="view-inventario">
+        <div class="section-header">
+          <div class="section-title">Inventario Detallado</div>
+          <span class="table-count" id="inv-count"></span>
+        </div>
+        <div class="filter-bar">
+          <div class="filter-group">
+            <div class="filter-label">Tienda</div>
+            <select id="inv-filter-tienda" onchange="filtrarInventario()"><option value="">Todas</option></select>
+          </div>
+          <div class="filter-group">
+            <div class="filter-label">Marca</div>
+            <select id="inv-filter-marca" onchange="filtrarInventario()"><option value="">Todas</option></select>
+          </div>
+          <div class="filter-group">
+            <div class="filter-label">Estado</div>
+            <select id="inv-filter-estado" onchange="filtrarInventario()">
+              <option value="">Todos</option>
+              <option value="critico">Critico</option>
+              <option value="atencion">Atencion</option>
+              <option value="optimo">Optimo</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>Tienda</th><th>Marca</th><th>Producto</th><th>Inventario</th><th>Venta 3M</th><th>Cobertura</th><th>Estado</th></tr></thead>
+              <tbody id="inv-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- OFERTAS -->
+      <div class="view" id="view-ofertas">
+        <div class="section-header"><div class="section-title">Ofertas Vigentes</div></div>
+        <div class="ofertas-grid" id="ofertas-grid"><p style="color:var(--muted)">Cargando...</p></div>
+      </div>
+
+      <!-- INGRESO -->
+      <!-- INVENTARIO EN BODEGA (solo lectura para vendedores) -->
+      <div class="view" id="view-bodega">
+        <div class="section-header"><div class="section-title">🏭 Inventario en Bodega</div></div>
+        <div style="margin-bottom:14px">
+          <input type="text" id="bodega-search" placeholder="&#128269; Buscar por producto o código de barra..."
+            oninput="filtrarBodegaVendedor(this.value)"
+            style="width:100%;max-width:420px;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border);background:#F5F7FA;font-size:13px;outline:none;">
+        </div>
+        <div id="bodega-vendedor-grid" style="margin-top:8px">
+          <p style="color:var(--muted);padding:20px">Cargando inventario en bodega...</p>
+        </div>
+      </div>
+      <div class="view" id="view-ingreso"><div id="react-ingreso"></div></div>
+
+      <!-- MACHETAZO -->
+      <div class="view" id="view-machetazo-react"><div id="react-machetazo"></div></div>
+
+    </div>
+  </div>
+</div>
+<script>
+async function sbGetV(ep) {
+  var r = await fetch('https://npatcmgjqxpjxhbcqsqv.supabase.co/rest/v1' + ep, {
+    headers: { 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wYXRjbWdqcXhwanhoYmNxc3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyOTEzNDUsImV4cCI6MjA5Mjg2NzM0NX0.uDyUMvouWcPlbNOiPClNYezkKIE9ICAEpWZxklUdGZg', 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wYXRjbWdqcXhwanhoYmNxc3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyOTEzNDUsImV4cCI6MjA5Mjg2NzM0NX0.uDyUMvouWcPlbNOiPClNYezkKIE9ICAEpWZxklUdGZg' }
+  });
+  var t = await r.text(); return t ? JSON.parse(t) : [];
+}
+
+var VENDOR_ACTUAL = null;
+var INV_DATA_V = [];
+
+var VENDS_LOGIN = [
+  'MARTIN CASTILLO','CECILIA VALDES','MELLINI SANTAMARIA','ALEXIS VAZQUEZ','MAGDIEL MORAN',
+  'GERTRUDIS PEREZ','MANUEL VALDEZ','LUIS TUNON','EDUARDO LÓPEZ','EVELYN FERNANDEZ',
+  'AURELINO RIVAS','MADELEN ACOSTA','ELEIDI FRANCO','STEFANI BRAVO','KATHYUSKA GUERRA',
+  'GALVEN RIVAS','YESLIN PALERMO','ADESSA COOK','PEDRO RODRIGUEZ','IRVING TORRES',
+  'BELTRAN FRANCO GONZALEZ','CARMEN FISHER','RUTH SANCHEZ','JAAZIEL GONZALEZ',
+  'DEIBITH JOSUE PRADO','ALEXIS SALAZAR','JUSTO VICTOR MACHUCA','ERICK RUIZ',
+  'SAMUEL BARRIA','JAVIER PINZON','ABDIEL JUAREZ'
+];
+
+window._selV = null;
+
+async function doLogin() {
+  var username = (document.getElementById('login-username').value||'').trim().toLowerCase();
+  var password = (document.getElementById('login-password').value||'').trim();
+  var btn = document.getElementById('login-btn');
+  var errEl = document.getElementById('login-error');
+  if (!username || !password) {
+    errEl.textContent = '⛔ Ingresa usuario y contraseña';
+    errEl.style.display = 'block'; return;
+  }
+  errEl.style.display = 'none';
+  btn.textContent = 'Verificando...'; btn.disabled = true;
+  try {
+    var url = '/usuarios?select=*&username=eq.' + encodeURIComponent(username) + '&password=eq.' + encodeURIComponent(password);
+    var res = await sbGetV(url);
+    if (!res || res.length === 0) {
+      errEl.textContent = '⛔ Usuario o contraseña incorrectos';
+      errEl.style.display = 'block';
+      btn.textContent = 'Entrar'; btn.disabled = false;
+      return;
+    }
+    var userData = res[0];
+    var nombreCompleto = (userData.nombre || userData.nombre_completo || userData.username || username).toUpperCase();
+    VENDOR_ACTUAL = nombreCompleto;
+    localStorage.setItem('mars_session', JSON.stringify({username: username, nombre: nombreCompleto, ts: Date.now()}));
+    await iniciarSesionVendedor(nombreCompleto);
+  } catch(e) {
+    errEl.textContent = '⛔ Error de conexión. Intenta de nuevo.';
+    errEl.style.display = 'block';
+    console.error(e);
+  }
+  btn.textContent = 'Entrar'; btn.disabled = false;
+}
+
+async function iniciarSesionVendedor(nombreCompleto) {
+  VENDOR_ACTUAL = nombreCompleto;
+  try {
+    var res = await sbGetV('/configuracion?clave=eq.inventario&select=valor');
+    if (res && res.length > 0) {
+      var all = JSON.parse(res[0].valor || '[]');
+      var vUpper = VENDOR_ACTUAL.toUpperCase();
+      INV_DATA_V = all.filter(function(d){ return d.vendedor && d.vendedor.toUpperCase() === vUpper; });
+    } else { INV_DATA_V = []; }
+  } catch(e) { INV_DATA_V = []; }
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-container').style.display = 'flex';
+  document.getElementById('sidebar-vendor-name').textContent = VENDOR_ACTUAL;
+  document.getElementById('topbar-vendor').textContent = VENDOR_ACTUAL;
+  document.getElementById('footer-date').textContent = new Date().toLocaleDateString('es-PA',{day:'2-digit',month:'short',year:'numeric'});
+  var firstName = VENDOR_ACTUAL.split(' ')[0];
+  var el = document.getElementById('topbar-greeting-name');
+  if (el) el.textContent = 'HI ' + firstName;
+  var dashG = document.getElementById('dash-greeting');
+  if (dashG) dashG.style.display = 'flex';
+  var dashN = document.getElementById('dash-greeting-name');
+  if (dashN) dashN.textContent = 'HI ' + firstName;
+  var dashA = document.getElementById('dash-avatar');
+  if (dashA) dashA.textContent = firstName.charAt(0).toUpperCase();
+  renderDashboard();
+  renderOfertas();
+}
+function cerrarSesion() {
+  VENDOR_ACTUAL = null; INV_DATA_V = [];
+  localStorage.removeItem('mars_session');
+  document.getElementById('app-container').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  var u = document.getElementById('login-username'); if (u) u.value = '';
+  var p = document.getElementById('login-password'); if (p) p.value = '';
+  var e = document.getElementById('login-error'); if (e) e.style.display = 'none';
+  document.getElementById('vendor-search').value = '';
+  document.getElementById('selected-vendor-label').style.display = 'none';
+  // Restore session from localStorage
+(function() {
+  try {
+    var sess = localStorage.getItem('mars_session');
+    if (sess) {
+      var parsed = JSON.parse(sess);
+      // Session valid for 12 hours
+      if (parsed && parsed.nombre && parsed.ts && (Date.now() - parsed.ts) < 43200000) {
+        setTimeout(function() { iniciarSesionVendedor(parsed.nombre); }, 100);
+        return;
+      }
+    }
+  } catch(e) {}
+})();
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('active');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('active');
+}
+
+function showView(name, el, fromBn) {
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  document.querySelectorAll('.bn-item').forEach(function(n){ n.classList.remove('active'); });
+  document.getElementById('view-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+  var bnEl = document.getElementById('bn-' + name);
+  if (bnEl) bnEl.classList.add('active');
+  closeSidebar();
+  var titles = { dashboard:'Dashboard', vendedor:'Mi Perfil', tiendas:'Mis Tiendas', inventario:'Inventario por Cadena', bodega:'Inventario en Bodega', ofertas:'Ofertas Vigentes', ingreso:'Ingresar Inventario', 'machetazo-react':'Machetazo' };
+  var isDash = name === 'dashboard';
+  document.getElementById('topbar-title').style.display = isDash ? 'none' : '';
+  if (document.getElementById('topbar-greeting')) document.getElementById('topbar-greeting').style.display = isDash ? 'flex' : 'none';
+  document.getElementById('topbar-title').textContent = titles[name] || name;
+  if (name === 'vendedor') renderVendedor();
+  if (name === 'tiendas') renderTiendas();
+  if (name === 'inventario') renderInventario();
+  if (name === 'ofertas') renderOfertas();
+  if (name === 'bodega') cargarBodegaVendedor();
+  if (name === 'machetazo-react') { if(document.getElementById('react-machetazo') && !document.getElementById('react-machetazo').dataset.rendered) { ReactDOM.render(React.createElement(MachetazoApp), document.getElementById('react-machetazo')); document.getElementById('react-machetazo').dataset.rendered='1'; } }
+}
+
+function renderDashboard() {
+  var data = INV_DATA_V;
+  var totalInv = data.reduce(function(a,d){ return a + (d.inventario||0); }, 0);
+  var totalProds = data.length;
+  var cobProm = totalProds > 0 ? Math.round(data.reduce(function(a,d){ return a + (d.cobertura||0); }, 0) / totalProds) : 0;
+  var criticos = data.filter(function(d){ return d.cobertura < 30; }).length;
+  var faltantes = data.filter(function(d){ return !d.inventario || d.inventario === 0; }).length;
+  var cobClass = cobProm < 30 ? ' kpi-alert' : cobProm < 60 ? ' kpi-warn' : '';
+  var critClass = criticos > 0 ? ' kpi-alert' : '';
+  var tiendas = [...new Set(data.map(function(d){return d.tienda;}))].length;
+  document.getElementById('kpi-grid').innerHTML =
+    '<div class="kpi-card kpi-color-yellow"><span class="kpi-icon">&#127991;</span><div class="kpi-label">Total Productos</div><div class="kpi-value">' + totalProds + ' <small style="font-size:16px">SKUs</small></div><div class="kpi-sub">Activos</div></div>' +
+    '<div class="kpi-card kpi-color-blue"><span class="kpi-icon">&#128230;</span><div class="kpi-label">Inventario Total</div><div class="kpi-value">' + totalInv.toLocaleString() + ' <small style="font-size:14px">UDS</small></div><div class="kpi-sub">' + tiendas + ' cadenas</div></div>' +
+    '<div class="kpi-card kpi-color-purple"><span class="kpi-icon">&#128205;</span><div class="kpi-label">Cobertura Total</div><div class="kpi-value">' + cobProm + ' <small style="font-size:16px">D&Iacute;AS</small></div><div class="kpi-sub">Promedio inventario</div></div>' +
+    '<div class="kpi-card kpi-color-red"><span class="kpi-icon">&#128336;</span><div class="kpi-label">Cr&iacute;ticos (&lt;30 d&iacute;as)</div><div class="kpi-value">' + criticos + ' <small style="font-size:14px">SKU/Tienda</small></div><div class="kpi-sub">Riesgo de quiebre</div></div>';
+  if (data.length === 0) {
+    document.getElementById('dash-table-body').innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">Sin data. El administrador debe publicar el inventario primero.</td></tr>';
+    document.getElementById('dash-count').textContent = '';
+    return;
+  }
+  var stores = {};
+  data.forEach(function(d) {
+    var t = d.tienda || '—';
+    if (!stores[t]) stores[t] = {prods:0,inv:0,venta:0,cob:[]};
+    stores[t].prods++; stores[t].inv += (d.inventario||0); stores[t].venta += (d.venta_prom_3m||0); stores[t].cob.push(d.cobertura||0);
+  });
+  var rows = Object.entries(stores).sort(function(a,b){ return a[0].localeCompare(b[0]); }).map(function(entry) {
+    var t = entry[0]; var s = entry[1];
+    var cp = s.cob.length > 0 ? Math.round(s.cob.reduce(function(a,c){ return a+c; }, 0) / s.cob.length) : 0;
+    var badge = cp < 30 ? 'badge-danger' : cp < 60 ? 'badge-warn' : 'badge-ok';
+    var estado = cp < 30 ? 'Critico' : cp < 60 ? 'Atencion' : 'Optimo';
+    return '<tr><td style="font-weight:600">' + t + '</td><td>' + s.prods + '</td><td>' + s.inv.toLocaleString() + '</td><td>' + s.venta.toLocaleString() + '</td><td>' + cp + ' dias</td><td><span class="badge ' + badge + '">' + estado + '</span></td></tr>';
+  }).join('');
+  document.getElementById('dash-table-body').innerHTML = rows;
+  document.getElementById('dash-count').textContent = Object.keys(stores).length + ' tiendas';
+}
+
+function renderVendedor() {
+  var misStores = (window.TIENDAS_INGRESO_DATA || []).filter(function(t){ return t.v === VENDOR_ACTUAL; });
+  var totalInv = INV_DATA_V.reduce(function(a,d){ return a + (d.inventario||0); }, 0);
+  var cobProm = INV_DATA_V.length > 0 ? Math.round(INV_DATA_V.reduce(function(a,d){ return a + (d.cobertura||0); }, 0) / INV_DATA_V.length) : 0;
+  var criticos = INV_DATA_V.filter(function(d){ return d.cobertura < 30; }).length;
+  var tiendas_unicas = [...new Set(INV_DATA_V.map(function(d){ return d.tienda; }).filter(Boolean))];
+  var numTiendas = misStores.length || tiendas_unicas.length;
+  var storeList = misStores.length > 0 ? misStores : tiendas_unicas.map(function(n){ return {n:n}; });
+  document.getElementById('vendedor-content').innerHTML =
+    '<div class="vendedor-profile">' +
+    '<div class="vendedor-name">' + VENDOR_ACTUAL + '</div>' +
+    '<div class="vendedor-role">Vendedor &middot; MARS XTRA</div>' +
+    '<div class="vendedor-stats">' +
+    '<div class="vstat"><div class="vstat-value">' + numTiendas + '</div><div class="vstat-label">Tiendas</div></div>' +
+    '<div class="vstat"><div class="vstat-value">' + INV_DATA_V.length + '</div><div class="vstat-label">Productos</div></div>' +
+    '<div class="vstat"><div class="vstat-value">' + totalInv.toLocaleString() + '</div><div class="vstat-label">Inv. Total</div></div>' +
+    '<div class="vstat"><div class="vstat-value">' + cobProm + 'd</div><div class="vstat-label">Cob. Prom</div></div>' +
+    '<div class="vstat"><div class="vstat-value" style="color:var(--red-light)">' + criticos + '</div><div class="vstat-label">Criticos</div></div>' +
+    '</div></div>' +
+    (storeList.length > 0 ? '<div class="section-header" style="margin-top:24px"><div class="section-title">Tiendas Asignadas (' + storeList.length + ')</div></div>' +
+    '<div class="table-wrapper"><table><thead><tr><th>#</th><th>Tienda</th></tr></thead><tbody>' +
+    storeList.map(function(t,i){ return '<tr><td style="color:var(--muted)">' + (i+1) + '</td><td>' + t.n + '</td></tr>'; }).join('') +
+    '</tbody></table></div>' : '');
+}
+
+function renderTiendas() {
+  var stores = {};
+  INV_DATA_V.forEach(function(d) {
+    var t = d.tienda || '—';
+    if (!stores[t]) stores[t] = {prods:0,inv:0,venta:0,cob:[],marcas:{}};
+    stores[t].prods++; stores[t].inv += (d.inventario||0); stores[t].venta += (d.venta_prom_3m||0); stores[t].cob.push(d.cobertura||0);
+    if (d.marca) stores[t].marcas[d.marca] = (stores[t].marcas[d.marca]||0) + 1;
+  });
+  var cards = Object.entries(stores).sort(function(a,b){ return a[0].localeCompare(b[0]); }).map(function(entry) {
+    var t = entry[0]; var s = entry[1];
+    var cp = s.cob.length > 0 ? Math.round(s.cob.reduce(function(a,c){ return a+c; },0) / s.cob.length) : 0;
+    var criticos = s.cob.filter(function(c){ return c < 30; }).length;
+    var cobColor = cp < 30 ? 'var(--red-light)' : cp < 60 ? 'var(--orange)' : 'var(--green)';
+    var marcas = Object.keys(s.marcas).join(', ');
+    return '<div class="kpi-card" style="border-radius:12px;padding:20px">' +
+      '<div style="font-weight:700;font-size:14px;color:var(--text);margin-bottom:14px;line-height:1.3">' + t + '</div>' +
+      '<div style="display:flex;gap:20px;margin-bottom:12px;flex-wrap:wrap">' +
+      '<div><div style="font-size:24px;font-weight:700;font-family:Bebas Neue,cursive;color:var(--white)">' + s.prods + '</div><div style="font-size:11px;color:var(--muted)">prods</div></div>' +
+      '<div><div style="font-size:24px;font-weight:700;font-family:Bebas Neue,cursive;color:var(--white)">' + s.inv.toLocaleString() + '</div><div style="font-size:11px;color:var(--muted)">inv</div></div>' +
+      '<div><div style="font-size:24px;font-weight:700;font-family:Bebas Neue,cursive;color:' + cobColor + '">' + cp + 'd</div><div style="font-size:11px;color:var(--muted)">cobertura</div></div>' +
+      '</div>' +
+      (criticos > 0 ? '<div style="font-size:12px;color:var(--red-light);margin-bottom:8px">&#9888; ' + criticos + ' criticos</div>' : '') +
+      (marcas ? '<div style="font-size:11px;color:var(--muted)">' + marcas + '</div>' : '') +
+      '</div>';
+  }).join('');
+  document.getElementById('tiendas-content').innerHTML =
+    '<div class="section-header"><div class="section-title">Mis Tiendas (' + Object.keys(stores).length + ')</div></div>' +
+    '<div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr));margin-top:16px">' +
+    (cards || '<p style="color:var(--muted)">Sin data. El administrador debe publicar el inventario.</p>') +
+    '</div>';
+}
+
+function renderInventario() {
+  var tiendas = [...new Set(INV_DATA_V.map(function(d){ return d.tienda; }).filter(Boolean))].sort();
+  var marcas = [...new Set(INV_DATA_V.map(function(d){ return d.marca; }).filter(Boolean))].sort();
+  document.getElementById('inv-filter-tienda').innerHTML = '<option value="">Todas</option>' + tiendas.map(function(t){ return '<option value="' + t + '">' + t + '</option>'; }).join('');
+  document.getElementById('inv-filter-marca').innerHTML = '<option value="">Todas</option>' + marcas.map(function(m){ return '<option value="' + m + '">' + m + '</option>'; }).join('');
+  filtrarInventario();
+}
+
+function filtrarInventario() {
+  var fT = document.getElementById('inv-filter-tienda').value;
+  var fM = document.getElementById('inv-filter-marca').value;
+  var fE = document.getElementById('inv-filter-estado').value;
+  var data = INV_DATA_V.filter(function(d) {
+    if (fT && d.tienda !== fT) return false;
+    if (fM && d.marca !== fM) return false;
+    if (fE === 'critico' && d.cobertura >= 30) return false;
+    if (fE === 'atencion' && (d.cobertura < 30 || d.cobertura >= 60)) return false;
+    if (fE === 'optimo' && d.cobertura < 60) return false;
+    return true;
+  });
+  document.getElementById('inv-count').textContent = data.length + ' registros';
+  document.getElementById('inv-table-body').innerHTML = data.map(function(d) {
+    var badge = d.cobertura < 30 ? 'badge-danger' : d.cobertura < 60 ? 'badge-warn' : 'badge-ok';
+    var estado = d.cobertura < 30 ? 'Critico' : d.cobertura < 60 ? 'Atencion' : 'Optimo';
+    return '<tr><td>' + (d.tienda||'—') + '</td><td><span class="badge badge-brand">' + (d.marca||'—') + '</span></td><td style="font-weight:600">' + (d.producto||'—') + '</td><td>' + (d.inventario||0).toLocaleString() + '</td><td>' + (d.venta_prom_3m||0).toLocaleString() + '</td><td>' + (d.cobertura||0) + ' dias</td><td><span class="badge ' + badge + '">' + estado + '</span></td></tr>';
+  }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Sin registros</td></tr>';
+}
+
+async function renderOfertas() {
+  var container = document.getElementById('ofertas-grid');
+  if (!container) return;
+  container.innerHTML = '<p style="color:var(--muted)">Cargando...</p>';
+  try {
+    var res = await sbGetV('/configuracion?clave=eq.ofertas&select=valor');
+    if (!res || res.length === 0) { container.innerHTML = '<p style="color:var(--muted)">No hay ofertas activas.</p>'; return; }
+    var ofertas = JSON.parse(res[0].valor || '[]');
+    var hoy = new Date();
+    container.innerHTML = ofertas.map(function(o) {
+      var inicio = new Date(o.fecha_inicio);
+      var fin = new Date(o.fecha_fin);
+      var activa = hoy >= inicio && hoy <= fin;
+      var proxima = hoy < inicio;
+      var estado = activa ? '<span class="badge badge-ok">ACTIVA</span>' : proxima ? '<span class="badge badge-warn">PROXIMA</span>' : '<span class="badge badge-zero">VENCIDA</span>';
+      var tipoClass = o.tipo === 'Mensual' ? 'oferta-mensual' : 'oferta-quincenal';
+      var dinHtml = o.dinamica ? '<div style="background:rgba(210,169,76,0.15);color:var(--yellow);padding:6px 12px;border-radius:8px;font-size:11px;font-weight:700;margin:6px 0;text-align:center">' + o.dinamica + '</div>' : '';
+      return '<div class="oferta-card ' + tipoClass + '"><div class="oferta-tipo">' + (o.tipo||'') + '</div><div class="oferta-nombre">' + (o.producto||'') + '</div>' + dinHtml + '<div class="oferta-desc" style="font-size:11px;color:var(--muted)">' + (o.codigo||'') + '</div><div class="oferta-periodo">&#128197; ' + o.fecha_inicio + ' &#8594; ' + o.fecha_fin + ' &nbsp;' + estado + '</div></div>';
+    }).join('') || '<p style="color:var(--muted)">No hay ofertas.</p>';
+  } catch(e) { container.innerHTML = '<p style="color:var(--muted)">Error cargando ofertas.</p>'; }
+}
+
+
+// ===== INVENTARIO EN BODEGA (lectura) =====
+var _bodegaDataCache = [];
+
+function buscarCodigoBodega(descripcion) {
+  if (!descripcion) return '';
+  var desc = descripcion.toUpperCase();
+  var found = null;
+  if (window.MACHETAZO_PRODUCTOS) {
+    found = MACHETAZO_PRODUCTOS.find(function(p){ return p.descripcion && p.descripcion.toUpperCase().indexOf(desc) >= 0 || desc.indexOf(p.descripcion.toUpperCase()) >= 0; });
+    if (found) return found.codigo;
+  }
+  if (window.CAT_DATA) {
+    found = CAT_DATA.find(function(p){ return p.n && (p.n.toUpperCase().indexOf(desc) >= 0 || desc.indexOf(p.n.toUpperCase()) >= 0); });
+    if (found) return found.b;
+  }
+  return '';
+}
+
+function renderBodegaTabla(datos) {
+  var container = document.getElementById('bodega-vendedor-grid');
+  if (!datos || datos.length === 0) {
+    container.innerHTML = '<p style="color:var(--muted);padding:20px">No hay registros de bodega.</p>';
+    return;
+  }
+  var html = '<div style="overflow-x:auto"><table><thead><tr><th>Bodega</th><th>Casa</th><th>Codigo</th><th>Descripcion</th><th>Cantidad</th><th>Vence</th></tr></thead><tbody>';
+  html += datos.map(function(d) {
+    var qty = parseFloat(d.cantidad) || 0;
+    var qtyColor = qty <= 0 ? 'color:#E53935' : qty <= 10 ? 'color:#FF6F00' : 'color:#00C853';
+    var cod = d.codigo || buscarCodigoBodega(d.descripcion) || '—';
+    return '<tr>' +
+      '<td>' + (d.bodega||'—') + '</td>' +
+      '<td><span class="badge badge-brand">' + (d.casa||'—') + '</span></td>' +
+      '<td style="font-family:monospace;font-size:11px;color:var(--muted)">' + cod + '</td>' +
+      '<td style="font-weight:600">' + (d.descripcion||'—') + '</td>' +
+      '<td style="font-family:monospace;' + qtyColor + ';font-weight:700">' + qty.toLocaleString() + '</td>' +
+      '<td>' + (d.vence||'—') + '</td>' +
+      '</tr>';
+  }).join('');
+  html += '</tbody></table></div>';
+  html += '<div style="color:var(--muted);font-size:12px;margin-top:12px;text-align:right">' + datos.length + ' registros</div>';
+  container.innerHTML = html;
+}
+
+function filtrarBodegaVendedor(term) {
+  if (!_bodegaDataCache.length) return;
+  if (!term || !term.trim()) { renderBodegaTabla(_bodegaDataCache); return; }
+  var t = term.trim().toUpperCase();
+  var filtered = _bodegaDataCache.filter(function(d) {
+    var desc = (d.descripcion||'').toUpperCase();
+    var cod = (d.codigo || buscarCodigoBodega(d.descripcion) || '').toUpperCase();
+    return desc.indexOf(t) >= 0 || cod.indexOf(t) >= 0;
+  });
+  renderBodegaTabla(filtered);
+}
+
+async function cargarBodegaVendedor() {
+  var container = document.getElementById('bodega-vendedor-grid');
+  if (!container) return;
+  container.innerHTML = '<p style="color:var(--muted);padding:20px">Cargando...</p>';
+  try {
+    var res = await sbGetV('/configuracion?clave=eq.inventario_bodega&select=valor');
+    if (!res || res.length === 0) {
+      container.innerHTML = '<p style="color:var(--muted);padding:20px">No hay inventario en bodega registrado.</p>';
+      return;
+    }
+    _bodegaDataCache = JSON.parse(res[0].valor || '[]');
+    var searchEl = document.getElementById('bodega-search');
+    if (searchEl) searchEl.value = '';
+    renderBodegaTabla(_bodegaDataCache);
+  } catch(e) {
+    container.innerHTML = '<p style="color:var(--muted)">Error cargando datos.</p>';
+  }
+}
+
+// Restore session from localStorage
+(function() {
+  try {
+    var sess = localStorage.getItem('mars_session');
+    if (sess) {
+      var parsed = JSON.parse(sess);
+      // Session valid for 12 hours
+      if (parsed && parsed.nombre && parsed.ts && (Date.now() - parsed.ts) < 43200000) {
+        setTimeout(function() { iniciarSesionVendedor(parsed.nombre); }, 100);
+        return;
+      }
+    }
+  } catch(e) {}
+})();
+</script>
+<script type="text/babel">
+const {useState,useEffect,useMemo,useCallback}=React;
+
+const SURL='https://npatcmgjqxpjxhbcqsqv.supabase.co';
+const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wYXRjbWdqcXhwanhoYmNxc3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyOTEzNDUsImV4cCI6MjA5Mjg2NzM0NX0.uDyUMvouWcPlbNOiPClNYezkKIE9ICAEpWZxklUdGZg';
+
+const sb=async(method,endpoint,data=null)=>{
+  const h={'Content-Type':'application/json','Authorization':'Bearer '+SKEY,'apikey':SKEY,'Prefer':'return=representation'};
+  const o={method,headers:h};
+  if(data)o.body=JSON.stringify(data);
+  try{const r=await fetch(SURL+'/rest/v1'+endpoint,o);const t=await r.text();return t?JSON.parse(t):[];}
+  catch(e){console.error(e);return null;}
+};
+
+const REY_TIENDAS=[
+  'SM REY CHORRERA','SM REY CC COSTA VERDE','S M REY PASEO ALBROOK','SM REY CENTENIAL',
+  'SM REY PASEO ARRAIJAN','SM REY SANTA MARIA','S M REY VERSALLES','S M REY CORONADO',
+  'SM REY PASEO DEL VALLE','SM REY 12 OCTUBRE','SM REY PARQUE LEFEVRE','SM REY BRISAS DEL GOLF',
+  'SM REY BRISAS DEL NORTE','SM REY COSTA DEL ESTE','S M REY CHANIS','SM REY BELLA VISTA',
+  'INM. DON ANTONIO REY CASCO ANTIGUO','SM REY VISTA ALEGRE','SM REY DORADO','SM REY 4 ALTOS',
+  'SM REY SABANITAS','SM REY CALLE 50','SM REY VIA ESPANA','SM REY C COMERCIAL 2412',
+  'SM REY VILLA LUCRE','SM REY MILLA 8','SM REY CALLE 13','SM REY CALLE 7A.',
+];
+
+const TIPOS_PEDIDO=[
+  'Pedido adicional','Pedido para Tonga','Pedido para Isla','Pedido para botadero','Pedido para frente de caja',
+];
+
+const MACHETAZO_TIENDAS=[
+  {n:'COMPANIA GOLY,S.A. CALIDONIA',v:'CECILIA VALDES',col:7,colLetter:'G',store:'CALIDONIA'},
+  {n:'COMPANIA GOLY S A ARRAIJAN',v:'ALEXIS VAZQUEZ',col:10,colLetter:'J',store:'ARRAIJAN'},
+  {n:'COMPANIA GOLY S A COSTA SUR',v:'MANUEL VALDEZ',col:17,colLetter:'Q',store:'COSTA SUR'},
+  {n:'COMPANIA GOLY, S.A. CORONADO',v:'EDUARDO LÓPEZ',col:15,colLetter:'O',store:'CORONADO'},
+  {n:'COMPANIA GOLY,S.A. BRISAS DEL GOLF',v:'ELEIDI FRANCO',col:18,colLetter:'R',store:'BRISAS'},
+  {n:'COMPANIA GOLY,S.A. NUEVO TOCUMEN',v:'ADESSA COOK',col:19,colLetter:'S',store:'NUEVO TOCUMEN'},
+  {n:'COMPANIA GOLY,S.A. EL DORADO',v:'IRVING TORRES',col:22,colLetter:'V',store:'DORADO'},
+  {n:'COMPANIA GOLY S A TOCUMEN',v:'BELTRAN FRANCO GONZALEZ',col:9,colLetter:'I',store:'TOCUMEN'},
+  {n:'COMPANIA GOLY S A S MIGUELITO',v:'JAAZIEL GONZALEZ',col:8,colLetter:'H',store:'SAN MIGUELITO'},
+  {n:'COMPANIA GOLY-MACHETAZO EXPRESS 3',v:'SAMUEL BARRIA',col:14,colLetter:'N',store:'METRO MALL'},
+  {n:'COMPANIA GOLY S A OJO DE AGUA',v:'ERICK RUIZ',col:21,colLetter:'U',store:'VIA ESPAÑA'},
+  {n:'CIA. GOLY, S.A. METROMALL',v:'PEDRO RODRIGUEZ',col:23,colLetter:'W',store:'METROMALL'},
+  {n:'SUPER CARNES #15 TRAPICHITO',v:'YESLIN PALERMO',col:24,colLetter:'X',store:'TRAPICHITO'},
+];
+
+const MACHETAZO_PRODUCTOS=[
+  {row:12,material:'10851349',codigo:'750617451441',descripcion:'PEDIGREE RAZAS PEQUEÑAS ETG 10/1KG',t:'CJ',u:10,p:39.50},
+  {row:13,material:'10851347',codigo:'750617451440',descripcion:'PEDIGREE PUPPY NUTRIDEFENSE ETG 10/1KG',t:'CJ',u:10,p:39.50},
+  {row:14,material:'10897017',codigo:'750617451439',descripcion:'PEDIGREE ADULTO ETG 10/1KG',t:'CJ',u:10,p:39.50},
+  {row:15,material:'10254381',codigo:'2310005104',descripcion:'PEDIGREE ADULTO 10BL/2KG.',t:'CJ',u:10,p:74.30},
+  {row:16,material:'10002142',codigo:'2310004104',descripcion:'PEDIGREE CACHORRO 10BL/2KG.',t:'CJ',u:10,p:74.30},
+  {row:17,material:'10022665',codigo:'70646001371',descripcion:'PEDIGREE RAZAS PEQUEÑAS 10BL/2KG.',t:'CJ',u:10,p:74.30},
+  {row:18,material:'10007176',codigo:'2310005103',descripcion:'PEDIGREE ADULTO 4/4KG.',t:'CJ',u:4,p:74.30},
+  {row:19,material:'10007174',codigo:'2310004103',descripcion:'PEDIGREE CACHORRO 4/4KG.',t:'CJ',u:4,p:74.30},
+  {row:20,material:'10022840',codigo:'70646023881',descripcion:'PEDIGREE RAZAS PEQUEÑAS 4/4KG.',t:'CJ',u:4,p:74.30},
+  {row:21,material:'10304181',codigo:'70646024486',descripcion:'PEDIGREE CACHORRO 7KG. SC/1',t:'CJ',u:1,p:74.30},
+  {row:22,material:'10767457',codigo:'750617451073',descripcion:'PEDIGREE POUCH CORDERO ADULTO 100GRS.',t:'CJ',u:24,p:39.50},
+  {row:23,material:'10552611',codigo:'70646024923',descripcion:'PEDIGREE POUCH POLLO ADULTO 100GRS.',t:'CJ',u:24,p:39.50},
+  {row:24,material:'10552597',codigo:'70646024927',descripcion:'PEDIGREE POUCH RES ADULTO 100GRS.',t:'CJ',u:24,p:39.50},
+  {row:25,material:'10552587',codigo:'70646024936',descripcion:'PEDIGREE POUCH POLLO CACHORRO 100GRS.',t:'CJ',u:24,p:39.50},
+  {row:26,material:'10552578',codigo:'70646024931',descripcion:'PEDIGREE POUCH RES CACHORRO 100GRS.',t:'CJ',u:24,p:39.50},
+  {row:27,material:'10767458',codigo:'750617450699',descripcion:'PEDIGREE POUCH CORDERO RAZAS PEQ. 100GRS.',t:'CJ',u:24,p:39.50},
+  {row:28,material:'10552591',codigo:'70646024928',descripcion:'PEDIGREE POUCH POLLO RAZAS PEQ. 100GRS.',t:'CJ',u:24,p:39.50},
+  {row:29,material:'10552603',codigo:'70646024948',descripcion:'PEDIGREE POUCH RES RAZAS PEQ. 100GRS.',t:'CJ',u:24,p:39.50},
+  {row:30,material:'10883240',codigo:'750617551508',descripcion:'PEDIGREE WET HIGH PROTEIN BEEF & CHICKEN 24/85G',t:'CJ',u:24,p:39.50},
+  {row:31,material:'10883241',codigo:'750617451509',descripcion:'PEDIGREE WET HIGH PROTEIN PORK & BEEF 24/85G',t:'CJ',u:24,p:39.50},
+  {row:32,material:'10883242',codigo:'750617451510',descripcion:'PEDIGREE WET HIGH PROTEIN CHICKEN & PORK 24/85G',t:'CJ',u:24,p:39.50},
+  {row:33,material:'10007053',codigo:'2310001527',descripcion:'PEDIGREE LATA CHOICE CUTS BEEF CJ12/375GRS.',t:'CJ',u:12,p:39.50},
+  {row:34,material:'10001783',codigo:'2310001301',descripcion:'PEDIGREE LATA CACHORRO CJ12/375GRS.',t:'CJ',u:12,p:39.50},
+  {row:35,material:'10002139',codigo:'210001004',descripcion:'PEDIGREE LATA CHOPPED BEEF CJ12/375GRS.',t:'CJ',u:12,p:39.50},
+  {row:36,material:'10002141',codigo:'2310001075',descripcion:'PEDIGREE LATA CHOPPED CHICKEN CJ12/375GRS.',t:'CJ',u:12,p:39.50},
+  {row:37,material:'10304183',codigo:'750617451523',descripcion:'Pedigree Biscrok Cachorro 12/100GR',t:'CJ',u:12,p:39.50},
+  {row:38,material:'10012131',codigo:'750617451524',descripcion:'Pedigree Biscrok Adulto 12/225G',t:'CJ',u:12,p:39.50},
+  {row:39,material:'10530530',codigo:'2310001401',descripcion:'CESAR BEEF CJ24/100GR',t:'CJ',u:24,p:39.50},
+  {row:40,material:'10656452',codigo:'2310001405',descripcion:'CESAR CHICKEN AND LIVER CJ24/100GR',t:'CJ',u:24,p:39.50},
+  {row:41,material:'10656485',codigo:'2310002607',descripcion:'CESAR CACHORRO CJ24/100GR',t:'CJ',u:24,p:39.50},
+  {row:42,material:'10656476',codigo:'5310005672',descripcion:'CESAR TOP SIRLOIN CJ24/100GR',t:'CJ',u:24,p:39.50},
+  {row:43,material:'10656458',codigo:'2310001407',descripcion:'CESAR TURKEY CJ24/100GR',t:'CJ',u:24,p:39.50},
+  {row:44,material:'10945845',codigo:'70646002937',descripcion:'WHISKAS CARNE ORIGINAL 5/3KG',t:'CJ',u:5,p:39.50},
+  {row:45,material:'10851346',codigo:'750617451478',descripcion:'WHISKAS CARNE ORIGINAL 12BL/500GRS.',t:'CJ',u:12,p:39.50},
+  {row:46,material:'10767459',codigo:'750617451360',descripcion:'WHISKAS GATITOS 12BL/1.4KG.',t:'CJ',u:12,p:39.50},
+  {row:47,material:'10022667',codigo:'70646002928',descripcion:'WHISKAS CARNE ORIGINAL 12BL/1.5KG.',t:'CJ',u:12,p:39.50},
+  {row:48,material:'10022834',codigo:'70646002932',descripcion:'WHISKAS PESCADO 12BL/1.5KG.',t:'CJ',u:12,p:39.50},
+  {row:49,material:'10022669',codigo:'70646002930',descripcion:'WHISKAS POLLO 12BL/1.5KG',t:'CJ',u:12,p:39.50},
+  {row:50,material:'10953843',codigo:'750617451480',descripcion:'WHISKAS MIX PROTEINAS SECO 12/1.5KG',t:'CJ',u:12,p:39.50},
+  {row:101,material:'10021042',codigo:'40000514510',descripcion:'CHOCOLATE MANI M&M 1.74OZ',t:'EX',u:48,p:46.56},
+  {row:102,material:'10021167',codigo:'40000004325',descripcion:'CHOCOLATE MANI KING M&M 3.27OZ',t:'EX',u:24,p:39.12},
+  {row:103,material:'10021037',codigo:'40000002376',descripcion:'CHOCOLATE MINI TUBO M&M 30.6GR',t:'EX',u:24,p:23.52},
+  {row:104,material:'10020907',codigo:'40000514480',descripcion:'CHOCOLATE M&M 1.69OZ',t:'EX',u:36,p:34.92},
+  {row:130,material:'10385410',codigo:'40000514251',descripcion:'CHOCOLATE SINGLE SNICKERS 1.86 OZ',t:'EX',u:48,p:47.04},
+  {row:131,material:'10015503',codigo:'40000002635',descripcion:'CHOCOLATE KING SIZE SNICKERS 3.29OZ',t:'EX',u:24,p:39.12},
+  {row:140,material:'10385411',codigo:'40000602040',descripcion:'CHOCOLATE MILKY WAY 1.84OZ',t:'EX',u:36,p:36.72},
+  {row:141,material:'10021169',codigo:'40000004356',descripcion:'TWIX CARAMEL SINGLE 1.79 OZ',t:'EX',u:36,p:34.92},
+  {row:219,material:'11036523',codigo:'22000002709',descripcion:'HUBBA BUBBA MAX 5PC ORIGINAL 8/18CT',t:'EX',u:18,p:13.50},
+  {row:51,material:'',codigo:'7506174516161',descripcion:'PANCITA SALUDABLE POLLO Y CAMOTE 24/100GR',t:'CJ',u:24,p:39.50},
+  {row:52,material:'',codigo:'7506174516147',descripcion:'PANCITA SALUDABLE SALMON Y ARROZ INTEGRAL 24/100GR',t:'CJ',u:24,p:39.50},
+  {row:53,material:'',codigo:'7506174516154',descripcion:'PANCITA SALUDABLE PAVO Y ZANAHORIA 24/100GR',t:'CJ',u:24,p:39.50},
+  {row:54,material:'',codigo:'70646000074',descripcion:'WHISKAS POUCH PARRILLADA MIXTA CJ24/85GR',t:'CJ',u:24,p:39.50},
+  {row:55,material:'',codigo:'70646000065',descripcion:'WHISKAS POUCH POLLO CJ24/85GR',t:'CJ',u:24,p:39.50},
+  {row:56,material:'',codigo:'70646000068',descripcion:'WHISKAS POUCH RES CJ24/85GR',t:'CJ',u:24,p:39.50},
+  {row:57,material:'',codigo:'745202641733',descripcion:'4PACK PEDIGREE CACHORRO CAJA6/4POUCH',t:'CJ',u:6,p:39.50},
+  {row:58,material:'',codigo:'745202641731',descripcion:'4PACK PEDIGREE RAZAS PEQUENAS CAJA6/4POUCH',t:'CJ',u:6,p:39.50},
+  {row:59,material:'',codigo:'745202641732',descripcion:'4PACK PEDIGREE ADULTO CAJA6/4POUCH',t:'CJ',u:6,p:39.50},
+  {row:60,material:'',codigo:'745202641729',descripcion:'4PACK WHISKAS GATO CAJA6/4POUCH',t:'CJ',u:6,p:39.50},
+  {row:61,material:'',codigo:'745202641730',descripcion:'4PACK WHISKAS GATITO CAJA6/4POUCH',t:'CJ',u:6,p:39.50},
+  {row:105,material:'',codigo:'040000001447',descripcion:'M&MS CARAMEL SINGLE 1.41OZ',t:'EX',u:24,p:23.52},
+  {row:106,material:'',codigo:'040000580881',descripcion:'M&MS CRUNCHY COOKIE 1.35OZ',t:'EX',u:24,p:21.60},
+  {row:107,material:'',codigo:'040000580966',descripcion:'M&MS CRISPY MINT 1.35OZ',t:'EX',u:24,p:21.60},
+  {row:108,material:'',codigo:'040000476528',descripcion:'M&MS MINIS MEGATUBO 1.77oz',t:'EX',u:24,p:39.36},
+  {row:109,material:'',codigo:'040000017448',descripcion:'M&MS CARAMEL SUP SIZE',t:'EX',u:12,p:25.92},
+  {row:110,material:'',codigo:'040000017318',descripcion:'M&MS MILK CHOCOLATE PEG PACK 5.3oz',t:'CJ',u:12,p:25.92},
+  {row:111,material:'',codigo:'040000017325',descripcion:'M&MS PEANUTS PEG PACK 5.3oz',t:'CJ',u:12,p:25.92},
+  {row:112,material:'',codigo:'040000565130',descripcion:'M&MS PEANUT BUTTER PEG PACK',t:'CJ',u:12,p:25.92},
+  {row:113,material:'',codigo:'040000579816',descripcion:'M&MS PEANUT BUTTER SUP 9OZ',t:'CJ',u:8,p:37.68},
+  {row:114,material:'',codigo:'040000565673',descripcion:'M&MS CRISPY PEG PACK',t:'CJ',u:12,p:25.92},
+  {row:115,material:'',codigo:'040000579946',descripcion:'M&MS CARAMEL SUP 9.05OZ',t:'CJ',u:12,p:57.00},
+  {row:116,material:'',codigo:'040000580164',descripcion:'M&MS CRUNCHY COOKIE SUP',t:'CJ',u:12,p:57.00},
+  {row:117,material:'',codigo:'040000579793',descripcion:'M&MS MILK CHOCO SUP 10OZ',t:'CJ',u:12,p:57.00},
+  {row:118,material:'',codigo:'040000579779',descripcion:'M&MS PEANUT SUP 10.05OZ',t:'CJ',u:12,p:57.00},
+  {row:119,material:'',codigo:'040000505921',descripcion:'M&MS PEANUTS FUN SIZE BOLSA 10.57oz',t:'CJ',u:16,p:77.60},
+  {row:120,material:'',codigo:'040000505969',descripcion:'M&MS MILK CHOCO FUN SIZE BOLSA 10.53oz',t:'CJ',u:16,p:77.60},
+  {row:121,material:'',codigo:'7502271917924',descripcion:'SNICKERS CHEESECAKE CS 41G',t:'EX',u:12,p:10.20},
+  {row:122,material:'',codigo:'7502271917061',descripcion:'SNICKERS ESPRESSO 41.5GR',t:'EX',u:24,p:24.48},
+  {row:123,material:'',codigo:'7506174502645',descripcion:'SNICKERS BAR 52G',t:'EX',u:24,p:23.52},
+  {row:124,material:'',codigo:'040000001058',descripcion:'SNICKERS ALMOND 1.76OZ',t:'EX',u:24,p:23.52},
+  {row:125,material:'04010508',codigo:'04010508',descripcion:'SNICKERS SINGLE VARIANT',t:'EX',u:24,p:23.52},
+  {row:126,material:'',codigo:'040000560470',descripcion:'SNICKERS WHITE SINGLE 1.41OZ',t:'EX',u:24,p:23.52},
+  {row:127,material:'04026305',codigo:'04026305',descripcion:'SNICKERS KING VARIANT',t:'EX',u:24,p:39.12},
+  {row:128,material:'04062705',codigo:'04062705',descripcion:'SNICKERS BOLSA VARIANT',t:'CJ',u:18,p:87.30},
+  {row:129,material:'',codigo:'040000015024',descripcion:'SNICKERS MINIATURES PEG PACK 4.4oz',t:'CJ',u:12,p:25.92},
+  {row:132,material:'',codigo:'040000525578',descripcion:'SNICKERS MINIATURES BOLSA 9.7oz',t:'CJ',u:8,p:37.52},
+  {row:133,material:'',codigo:'040000505334',descripcion:'SNICKERS FUN SIZE BOLSA 10.59oz',t:'CJ',u:18,p:87.30},
+  {row:134,material:'',codigo:'040000151358',descripcion:'SNICKERS FUN SIZE BOLSA SURTIDA',t:'CJ',u:18,p:87.30},
+  {row:142,material:'',codigo:'040000597551',descripcion:'MIXED MINIATURES VARIETY BOLSA 8.31OZ',t:'CJ',u:18,p:37.52},
+  {row:143,material:'',codigo:'810008800898',descripcion:'TURIN ZERO CS 18GR',t:'EX',u:18,p:15.66},
+  {row:144,material:'',codigo:'7502271917108',descripcion:'TURIN ZERO ALMENDRA CS 16GR',t:'EX',u:18,p:15.66},
+  {row:145,material:'',codigo:'7502271917146',descripcion:'TURIN NUEZ 18GR',t:'EX',u:18,p:16.38},
+  {row:146,material:'',codigo:'7502271917160',descripcion:'TURIN ZERO BOLSA CS 75G',t:'CJ',u:18,p:69.30},
+  {row:147,material:'',codigo:'810008801031',descripcion:'TURIN ZERO ALMENDRA BOLSA 75G',t:'CJ',u:18,p:69.30},
+  {row:148,material:'',codigo:'810008800850',descripcion:'TURIN ZERO AVELLANA CS 18GR',t:'EX',u:18,p:15.66},
+  {row:149,material:'',codigo:'756774081393',descripcion:'TURIN CHOCOLATE OBSCURO CS 18GR',t:'EX',u:18,p:15.66},
+  {row:150,material:'',codigo:'756774022860',descripcion:'TURIN CHOCOLATE LECHE CS 18GR',t:'EX',u:18,p:15.66},
+  {row:200,material:'',codigo:'022000293213',descripcion:'DOUBLEMINT 20 PKGS PER BOX',t:'EX',u:20,p:6.40},
+  {row:201,material:'',codigo:'022000006660',descripcion:'DOUBLEMINT 15 STK',t:'EX',u:10,p:10.10},
+  {row:202,material:'',codigo:'022000293275',descripcion:'DOUBLEMINT SUGARFREE 20 PKGS',t:'EX',u:20,p:6.40},
+  {row:203,material:'',codigo:'022000006691',descripcion:'WINTERFRESH 15 STK',t:'EX',u:10,p:10.10},
+  {row:204,material:'',codigo:'022000293237',descripcion:'WINTERFRESH 20 PKGS PER BOX',t:'EX',u:20,p:6.40},
+  {row:205,material:'',codigo:'022000005144',descripcion:'FIVE RAIN STICK PACK',t:'EX',u:10,p:10.10},
+  {row:206,material:'',codigo:'022000008404',descripcion:'EXTRA WINTERFRESH 15 STK',t:'EX',u:10,p:11.20},
+  {row:207,material:'',codigo:'022000008381',descripcion:'EXTRA SPEARMINT 15 STK',t:'EX',u:10,p:11.20},
+  {row:208,material:'',codigo:'022000008916',descripcion:'EXTRA PEPPERMINT 15 STK',t:'EX',u:10,p:11.20},
+  {row:209,material:'',codigo:'022000008992',descripcion:'EXTRA FRUIT SENSATION 15 STK',t:'EX',u:10,p:11.20},
+  {row:210,material:'',codigo:'022000112583',descripcion:'EXTRA BUBBLEMINT 15 STK',t:'EX',u:10,p:11.20},
+  {row:211,material:'',codigo:'022000296207',descripcion:'EXTRA POLAR ICE 3PK',t:'EX',u:10,p:11.20},
+  {row:212,material:'',codigo:'022000296283',descripcion:'EXTRA SANDIA DULCE 3PK',t:'EX',u:10,p:11.20},
+  {row:213,material:'',codigo:'022000159540',descripcion:'EXTRA SPEARMINT 10 CT',t:'EX',u:10,p:11.20},
+  {row:214,material:'',codigo:'022000019172',descripcion:'ORBIT PEPPERMINT 14 STK',t:'EX',u:12,p:13.20},
+  {row:215,material:'',codigo:'022000019189',descripcion:'ORBIT SPEARMINT 14 STK',t:'EX',u:12,p:13.20},
+  {row:216,material:'',codigo:'75079949',descripcion:'ORBIT VARIANT 14 STK',t:'EX',u:12,p:13.20},
+  {row:217,material:'',codigo:'75079925',descripcion:'ORBIT SUGARFREE 14 STK',t:'EX',u:12,p:13.20},
+  {row:218,material:'',codigo:'022000007698',descripcion:'ALTOIDS MINTS PEPPERMINT',t:'EX',u:12,p:13.20},
+  {row:220,material:'',codigo:'022000009951',descripcion:'ALTOIDS MINTS SPEARMINT',t:'EX',u:12,p:13.20},
+  {row:221,material:'',codigo:'022110079806',descripcion:'HUBBA BUBBA TAPE ORIGINAL',t:'EX',u:12,p:13.50},
+  {row:222,material:'',codigo:'7502226814506',descripcion:'HUBBA BUBBA MEGA ROLL VARIANT',t:'EX',u:12,p:13.50},
+  {row:223,material:'',codigo:'93613583',descripcion:'HUBBA BUBBA VARIANT',t:'EX',u:12,p:13.50},
+  {row:224,material:'',codigo:'040000000518',descripcion:'STARBURST ORIGINAL SINGLE 2.07oz',t:'EX',u:24,p:23.52},
+  {row:225,material:'',codigo:'040000141143',descripcion:'STARBURST ORIGINAL PEG PACK 7.2oz',t:'CJ',u:12,p:25.92},
+  {row:226,material:'',codigo:'040000298829',descripcion:'STARBURST GUMMIES ORIGINAL',t:'CJ',u:12,p:25.92},
+  {row:227,material:'',codigo:'040000298416',descripcion:'STARBURST GUMMIES SOUR',t:'CJ',u:12,p:25.92},
+  {row:228,material:'',codigo:'040000298492',descripcion:'STARBURST GUMMIES SOUR PEGBAG 5oz',t:'CJ',u:12,p:25.92},
+  {row:229,material:'',codigo:'022000018465',descripcion:'SKITTLES ORIGINAL 2.17oz',t:'EX',u:36,p:35.28},
+  {row:230,material:'',codigo:'022000018489',descripcion:'SKITTLES WILDBERRY 2.17oz',t:'EX',u:36,p:35.28},
+  {row:231,material:'',codigo:'040000001638',descripcion:'SKITTLES TROPICAL 2.17oz',t:'EX',u:36,p:35.28},
+  {row:232,material:'',codigo:'040000002566',descripcion:'SKITTLES SOUR SINGLE 1.8oz',t:'EX',u:24,p:23.52},
+  {row:233,material:'',codigo:'040000140931',descripcion:'SKITTLES SOUR PEG BAG 5.7oz',t:'CJ',u:12,p:25.92},
+  {row:234,material:'',codigo:'022000284143',descripcion:'SKITTLES ORIGINAL PEG PACK 3.13oz',t:'CJ',u:12,p:25.92},
+  {row:235,material:'',codigo:'040000140924',descripcion:'SKITTLES ORIGINAL BOLSA 204G',t:'CJ',u:12,p:25.92},
+  {row:236,material:'',codigo:'7502226819914',descripcion:'SKITTLES ORIGINAL BOLSA MX',t:'CJ',u:12,p:25.92},
+  {row:237,material:'',codigo:'7502226819938',descripcion:'SKITTLES WILDBERRY BOLSA MX',t:'CJ',u:12,p:25.92},
+  {row:238,material:'',codigo:'022000285942',descripcion:'SKITTLES SHARING BAG ORIGINAL',t:'CJ',u:12,p:25.92},
+  {row:239,material:'',codigo:'022000285966',descripcion:'SKITTLES SHARING BAG WILDBERRY',t:'CJ',u:12,p:25.92},
+  {row:240,material:'',codigo:'022000289735',descripcion:'SKITTLES SHARING BAG SOUR',t:'CJ',u:12,p:25.92},
+  {row:241,material:'',codigo:'7502226812335',descripcion:'LUCAS MUECAS TAMARINDO 25GR',t:'CJ',u:10,p:8.00},
+  {row:242,material:'',codigo:'725181363019',descripcion:'LUCAS MUECAS CEREZA 25GR',t:'CJ',u:10,p:8.00},
+  {row:243,material:'',codigo:'725181203018',descripcion:'LUCAS MUECAS MANGO 25GR',t:'CJ',u:10,p:8.00},
+  {row:244,material:'',codigo:'7506174513900',descripcion:'LUCAS MUECAS TAMARINDO CHILE 25GR',t:'CJ',u:10,p:8.00},
+  {row:245,material:'',codigo:'725181068013',descripcion:'LUCAS MUECAS CHA 25GR',t:'CJ',u:10,p:8.00},
+  {row:246,material:'',codigo:'810008800546',descripcion:'SKWINKLES CHUNK SINGLE CS 45GR',t:'CJ',u:6,p:10.00},
+  {row:247,material:'',codigo:'810008800614',descripcion:'SKWINKLES CHUNK PEGBAG CS 70G',t:'CJ',u:12,p:18.00},
+  {row:248,material:'',codigo:'81000880054',descripcion:'SKWINKLES SENSACIONES SINGLE',t:'CJ',u:6,p:10.00},
+  {row:249,material:'',codigo:'81000880014',descripcion:'SKWINKLES SENSACIONES PEGBAG',t:'CJ',u:12,p:18.00},
+  {row:250,material:'',codigo:'81000801192',descripcion:'SKWINKLES VARIANT',t:'CJ',u:6,p:10.00},
+  {row:251,material:'',codigo:'810008801154',descripcion:'LUCAS GOMITAS SANDIA SINGLE CS 40GR',t:'CJ',u:6,p:10.00},
+  {row:252,material:'',codigo:'810008801178',descripcion:'LUCAS GOMITAS MANGO SINGLE CS 40GR',t:'CJ',u:6,p:10.00},
+  {row:253,material:'',codigo:'81000880097',descripcion:'LUCAS GOMITAS TAMARINDO',t:'CJ',u:6,p:10.00},
+  {row:254,material:'',codigo:'81000880980',descripcion:'LUCAS GOMITAS CEREZA',t:'CJ',u:6,p:10.00},
+  {row:255,material:'',codigo:'7502271919775',descripcion:'LUCAS LENWAS ORIGINAL',t:'CJ',u:6,p:10.00},
+  {row:256,material:'',codigo:'7502271918266',descripcion:'LUCAS LENWAS VARIANT',t:'CJ',u:6,p:10.00},
+];
+
+const CAT=[
+  {b:'040000514480',c:'W4-514497',n:"M&M's MILK CHOCOLATE 1.69oz/36un",m:'MARS',t:'EX',u:36,p:34.92},
+  {b:'040000514510',c:'W4-514527',n:"M&M's PEANUTS 1.74oz/48un",m:'MARS',t:'EX',u:48,p:46.56},
+  {b:'040000004325',c:'W4-044321',n:"M&M'S PEANUTS KING SIZE 3.27oz/24un",m:'MARS',t:'EX',u:24,p:39.12},
+  {b:'040000002376',c:'W4-032373',n:"M&M's MINIS MINITUBO 1.08oz/24un",m:'MARS',t:'EX',u:24,p:23.52},
+  {b:'040000476528',c:'W4-576525',n:"M&M'S MINIS MEGATUBO 1.77oz/24un",m:'MARS',t:'EX',u:24,p:39.36},
+  {b:'040000017318',c:'W4-017315',n:"M&M'S MILK CHOCOLATE PEG PACK 5.3oz/12un",m:'MARS',t:'CJ',u:12,p:25.92},
+  {b:'040000017325',c:'W4-017322',n:"M&M'S PEANUTS PEG PACK 5.3oz/12un",m:'MARS',t:'CJ',u:12,p:25.92},
+  {b:'040000579816',c:'W4-240850',n:"M&MS PEANUT BUTTER SUP 9OZ 8CS",m:'MARS',t:'CJ',u:8,p:37.68},
+  {b:'040000579793',c:'W4-579793',n:"M&MS MILK CHOCO SUP 10OZ 12CS",m:'MARS',t:'CJ',u:12,p:57.00},
+  {b:'040000579779',c:'W4-579779',n:"M&MS PEANUT SUP 10.05OZ 12CS",m:'MARS',t:'CJ',u:12,p:57.00},
+  {b:'040000505921',c:'W4-505921',n:"M&M'S PEANUTS FUN SIZE BOLSA 10.57oz",m:'MARS',t:'CJ',u:16,p:77.60},
+  {b:'040000505969',c:'W4-505969',n:"M&M'S MILK CHOCOLATE FUN SIZE BOLSA 10.53oz",m:'MARS',t:'CJ',u:16,p:77.60},
+  {b:'040000580881',c:'W4-580898',n:"M&M'S CRUNCHY COOKIE 1.35OZ",m:'MARS',t:'EX',u:24,p:21.60},
+  {b:'7502271917924',c:'W4-403266',n:"SNICKERS CHEESECAKE CS 41G",m:'MARS',t:'EX',u:12,p:10.20},
+  {b:'7502271917061',c:'W4-917054',n:"SNICKERS ESPRESSO 41.5GR",m:'MARS',t:'EX',u:24,p:24.48},
+  {b:'040000514251',c:'W4-514268',n:"SNICKERS 1.86oz/48un",m:'MARS',t:'EX',u:48,p:47.04},
+  {b:'040000001058',c:'W4-011057',n:"SNICKERS ALMOND 1.76OZ",m:'MARS',t:'EX',u:24,p:23.52},
+  {b:'040000560470',c:'W4-560449',n:"SNICKERS WHITE SINGLE 1.41OZ",m:'MARS',t:'EX',u:24,p:23.52},
+  {b:'040000002635',c:'W4-322528',n:"SNICKERS KING SIZE 3.29oz/24un",m:'MARS',t:'EX',u:24,p:39.12},
+  {b:'040000015024',c:'W4-015021',n:"SNICKERS MINIATURES PEG PACK 4.4oz/12un",m:'MARS',t:'CJ',u:12,p:25.92},
+  {b:'040000525578',c:'W4-525582',n:"SNICKERS MINIATURES BOLSA 9.7oz/8un",m:'MARS',t:'CJ',u:8,p:37.52},
+  {b:'040000505334',c:'W4-505334',n:"SNICKERS FUN SIZE BOLSA 10.59oz",m:'MARS',t:'CJ',u:18,p:87.30},
+  {b:'040000602040',c:'W4-522065',n:"MILKY WAY 1.84oz/36un",m:'MARS',t:'EX',u:36,p:36.72},
+  {b:'040000004356',c:'W4-514213',n:"TWIX 1.79oz/36un",m:'MARS',t:'EX',u:36,p:34.92},
+  {b:'040000597551',c:'W4-597551',n:"MIXED MINIATURES VARIETY BOLSA 8.31OZ",m:'MARS',t:'CJ',u:18,p:37.52},
+  {b:'810008800898',c:'W4-800904',n:"TURIN ZERO CS 18GR",m:'MARS',t:'EX',u:18,p:15.66},
+  {b:'7502271917108',c:'W4-917092',n:"TURIN ZERO ALMENDRA CS 16GR",m:'MARS',t:'EX',u:18,p:15.66},
+  {b:'7502271917146',c:'W4-917139',n:"TURIN NUEZ 18GR",m:'MARS',t:'EX',u:18,p:16.38},
+  {b:'7502271917160',c:'W4-917160',n:"TURIN ZERO BOLSA CS 75G",m:'MARS',t:'CJ',u:18,p:69.30},
+  {b:'022000293213',c:'W512903029',n:"DOUBLEMINT 20 PKGS. PER BOX",m:'WRIGLEY',t:'EX',u:20,p:6.40},
+  {b:'022000006660',c:'W5-21735',n:"DOUBLEMINT 15 STK",m:'WRIGLEY',t:'EX',u:10,p:10.10},
+  {b:'022000008404',c:'W5-22024',n:"EXTRA WINTERFRESH 15 STK",m:'WRIGLEY',t:'EX',u:10,p:11.20},
+  {b:'022000008916',c:'W5-289106',n:"EXTRA PEPPERMINT 15 STK",m:'WRIGLEY',t:'EX',u:10,p:11.20},
+  {b:'022000159540',c:'W5-159540',n:"EXTRA SPEARMINT 10 CT",m:'WRIGLEY',t:'EX',u:10,p:11.20},
+  {b:'022000296207',c:'W5-296207',n:"CHICLE POLAR ICE WRIGLEY EXTRA 3PK",m:'WRIGLEY',t:'EX',u:10,p:11.20},
+  {b:'022000296283',c:'W5-296283',n:"CHICLE SANDIA DULCE WRIGLEY EXTRA 3PK",m:'WRIGLEY',t:'EX',u:10,p:11.20},
+  {b:'022000018465',c:'W4-136251',n:"SKITTLES ORIGINAL 2.17oz/36un",m:'WRIGLEY',t:'EX',u:36,p:35.28},
+  {b:'022000018489',c:'W4-136268',n:"SKITTLES WILDBERRY 2.17oz/36un",m:'WRIGLEY',t:'EX',u:36,p:35.28},
+  {b:'040000001638',c:'W4-011637',n:"SKITTLES TROPICAL 2.17oz/36un",m:'WRIGLEY',t:'EX',u:36,p:35.28},
+  {b:'040000002666',c:'W5-002666',n:"SKITTLES SOUR SINGLE 1.8 OZ",m:'WRIGLEY',t:'EX',u:24,p:23.52},
+  {b:'040000140931',c:'W4-140931',n:"SKITTLES SOUR PEG BAG PACK 5.7 OZ",m:'WRIGLEY',t:'CJ',u:12,p:25.92},
+  {b:'022000284143',c:'W4-284143',n:"SKITTLES ORIGINAL PEG PACK 3.13OZ",m:'WRIGLEY',t:'CJ',u:12,p:25.92},
+  {b:'040000140924',c:'W4-140924',n:"SKITTLES ORIGINAL BOLSA 204.1GR",m:'WRIGLEY',t:'CJ',u:12,p:25.92},
+  {b:'040000141143',c:'W4-141143',n:"STARBURST ORIGINAL PEG PACK 7.2 OZ",m:'WRIGLEY',t:'CJ',u:12,p:25.92},
+  {b:'022000298492',c:'W4-298492',n:"STARBURST GUMMIES SOUR PGPK 5 OZ",m:'WRIGLEY',t:'CJ',u:12,p:25.92},
+  {b:'725181068013',c:'W5-068013',n:"CARAMELOS LUCAS MUECAS CHA WRIGLEY 25GR",m:'WRIGLEY',t:'CJ',u:10,p:8.00},
+  {b:'7506174513900',c:'W5-513900',n:"CARAMELOS LUCAS MUECAS TAMA WRIGLEY 25GR",m:'WRIGLEY',t:'CJ',u:10,p:8.00},
+  {b:'725181203018',c:'W5-203018',n:"CARAMELOS LUCAS MUECAS MANGO WRIGLEY 25GR",m:'WRIGLEY',t:'CJ',u:10,p:8.00},
+  {b:'725181363019',c:'W5-363019',n:"CARAMELO CEREZA LUCAS MUECAS 25G",m:'WRIGLEY',t:'CJ',u:10,p:8.00},
+  {b:'810008801154',c:'W5-801154',n:"LUCAS GOMITAS SANDIA SINGLE CS 40GR",m:'WRIGLEY',t:'CJ',u:6,p:10.00},
+  {b:'810008801178',c:'W5-801178',n:"LUCAS GOMITAS MANGO SINGLE CS 40GR",m:'WRIGLEY',t:'CJ',u:6,p:10.00},
+  {b:'810008800546',c:'W5-800546',n:"SKWINKLES CHUNK SINGLE WRIGLEY CS 45GR",m:'WRIGLEY',t:'CJ',u:6,p:10.00},
+  {b:'810008800614',c:'W5-800614',n:"SKWINKLES CHUNK PEGBAG WRIGLEY CS 70G",m:'WRIGLEY',t:'CJ',u:12,p:18.00},
+  {b:'7506174516161',c:'W3-516161',n:"PANCITA SALUDABLE POLLO Y CAMOTE 24/100GR",m:'PETCARE',t:'CJ',u:24,p:39.50},
+  {b:'7506174516147',c:'W3-516147',n:"PANCITA SALUDABLE SALMON Y ARROZ INTEGRAL 24/100GR",m:'PETCARE',t:'CJ',u:24,p:39.50},
+  {b:'7506174516154',c:'W3-516154',n:"PANCITA SALUDABLE PAVO Y ZANAHORIA 24/100GR",m:'PETCARE',t:'CJ',u:24,p:39.50},
+  {b:'7506174514419',c:'W3-514419',n:"PEDIGREE RAZAS PEQUEÑAS ETG 10/1KG",m:'PETCARE',t:'CJ',u:10,p:39.50},
+  {b:'7506174514402',c:'W3-514402',n:"PEDIGREE PUPPY NUTRIDEFENSE ETG 10/1KG",m:'PETCARE',t:'CJ',u:10,p:39.50},
+  {b:'7506174514396',c:'W3-514396',n:"PEDIGREE ADULTO ETG 10/1KG",m:'PETCARE',t:'CJ',u:10,p:39.50},
+  {b:'023100051048',c:'W3-051048',n:"PEDIGREE ADULTO 10BL/2KG",m:'PETCARE',t:'CJ',u:10,p:74.30},
+  {b:'023100041049',c:'W3-041049',n:"PEDIGREE CACHORRO 10BL/2KG",m:'PETCARE',t:'CJ',u:10,p:74.30},
+  {b:'2310005103',c:'W3-005103',n:"PEDIGREE ADULTO 4/4KG",m:'PETCARE',t:'CJ',u:4,p:74.30},
+  {b:'2310004103',c:'W3-004103',n:"PEDIGREE CACHORRO 4/4KG",m:'PETCARE',t:'CJ',u:4,p:74.30},
+  {b:'750617451073',c:'W3-451073',n:"PEDIGREE POUCH CORDERO ADULTO 100GRS",m:'PETCARE',t:'CJ',u:24,p:39.50},
+  {b:'70646024923',c:'W3-024923',n:"PEDIGREE POUCH POLLO ADULTO 100GRS",m:'PETCARE',t:'CJ',u:24,p:39.50},
+  {b:'70646024927',c:'W3-024927',n:"PEDIGREE POUCH RES ADULTO 100GRS",m:'PETCARE',t:'CJ',u:24,p:39.50},
+  {b:'2310001401',c:'W3-001401',n:"CESAR BEEF CJ24/100GR",m:'PETCARE',t:'CJ',u:24,p:39.50},
+  {b:'2310001405',c:'W3-001405',n:"CESAR CHICKEN AND LIVER CJ24/100GR",m:'PETCARE',t:'CJ',u:24,p:39.50},
+  {b:'2310002607',c:'W3-002607',n:"CESAR CACHORRO CJ24/100GR",m:'PETCARE',t:'CJ',u:24,p:39.50},
+  {b:'5310005672',c:'W3-005672',n:"CESAR TOP SIRLOIN CJ24/100GR",m:'PETCARE',t:'CJ',u:24,p:39.50},
+  {b:'70646002937',c:'W3-002937',n:"WHISKAS CARNE ORIGINAL 5/3KG",m:'PETCARE',t:'CJ',u:5,p:39.50},
+  {b:'750617451478',c:'W3-451478',n:"WHISKAS CARNE ORIGINAL 12BL/500GRS",m:'PETCARE',t:'CJ',u:12,p:39.50},
+  {b:'750617451360',c:'W3-451360',n:"WHISKAS GATITOS 12BL/1.4KG",m:'PETCARE',t:'CJ',u:12,p:39.50},
+  {b:'70646002928',c:'W3-002928',n:"WHISKAS CARNE ORIGINAL 12BL/1.5KG",m:'PETCARE',t:'CJ',u:12,p:39.50},
+  {b:'70646000074',c:'W3-000074',n:"WHISKAS POUCH PARRILLADA MIXTA CJ24/85GR",m:'PETCARE',t:'CJ',u:24,p:39.50},
+  {b:'70646000065',c:'W3-000065',n:"WHISKAS POUCH POLLO CJ24/85GR",m:'PETCARE',t:'CJ',u:24,p:39.50},
+  {b:'70646000068',c:'W3-000068',n:"WHISKAS POUCH RES CJ24/85GR",m:'PETCARE',t:'CJ',u:24,p:39.50},
+  {b:'745202641733',c:'W3-641733',n:"4PACK PEDIGREE CACHORRO CAJA6/4POUCH",m:'PETCARE',t:'CJ',u:6,p:39.50},
+  {b:'745202641731',c:'W3-641731',n:"4PACK PEDIGREE RAZAS PEQUEÑAS CAJA6/4POUCH",m:'PETCARE',t:'CJ',u:6,p:39.50},
+  {b:'745202641732',c:'W3-641732',n:"4PACK PEDIGREE ADULTO CAJA6/4POUCH",m:'PETCARE',t:'CJ',u:6,p:39.50},
+  {b:'745202641729',c:'W3-641729',n:"4PACK WHISKAS GATO CAJA6/4POUCH",m:'PETCARE',t:'CJ',u:6,p:39.50},
+  {b:'745202641730',c:'W3-641730',n:"4PACK WHISKAS GATITO CAJA6/4POUCH",m:'PETCARE',t:'CJ',u:6,p:39.50},
+];
+window.CAT_DATA = CAT;
+
+const VENDS=[
+  {id:1,n:'MARTIN CASTILLO'},{id:2,n:'CECILIA VALDES'},{id:3,n:'MELLINI SANTAMARIA'},
+  {id:4,n:'ALEXIS VAZQUEZ'},{id:5,n:'MAGDIEL MORAN'},{id:6,n:'GERTRUDIS PEREZ'},
+  {id:7,n:'MANUEL VALDEZ'},{id:8,n:'LUIS TUNON'},{id:9,n:'EDUARDO LÓPEZ'},
+  {id:10,n:'EVELYN FERNANDEZ'},{id:11,n:'AURELINO RIVAS'},{id:12,n:'MADELEN ACOSTA'},
+  {id:13,n:'ELEIDI FRANCO'},{id:14,n:'STEFANI BRAVO'},{id:15,n:'KATHYUSKA GUERRA'},
+  {id:16,n:'GALVEN RIVAS'},{id:17,n:'YESLIN PALERMO'},{id:18,n:'ADESSA COOK'},
+  {id:19,n:'PEDRO RODRIGUEZ'},{id:20,n:'IRVING TORRES'},{id:21,n:'BELTRAN FRANCO GONZALEZ'},
+  {id:22,n:'CARMEN FISHER'},{id:23,n:'RUTH SANCHEZ'},{id:24,n:'JAAZIEL GONZALEZ'},
+  {id:25,n:'DEIBITH JOSUE PRADO'},{id:26,n:'ALEXIS SALAZAR'},{id:27,n:'JUSTO VICTOR MACHUCA'},
+  {id:28,n:'ERICK RUIZ'},{id:29,n:'SAMUEL BARRIA'},{id:30,n:'JAVIER PINZON'},
+  {id:31,n:'ABDIEL JUAREZ'},
+];
+
+const TIENDAS_REY=[
+  {id:1,n:'SM REY CHORRERA',v:'MARTIN CASTILLO'},
+  {id:4,n:'SM REY CC COSTA VERDE',v:'MARTIN CASTILLO'},
+  {id:8,n:'S M REY PASEO ALBROOK',v:'CECILIA VALDES'},
+  {id:11,n:'SM REY CENTENIAL',v:'MELLINI SANTAMARIA'},
+  {id:14,n:'SM REY PASEO ARRAIJAN',v:'ALEXIS VAZQUEZ'},
+  {id:20,n:'SM REY SANTA MARIA',v:'GERTRUDIS PEREZ'},
+  {id:29,n:'S M REY VERSALLES',v:'MANUEL VALDEZ'},
+  {id:35,n:'S M REY CORONADO',v:'EDUARDO LÓPEZ'},
+  {id:42,n:'SM REY PASEO DEL VALLE',v:'EDUARDO LÓPEZ'},
+  {id:58,n:'SM REY 12 OCTUBRE',v:'MADELEN ACOSTA'},
+  {id:61,n:'SM REY BRISAS DEL GOLF',v:'ELEIDI FRANCO'},
+  {id:65,n:'SM REY BRISAS DEL NORTE',v:'ELEIDI FRANCO'},
+  {id:80,n:'SM REY BELLA VISTA',v:'GALVEN RIVAS'},
+  {id:84,n:'INM. DON ANTONIO REY CASCO ANTIGUO',v:'GALVEN RIVAS'},
+  {id:87,n:'SM REY VISTA ALEGRE',v:'YESLIN PALERMO'},
+  {id:106,n:'SM REY DORADO',v:'IRVING TORRES'},
+  {id:122,n:'SM REY 4 ALTOS',v:'CARMEN FISHER'},
+  {id:124,n:'SM REY SABANITAS',v:'CARMEN FISHER'},
+  {id:129,n:'SM REY CALLE 50',v:'RUTH SANCHEZ'},
+  {id:132,n:'SM REY VIA ESPANA',v:'RUTH SANCHEZ'},
+  {id:139,n:'SM REY C COMERCIAL 2412',v:'DEIBITH JOSUE PRADO'},
+  {id:141,n:'SM REY VILLA LUCRE',v:'DEIBITH JOSUE PRADO'},
+  {id:148,n:'SM REY MILLA 8',v:'ALEXIS SALAZAR'},
+  {id:159,n:'SM REY CALLE 13',v:'JUSTO VICTOR MACHUCA'},
+  {id:160,n:'SM REY CALLE 7A.',v:'JUSTO VICTOR MACHUCA'},
+];
+
+const TIENDAS_INGRESO=[
+  {id:1,n:'SM REY CHORRERA',v:'MARTIN CASTILLO'},
+  {id:2,n:'SUPERMERCADOS XTRA S.A.(T038 BARRIO COLON)',v:'MARTIN CASTILLO'},
+  {id:3,n:'SUPERMERCADOS XTRA S.A. (T002 CHORRERA)',v:'MARTIN CASTILLO'},
+  {id:4,n:'SUPERMERCADOS XTRA S.A.(T206 MAXI FERIA B BALBOA)',v:'MARTIN CASTILLO'},
+  {id:5,n:'SM REY CC COSTA VERDE',v:'MARTIN CASTILLO'},
+  {id:6,n:'IMPORTADORA RICAMAR, S.A.(EL COCO CHORRERA)',v:'MARTIN CASTILLO'},
+  {id:7,n:'SUPERMERCADOS XTRA S.A.(T023 TRANSISTMICA)',v:'CECILIA VALDES'},
+  {id:8,n:'COMPANIA GOLY,S.A. CALIDONIA',v:'CECILIA VALDES'},
+  {id:9,n:'RIBA SMITH ALBROOK',v:'CECILIA VALDES'},
+  {id:10,n:'S M REY PASEO ALBROOK',v:'CECILIA VALDES'},
+  {id:11,n:'IMPORTADORA RICAMAR, S.A.(ALBROOK)',v:'CECILIA VALDES'},
+  {id:12,n:'IMPORTADORA RICAMAR, S.A.(SAN MIGUELITO)',v:'MELLINI SANTAMARIA'},
+  {id:13,n:'SUPERMERCADOS XTRA S.A.(T010 V.RICARDO J. ALFARO)',v:'MELLINI SANTAMARIA'},
+  {id:14,n:'IMPORTADORA RICAMAR, S.A.(CONDADO)',v:'MELLINI SANTAMARIA'},
+  {id:15,n:'S M RIBA SMITH C C ALTAPLAZA MALL',v:'MELLINI SANTAMARIA'},
+  {id:16,n:'SM REY CENTENIAL',v:'MELLINI SANTAMARIA'},
+  {id:17,n:'SUPERMERCADOS XTRA S.A. (T001 ARRAIJAN)',v:'ALEXIS VAZQUEZ'},
+  {id:18,n:'IMPORTADORA RICAMAR S A TOWN CENTER ARRAIJAN',v:'ALEXIS VAZQUEZ'},
+  {id:19,n:'COMPANIA GOLY S A ARRAIJAN',v:'ALEXIS VAZQUEZ'},
+  {id:20,n:'SM REY PASEO ARRAIJAN',v:'ALEXIS VAZQUEZ'},
+  {id:21,n:'S M RIBA SMITH COSTA VERDE',v:'ALEXIS VAZQUEZ'},
+  {id:22,n:'TAMEK,S.A. (S M EL FUERTE WESTLAND)',v:'MAGDIEL MORAN'},
+  {id:23,n:'EL FUERTE BURUNGA',v:'MAGDIEL MORAN'},
+  {id:24,n:'IMPORTADORA VIRZI,SA(S/C 9) VISTA ALEGRE',v:'MAGDIEL MORAN'},
+  {id:25,n:'XTRA MAXI FERIA VACAMONTE',v:'MAGDIEL MORAN'},
+  {id:26,n:'SUPERMERCADOS XTRA S.A.(T040 XTRA CHANIS)',v:'GERTRUDIS PEREZ'},
+  {id:27,n:'S M RIBA SMITH COSTA DEL ESTE',v:'GERTRUDIS PEREZ'},
+  {id:28,n:'IMPORTADORA RICAMAR, S.A.(CHANIS)',v:'GERTRUDIS PEREZ'},
+  {id:29,n:'SM REY SANTA MARIA',v:'GERTRUDIS PEREZ'},
+  {id:30,n:'IMPORTADORA RICAMAR, S.A.(COSTA DEL ESTE)',v:'GERTRUDIS PEREZ'},
+  {id:31,n:'SUPERMERCADO RIBA SMITH LA PITA',v:'GERTRUDIS PEREZ'},
+  {id:32,n:'S M RIBA SMITH (DEPOSITO)',v:'GERTRUDIS PEREZ'},
+  {id:33,n:'SM REY COSTA DEL ESTE',v:'GERTRUDIS PEREZ'},
+  {id:34,n:'COMPANIA GOLY S A COSTA SUR',v:'MANUEL VALDEZ'},
+  {id:35,n:'SUPERMERCADOS XTRA S.A.(T031 VILLALOBOS)',v:'MANUEL VALDEZ'},
+  {id:36,n:'IMPORTADORA RICAMAR, S.A.(TOCUMEN)',v:'MANUEL VALDEZ'},
+  {id:37,n:'S/M RIBA SMITH QUINTAS DE VERSALLES II',v:'MANUEL VALDEZ'},
+  {id:38,n:'S M REY VERSALLES',v:'MANUEL VALDEZ'},
+  {id:39,n:'IMPORTADORA RICAMAR, S.A.(PEDREGAL)',v:'MANUEL VALDEZ'},
+  {id:40,n:'SUPERMERCADOS XTRA S.A.(T006 MONTERICO)',v:'LUIS TUNON'},
+  {id:41,n:'IMPORTADORA RICAMAR, S.A.(LA DONA)',v:'LUIS TUNON'},
+  {id:42,n:'IMPORTADORA RICAMAR S A NUEVO TOCUMEN',v:'LUIS TUNON'},
+  {id:43,n:'TAMEK S A EL FUERTE LA ONDA 24 DE DICIEMBRE',v:'LUIS TUNON'},
+  {id:44,n:'S M REY CORONADO',v:'EDUARDO LÓPEZ'},
+  {id:45,n:'S/M RIBA SMITH SELECTO CORONADO 2',v:'EDUARDO LÓPEZ'},
+  {id:46,n:'COMPANIA GOLY, S.A. CORONADO',v:'EDUARDO LÓPEZ'},
+  {id:47,n:'IMPORTADORA RICAMAR, S.A.(CORONADO)',v:'EDUARDO LÓPEZ'},
+  {id:48,n:'FARMACIA ARROCHA SA CORONADO',v:'EDUARDO LÓPEZ'},
+  {id:49,n:'COCHEZ CORONADO',v:'EDUARDO LÓPEZ'},
+  {id:50,n:'SUPERMERCADOS XTRA S.A.(T301 CORONADO MAXI FERIA)',v:'EDUARDO LÓPEZ'},
+  {id:51,n:'SM REY PASEO DEL VALLE',v:'EDUARDO LÓPEZ'},
+  {id:52,n:'SUPERMERCADOS XTRA S.A.(T039 MARKET CAPIRA)',v:'EDUARDO LÓPEZ'},
+  {id:53,n:'IMPORTADORA RICAMAR, S.A.(C/C ON-D-GO)',v:'EVELYN FERNANDEZ'},
+  {id:54,n:'SUPERMERCADOS XTRA S.A(T211 MF-XTRA LLANO LARGO)',v:'EVELYN FERNANDEZ'},
+  {id:55,n:'IMPORTADORA VIRZI,SA(S/C 11) CHORRERA',v:'EVELYN FERNANDEZ'},
+  {id:56,n:'SUPERMERCADOS XTRA S.A.(T020 ANCLAS MALL)',v:'EVELYN FERNANDEZ'},
+  {id:57,n:'JUMBO MARKET, S.A.ARRAIJAN',v:'EVELYN FERNANDEZ'},
+  {id:58,n:'SUPERMERCADOS XTRA S.A.(T030 LA MARQUESA)',v:'AURELINO RIVAS'},
+  {id:59,n:'JUMBO MARKET, S.A.VACAMONTE',v:'AURELINO RIVAS'},
+  {id:60,n:'IMPORTADORA RICAMAR, S.A.(BRISAS ARRAIJAN)',v:'AURELINO RIVAS'},
+  {id:61,n:'IMPORTADORA RICAMAR, S.A.(EL TECAL)',v:'AURELINO RIVAS'},
+  {id:62,n:'JUMBO SUPERMERCADO - TECAL',v:'AURELINO RIVAS'},
+  {id:63,n:'IMPORTADORA RICAMAR, S.A.(VISTA HERMOSA)',v:'MADELEN ACOSTA'},
+  {id:64,n:'RIBA SMITH MULTIPLAZA PACIFIC',v:'MADELEN ACOSTA'},
+  {id:65,n:'CASA DE LA CARNE NO.1, S.A (EL CANGREJO)',v:'MADELEN ACOSTA'},
+  {id:66,n:'IMPORTADORA RICAMAR, S.A.(VIA PORRAS)',v:'MADELEN ACOSTA'},
+  {id:67,n:'SM REY 12 OCTUBRE',v:'MADELEN ACOSTA'},
+  {id:68,n:'IMPORTADORA RICAMAR, S.A.(SAN FCO)',v:'MADELEN ACOSTA'},
+  {id:69,n:'SM REY BRISAS DEL GOLF',v:'ELEIDI FRANCO'},
+  {id:70,n:'IMPORTADORA RICAMAR, S.A.(BRISAS)',v:'ELEIDI FRANCO'},
+  {id:71,n:'S/M RIBA SMITH-BRISAS DEL GOLF',v:'ELEIDI FRANCO'},
+  {id:72,n:'COMPANIA GOLY,S.A. BRISAS DEL GOLF',v:'ELEIDI FRANCO'},
+  {id:73,n:'SM REY BRISAS DEL NORTE',v:'ELEIDI FRANCO'},
+  {id:74,n:'SUPERMERCADOS XTRA S.A.(T041 MARKET BRISAS)',v:'ELEIDI FRANCO'},
+  {id:75,n:'IMPORTADORA RICAMAR, S.A.(LA CABIMA)',v:'STEFANI BRAVO'},
+  {id:76,n:'99 SAN LORENZO',v:'STEFANI BRAVO'},
+  {id:77,n:'SUPERMERCADOS XTRA S.A.(T019 EL LAGO)',v:'STEFANI BRAVO'},
+  {id:78,n:'SUPERMERCADOS XTRA S.A.(T203 CHILIBRE MAXI FERIA)',v:'STEFANI BRAVO'},
+  {id:79,n:'SUPERMERCADOS XTRA S.A.(T208 MAXI FERIA S.VICENTE)',v:'STEFANI BRAVO'},
+  {id:80,n:'SM REY PARQUE LEFEVRE',v:'KATHYUSKA GUERRA'},
+  {id:81,n:'S M REY CHANIS',v:'KATHYUSKA GUERRA'},
+  {id:82,n:'JUMBO MARKET, S.A. CHANIS',v:'KATHYUSKA GUERRA'},
+  {id:83,n:'IMPORTADORA RICAMAR, S.A.(PORTOBELO)',v:'KATHYUSKA GUERRA'},
+  {id:84,n:'IMPORTADORA RICAMAR, S.A.(BALBOA)',v:'KATHYUSKA GUERRA'},
+  {id:85,n:'IMPORTADORA RICAMAR S.A.(MEGA DEPOT P CAROLINA)',v:'KATHYUSKA GUERRA'},
+  {id:86,n:'SUPERMERCADOS XTRA S.A.(T303 RIO ABAJO MAXI FERIA)',v:'KATHYUSKA GUERRA'},
+  {id:87,n:'SUPERMERCADOS XTRA S.A.(T022 CHORRILLO)',v:'GALVEN RIVAS'},
+  {id:88,n:'SM REY BELLA VISTA',v:'GALVEN RIVAS'},
+  {id:89,n:'SUPERMERCADO BELLA VISTA',v:'GALVEN RIVAS'},
+  {id:90,n:'IMPORTADORA RICAMAR, S.A.(CENCAL)',v:'GALVEN RIVAS'},
+  {id:91,n:'SUPERMERCADOS XTRA S.A.(T300 CALIDONIA MAXI FERIA)',v:'GALVEN RIVAS'},
+  {id:92,n:'INM. DON ANTONIO REY CASCO ANTIGUO',v:'GALVEN RIVAS'},
+  {id:93,n:'IMPORTADORA VIRZI,SA(S/C 12)',v:'GALVEN RIVAS'},
+  {id:94,n:'IMPORTADORA VIRZI,SA(S/C 13) COSTA VERDE',v:'YESLIN PALERMO'},
+  {id:95,n:'SM REY VISTA ALEGRE',v:'YESLIN PALERMO'},
+  {id:96,n:'IMPORTADORA RICAMAR, S.A.(SAN BERNARDINO)',v:'YESLIN PALERMO'},
+  {id:97,n:'JUMBO MARKET, S.A. COSTA VERDE',v:'YESLIN PALERMO'},
+  {id:98,n:'SUPER CARNES #15 TRAPICHITO',v:'YESLIN PALERMO'},
+  {id:99,n:'IMPORTADORA RICAMAR, S.A.(CHORRERA)',v:'YESLIN PALERMO'},
+  {id:100,n:'SUPERMERCADOS XTRA S.A.(T018 PACORA)',v:'ADESSA COOK'},
+  {id:101,n:'COMPANIA GOLY,S.A. NUEVO TOCUMEN',v:'ADESSA COOK'},
+  {id:102,n:'IMPORTADORA RICAMAR S A MONTE MADERO',v:'ADESSA COOK'},
+  {id:103,n:'SUPERMERCADOS XTRA S.A.(T200 CHEPO MAXI FERIA)',v:'ADESSA COOK'},
+  {id:104,n:'IMPORTADORA RICAMAR, S.A.(LOS PUEBLOS)',v:'PEDRO RODRIGUEZ'},
+  {id:105,n:'SUPERMERCADOS XTRA S.A.(T005 LOS PUEBLOS)',v:'PEDRO RODRIGUEZ'},
+  {id:106,n:'INM DON ANTONIO (MR P PEDREGAL)',v:'PEDRO RODRIGUEZ'},
+  {id:107,n:'INM DON ANTONIO (MR P PLAZA STONE)',v:'PEDRO RODRIGUEZ'},
+  {id:108,n:'SUPERMERCADOS XTRA S.A.(T004 LAS ACACIAS)',v:'PEDRO RODRIGUEZ'},
+  {id:109,n:'CIA. GOLY, S. A. METROMALL',v:'PEDRO RODRIGUEZ'},
+  {id:110,n:'SUPERMERCADOS XTRA S.A.(T017 ALBROOK MALL)',v:'IRVING TORRES'},
+  {id:111,n:'COMPANIA GOLY,S.A. EL DORADO',v:'IRVING TORRES'},
+  {id:112,n:'IMPORTADORA RICAMAR, S.A.(T.MUERTO)',v:'IRVING TORRES'},
+  {id:113,n:'JUMBO MARKET, S.A. TUMBA MUERTO',v:'IRVING TORRES'},
+  {id:114,n:'IMPORTADORA RICAMAR, S.A.(DORADO)',v:'IRVING TORRES'},
+  {id:115,n:'SM REY DORADO',v:'IRVING TORRES'},
+  {id:116,n:'COMPANIA GOLY S A TOCUMEN',v:'BELTRAN FRANCO GONZALEZ'},
+  {id:117,n:'SUPERMERCADOS XTRA S.A.(T202 LA SIESTA MAXI FERIA)',v:'BELTRAN FRANCO GONZALEZ'},
+  {id:118,n:'MERCADITO RIBA SMITH LA SIESTA',v:'BELTRAN FRANCO GONZALEZ'},
+  {id:119,n:'SUPERMERCADOS XTRA S.A.(T309 MANANITAS MI FERIA)',v:'BELTRAN FRANCO GONZALEZ'},
+  {id:120,n:'IMPORTADORA RICAMAR,S.A.(LAS MANANITAS)',v:'BELTRAN FRANCO GONZALEZ'},
+  {id:121,n:'JUMBO MARKET, S.A.',v:'BELTRAN FRANCO GONZALEZ'},
+  {id:122,n:'INM DON ANTONIO (MR P MANANITAS)',v:'BELTRAN FRANCO GONZALEZ'},
+  {id:123,n:'SUPERMERCADOS XTRA S.A.(T302 EL TREBOL)',v:'BELTRAN FRANCO GONZALEZ'},
+  {id:124,n:'SUPERMERCADOS XTRA S.A.(T012 SABANITAS-COLON)',v:'CARMEN FISHER'},
+  {id:125,n:'JUMBO MARKET, S.A. ATLANTIC PLAZA',v:'CARMEN FISHER'},
+  {id:126,n:'SUPERMERCADOS XTRA S.A.(T207 BUENA VISTA MAXI FER)',v:'CARMEN FISHER'},
+  {id:127,n:'SM REY 4 ALTOS',v:'CARMEN FISHER'},
+  {id:128,n:'IMPORTADORA RICAMAR, S.A.(PTO.ESCONDIDO)',v:'CARMEN FISHER'},
+  {id:129,n:'SM REY SABANITAS',v:'CARMEN FISHER'},
+  {id:130,n:'SHALOM, S.A. (TITAN 4 ALTOS)',v:'CARMEN FISHER'},
+  {id:131,n:'TOVA (MADISON CUATRO ALTOS)',v:'CARMEN FISHER'},
+  {id:132,n:'DOYAN, S.A.',v:'CARMEN FISHER'},
+  {id:133,n:'SUPERMERCADOS XTRA S.A.(T036 4 ALTOS)',v:'CARMEN FISHER'},
+  {id:134,n:'SM REY CALLE 50',v:'RUTH SANCHEZ'},
+  {id:135,n:'SUPERMERCADOS XTRA S.A.(T035 VIA ISRAEL)',v:'RUTH SANCHEZ'},
+  {id:136,n:'IMPORTADORA RICAMAR,S.A.(TRANSISTMICA)',v:'RUTH SANCHEZ'},
+  {id:137,n:'SM REY VIA ESPANA',v:'RUTH SANCHEZ'},
+  {id:138,n:'BINAT INTERINVEST,SA(DELI K)',v:'RUTH SANCHEZ'},
+  {id:139,n:'IMPORTADORA RICAMAR, S.A.(PAITILLA)',v:'RUTH SANCHEZ'},
+  {id:140,n:'SUPERMERCADOS XTRA S.A.(T307 GRAN ESTACION MI FERI)',v:'JAAZIEL GONZALEZ'},
+  {id:141,n:'COMPANIA GOLY S A S MIGUELITO',v:'JAAZIEL GONZALEZ'},
+  {id:142,n:'TAMEK, S.A. (SUPERMERCADO EL FUERTE)',v:'JAAZIEL GONZALEZ'},
+  {id:143,n:'IMPORTADORA RICAMAR, S.A.(LOS ANDES)',v:'JAAZIEL GONZALEZ'},
+  {id:144,n:'SM REY C COMERCIAL 2412',v:'DEIBITH JOSUE PRADO'},
+  {id:145,n:'SUPERMERCADOS XTRA S.A.(T008 S. MIGUELITO)',v:'DEIBITH JOSUE PRADO'},
+  {id:146,n:'SM REY VILLA LUCRE',v:'DEIBITH JOSUE PRADO'},
+  {id:147,n:'IMPORTADORA RICAMAR,S.A.(VILLA LUCRE)',v:'DEIBITH JOSUE PRADO'},
+  {id:148,n:'SUPERMERCADOS XTRA S.A.(T014 VILLA LUCRE)',v:'DEIBITH JOSUE PRADO'},
+  {id:149,n:'IMPORTADORA RICAMAR, S.A.(LOS ANDES SUC.2)',v:'ALEXIS SALAZAR'},
+  {id:150,n:'SM REY MILLA 8',v:'ALEXIS SALAZAR'},
+  {id:151,n:'SUPERMERCADO RIBA SMITH TRST',v:'ALEXIS SALAZAR'},
+  {id:152,n:'IMPORTADORA RICAMAR, S.A.(BETHANIA)',v:'ALEXIS SALAZAR'},
+  {id:153,n:'IMPORTADORA RICAMAR,S.A.-MEGA DEPOT LOS ANDES MALL',v:'ALEXIS SALAZAR'},
+  {id:154,n:'SUPERMERCADOS XTRA S.A.(T034 SAN ISIDRO)',v:'ALEXIS SALAZAR'},
+  {id:155,n:'IMPORTADORA RICAMAR,S.A.(SABANITAS)',v:'JUSTO VICTOR MACHUCA'},
+  {id:156,n:'SUPERMERCADOS XTRA S.A.(T013 CATIVA)',v:'JUSTO VICTOR MACHUCA'},
+  {id:157,n:'SUPERMERCADOS XTRA S.A.(T012 SABANITAS-COLON)',v:'JUSTO VICTOR MACHUCA'},
+  {id:158,n:'DOYAN, S.A. (EMPERADOR)',v:'JUSTO VICTOR MACHUCA'},
+  {id:159,n:'DOYAN, S.A. (MAESTRO)',v:'JUSTO VICTOR MACHUCA'},
+  {id:160,n:'IMPORTADORA RICAMAR, S.A.(COLMAR)',v:'JUSTO VICTOR MACHUCA'},
+  {id:161,n:'SM REY CALLE 13',v:'JUSTO VICTOR MACHUCA'},
+  {id:162,n:'SM REY CALLE 7A.',v:'JUSTO VICTOR MACHUCA'},
+  {id:163,n:'IMPORTADORA RICAMAR, S.A.(COLON 2000)',v:'JUSTO VICTOR MACHUCA'},
+  {id:164,n:'JUMBO MARKET, S.A. SABANITAS',v:'JUSTO VICTOR MACHUCA'},
+  {id:165,n:'SUPERMERCADOS XTRA S.A.(T007 OJO DE AGUA)',v:'ERICK RUIZ'},
+  {id:166,n:'COMPANIA GOLY S A OJO DE AGUA',v:'ERICK RUIZ'},
+];
+window.CAT_DATA = CAT;
+window.TIENDAS_INGRESO_DATA = TIENDAS_INGRESO;
+
+
+/* ── helpers ── */
+const Logo=()=>(
+  <svg width="100" height="34" viewBox="0 0 280 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="280" height="100" fill="#CC0000" rx="4"/>
+    <text x="50%" y="72" textAnchor="middle" fontFamily="Arial Black,Arial" fontWeight="900" fontSize="78" fill="white">MARS</text>
+  </svg>
+);
+
+const calcMontoVendedor=(prod,cant)=>{
+  if(!prod||!cant||isNaN(cant)||parseFloat(cant)<=0)return null;
+  return(parseFloat(cant)*(prod.p/prod.u)).toFixed(2);
+};
+const calcMontoAuditor=(prod,cant)=>{
+  if(!prod||!cant||isNaN(cant)||parseFloat(cant)<=0)return null;
+  return(parseFloat(cant)*prod.p).toFixed(2);
+};
+
+const TIPO_PEDIDO_COLORS={
+  'Pedido adicional':{bg:'rgba(99,102,241,.25)',border:'#6366f1',text:'#a5b4fc'},
+  'Pedido para Tonga':{bg:'rgba(245,158,11,.25)',border:'#f59e0b',text:'#fcd34d'},
+  'Pedido para Isla':{bg:'rgba(16,185,129,.25)',border:'#10b981',text:'#6ee7b7'},
+  'Pedido para botadero':{bg:'rgba(239,68,68,.25)',border:'#ef4444',text:'#fca5a5'},
+  'Pedido para frente de caja':{bg:'rgba(56,189,248,.25)',border:'#38bdf8',text:'#7dd3fc'},
+};
+
+const TipoPedidoBadge=({tipo})=>{
+  if(!tipo||tipo==='—')return <span style={{color:'#555'}}>—</span>;
+  const c=TIPO_PEDIDO_COLORS[tipo]||{bg:'rgba(100,116,139,.25)',border:'#64748b',text:'#cbd5e1'};
+  return(
+    <span style={{background:c.bg,border:`1px solid ${c.border}`,color:c.text,fontSize:'.68rem',fontWeight:'700',padding:'2px 7px',borderRadius:'4px',whiteSpace:'nowrap'}}>
+      {tipo}
+    </span>
+  );
+};
+
+const TipoPedidoSelector=({value,onChange})=>(
+  <div style={{marginBottom:'1rem'}}>
+    <label style={{color:'#F0F0F0',fontWeight:'700',fontSize:'.9rem',display:'block',marginBottom:'.5rem'}}>🏷️ Tipo de Pedido</label>
+    <div style={{display:'flex',flexWrap:'wrap',gap:'.45rem'}}>
+      {TIPOS_PEDIDO.map(tipo=>{
+        const sel=value===tipo;
+        const c=TIPO_PEDIDO_COLORS[tipo]||{bg:'rgba(204,0,0,.25)',border:'#CC0000',text:'#FF4444'};
+        return(
+          <button key={tipo} type="button" onClick={()=>onChange(sel?'':tipo)}
+            style={{padding:'.45rem .85rem',borderRadius:'2rem',border:sel?`2px solid ${c.border}`:'1px solid #2A2A2A',
+              background:sel?c.bg:'rgba(30,30,30,.8)',color:sel?c.text:'#888',cursor:'pointer',fontSize:'.78rem',fontWeight:sel?'700':'400',transition:'all .15s'}}>
+            {sel?'✓ ':''}{tipo}
+          </button>
+        );
+      })}
+    </div>
+    {value&&<p style={{color:'#7dd3fc',fontSize:'.75rem',margin:'.4rem 0 0'}}>✓ Seleccionado: <strong>{value}</strong></p>}
+  </div>
+);
+
+const descargarMachetazoExcel=(pedidos)=>{
+  if(!pedidos||pedidos.length===0){alert('Agrega al menos un producto');return;}
+  try{
+    const rows1=[['#','Material','Codigo','Descripcion','Tipo de Pedido','Tienda','Columna','Cajas/Ex','Unidades','Monto ($)']];
+    pedidos.forEach((p,i)=>{
+      rows1.push([i+1,p.pMat,p.pCod,p.pDesc,p.tipoPedido||'—',p.tStore,p.tColL,p.qtyCajas,p.qtyUnidades,p.monto]);
+    });
+    rows1.push([]);
+    const totalUnidades=pedidos.reduce((a,p)=>a+p.qtyUnidades,0);
+    const totalMonto=pedidos.reduce((a,p)=>a+(parseFloat(p.monto)||0),0);
+    rows1.push(['','','','','','','','TOTAL UNIDADES:',totalUnidades,'']);
+    rows1.push(['','','','','','','','TOTAL MONTO:','','$'+totalMonto.toFixed(2)]);
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows1),'PEDIDO');
+    XLSX.writeFile(wb,'machetazo_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  }catch(err){console.error(err);alert('Error generando Excel: '+err.message);}
+};
+
+function ItemEditable({item,idx,onEliminar,onEditar,accentColor,borderColor,bgColor,labelCant,renderDetalle}){
+  const [editando,setEditando]=useState(false);
+  const [nuevaCant,setNuevaCant]=useState(String(item.cantidad||item.qtyCajas||''));
+  const guardarEdicion=()=>{
+    const val=parseFloat(nuevaCant);
+    if(!val||val<=0){alert('Cantidad inválida');return;}
+    onEditar(idx,val);setEditando(false);
+  };
+  return(
+    <div style={{background:bgColor,border:`1px solid ${borderColor}`,borderRadius:'.5rem',padding:'.75rem 1rem',marginBottom:'.4rem'}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+        <div style={{flex:1,minWidth:0}}>{renderDetalle(item)}</div>
+        <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:'4px',flexShrink:0,marginLeft:'.75rem'}}>
+          <div style={{display:'flex',gap:'4px'}}>
+            <button onClick={()=>{setEditando(!editando);setNuevaCant(String(item.cantidad||item.qtyCajas||''));}}
+              style={{background:'rgba(251,191,36,.2)',border:'1px solid #fbbf24',color:'#fcd34d',borderRadius:'.35rem',padding:'3px 8px',cursor:'pointer',fontSize:'.72rem',fontWeight:'700'}}>✏️</button>
+            <button onClick={()=>onEliminar(idx)}
+              style={{background:'rgba(220,38,38,.3)',border:'1px solid #dc2626',color:'#fca5a5',borderRadius:'.35rem',padding:'3px 8px',cursor:'pointer',fontSize:'.72rem',fontWeight:'700'}}>✕</button>
+          </div>
+        </div>
+      </div>
+      {editando&&(
+        <div style={{marginTop:'.6rem',background:'rgba(0,0,0,.25)',borderRadius:'.4rem',padding:'.6rem',display:'flex',gap:'.5rem',alignItems:'center'}}>
+          <label style={{color:'#fcd34d',fontSize:'.78rem',whiteSpace:'nowrap'}}>{labelCant}:</label>
+          <input type="number" min="1" value={nuevaCant} onChange={e=>setNuevaCant(e.target.value)}
+            style={{flex:1,background:'#1A1A1A',color:'white',border:'1px solid #fbbf24',borderRadius:'.35rem',padding:'.4rem .6rem',outline:'none',fontSize:'.85rem'}}/>
+          <button onClick={guardarEdicion} style={{background:'#16a34a',color:'white',border:'none',borderRadius:'.35rem',padding:'.4rem .75rem',cursor:'pointer',fontSize:'.78rem',fontWeight:'700'}}>OK</button>
+          <button onClick={()=>setEditando(false)} style={{background:'#333',color:'white',border:'none',borderRadius:'.35rem',padding:'.4rem .6rem',cursor:'pointer',fontSize:'.78rem'}}>✕</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ════ IngresoApp ════ */
+function IngresoApp(){
+  const [user,setUser]=useState(null);
+  const [reps,setReps]=useState([]);
+  const [load,setLoad]=useState(false);
+  const [saving,setSaving]=useState(false);
+  const [showForm,setShowForm]=useState(false);
+  const [tId,setTId]=useState('');
+  const [cant,setCant]=useState('');
+  const [mesVenc,setMesVenc]=useState('');
+  const [codIn,setCodIn]=useState('');
+  const [prod,setProd]=useState(null);
+  const [showSug,setShowSug]=useState(false);
+  const [selV,setSelV]=useState('');
+  const [srchV,setSrchV]=useState('');
+  const [msg,setMsg]=useState('');
+  const [err,setErr]=useState('');
+  const [vPedidos,setVPedidos]=useState([]);
+
+  const showM=(m,e=false)=>{if(e)setErr(m);else setMsg(m);setTimeout(()=>{setMsg('');setErr('');},3000);};
+  const btn=(bg,extra={})=>({background:bg,color:'white',border:'none',borderRadius:'.5rem',padding:'.75rem 1rem',fontWeight:'700',cursor:'pointer',...extra});
+
+  const cargar=useCallback(async()=>{
+    setLoad(true);
+    const d=await sb('GET','/reportes?select=*&order=id.desc');
+    if(d)setReps(d);else showM('Error conectando',true);
+    setLoad(false);
+  },[]);
+
+  useEffect(()=>{if(user)cargar();},[user]);
+
+  const tiendasV=useMemo(()=>user?.v?TIENDAS_INGRESO.filter(t=>t.v===user.v):[],[user]);
+  const vFilt=useMemo(()=>VENDS.filter(v=>v.n.toUpperCase().includes(srchV.toUpperCase())),[srchV]);
+  const sugs=useMemo(()=>{
+    if(!codIn.trim()||prod)return[];
+    const q=codIn.toUpperCase();
+    return CAT.filter(p=>p.b.includes(q)||p.c.toUpperCase().includes(q)||p.n.toUpperCase().includes(q)||p.m.toUpperCase().includes(q)).slice(0,8);
+  },[codIn,prod]);
+
+  const logout=()=>{setUser(null);setSelV('');setSrchV('');setReps([]);setVPedidos([]);setTId('');setMesVenc('');setCant('');setCodIn('');setProd(null);setShowSug(false);setShowForm(false);};
+
+  const vAgregar=()=>{
+    if(!tId||!prod||!cant||!mesVenc){alert('Completa todos los campos');return;}
+    const tienda=TIENDAS_INGRESO.find(t=>t.id===parseInt(tId));
+    const monto=calcMontoVendedor(prod,cant);
+    setVPedidos(prev=>[...prev,{
+      barcode:prod.b,codigo:prod.c,producto:prod.n,marca:prod.m,tipo:prod.t,
+      tienda:tienda?.n||'',cantidad:parseInt(cant),monto_estimado:parseFloat(monto),
+      mes_vencimiento:mesVenc,fecha_reporte:new Date().toLocaleDateString('es-ES'),
+      vendedor:user.v,_prod:prod,_tId:tId
+    }]);
+    showM('Agregado: '+prod.n);
+    setCant('');setCodIn('');setProd(null);setShowSug(false);setMesVenc('');
+  };
+
+  const vEditar=(idx,nuevaCant)=>{
+    setVPedidos(prev=>prev.map((p,i)=>{
+      if(i!==idx)return p;
+      const monto=parseFloat((nuevaCant*(p._prod.p/p._prod.u)).toFixed(2));
+      return{...p,cantidad:parseInt(nuevaCant),monto_estimado:monto};
+    }));
+    showM('Cantidad actualizada');
+  };
+
+  const vGuardarTodo=async()=>{
+    if(vPedidos.length===0){alert('No hay productos en la lista');return;}
+    setSaving(true);let ok=0;
+    for(const p of vPedidos){
+      const {_prod,_tId,...datos}=p;
+      const r=await sb('POST','/reportes',datos);
+      if(r&&!r.error)ok++;
+    }
+    setSaving(false);
+    if(ok===vPedidos.length){showM(''+ok+' reportes guardados');setVPedidos([]);cargar();}
+    else showM(''+ok+'/'+vPedidos.length+' guardados. Revisa conexión.',true);
+  };
+
+  const vEliminar=(idx)=>setVPedidos(prev=>prev.filter((_,i)=>i!==idx));
+  const vTotalMonto=vPedidos.reduce((a,p)=>a+(parseFloat(p.monto_estimado)||0),0);
+  const misR=reps.filter(r=>r.vendedor===user?.v);
+  const montoActual=calcMontoVendedor(prod,cant);
+  const precioUnitario=prod?(prod.p/prod.u).toFixed(4):null;
+
+  if(!user)return(
+    <div style={{minHeight:'60vh',background:'#111111',display:'flex',alignItems:'center',justifyContent:'center',padding:'1rem'}}>
+      <div style={{width:'100%',maxWidth:'440px',background:'#1A1A1A',border:'1px solid #2A2A2A',borderRadius:'1rem',padding:'2.5rem'}}>
+        <div style={{display:'flex',flexDirection:'column',alignItems:'center',marginBottom:'2rem'}}>
+          <Logo/>
+          <h1 style={{color:'white',fontSize:'1.2rem',fontWeight:'700',marginTop:'1rem',textAlign:'center'}}>INVENTARIO — Ingresar Reporte</h1>
+        </div>
+        <h2 style={{color:'#F0F0F0',fontWeight:'700',marginBottom:'.75rem'}}>Selecciona tu nombre</h2>
+        <input type="text" placeholder="Buscar..." value={srchV} onChange={e=>setSrchV(e.target.value)}
+          style={{width:'100%',background:'#222',color:'white',border:'1px solid #2A2A2A',borderRadius:'.5rem',padding:'.6rem',marginBottom:'.75rem',outline:'none',boxSizing:'border-box'}}/>
+        <div style={{maxHeight:'220px',overflowY:'auto',marginBottom:'1rem',display:'flex',flexDirection:'column',gap:'.25rem'}}>
+          {vFilt.map(v=>(
+            <button key={v.id} onClick={()=>setSelV(v.n)}
+              style={{textAlign:'left',padding:'.6rem 1rem',borderRadius:'.5rem',border:selV===v.n?'1px solid #CC0000':'1px solid #2A2A2A',background:selV===v.n?'rgba(204,0,0,.2)':'#222',color:'white',cursor:'pointer',fontSize:'.9rem'}}>
+              {v.n}
+            </button>
+          ))}
+        </div>
+        {selV&&<p style={{color:'#4ade80',fontSize:'.85rem',textAlign:'center',marginBottom:'.75rem'}}>✓ <strong>{selV}</strong></p>}
+        <button onClick={()=>{if(selV)setUser({v:selV});}} disabled={!selV}
+          style={btn(selV?'#CC0000':'#333',{width:'100%',fontSize:'1rem',padding:'.85rem'})}>Entrar</button>
+      </div>
+    </div>
+  );
+
+  return(
+    <div style={{minHeight:'60vh',background:'#111111'}}>
+      <div style={{background:'linear-gradient(90deg,#1A0000,#330000)',padding:'1rem 1.5rem',display:'flex',justifyContent:'space-between',alignItems:'center',borderBottom:'1px solid #2A2A2A'}}>
+        <div style={{display:'flex',alignItems:'center',gap:'1rem'}}><Logo/>
+          <div><h1 style={{color:'white',fontWeight:'700',fontSize:'1rem',margin:0}}>INVENTARIO</h1>
+            <p style={{color:'#fca5a5',fontSize:'.75rem',margin:0}}>{user.v}</p></div>
+        </div>
+        <button onClick={logout} style={btn('#CC0000',{fontSize:'.8rem',padding:'.5rem .75rem'})}>Salir</button>
+      </div>
+      {msg&&<div style={{background:'rgba(34,197,94,.1)',borderBottom:'1px solid #22c55e',color:'#86efac',padding:'.5rem',textAlign:'center',fontSize:'.85rem'}}>{msg}</div>}
+      {err&&<div style={{background:'rgba(239,68,68,.1)',borderBottom:'1px solid #ef4444',color:'#fca5a5',padding:'.5rem',textAlign:'center',fontSize:'.85rem'}}>{err}</div>}
+      <div style={{maxWidth:'640px',margin:'0 auto',padding:'1.5rem'}}>
+        <div style={{background:'rgba(204,0,0,.1)',border:'1px solid #CC0000',borderRadius:'.75rem',padding:'1rem',marginBottom:'1.5rem',display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:'1rem'}}>
+          <div><p style={{color:'#fca5a5',fontSize:'.75rem',margin:0}}>Vendedor</p><p style={{color:'white',fontWeight:'700',margin:'.2rem 0 0',fontSize:'.8rem'}}>{user.v}</p></div>
+          <div><p style={{color:'#fca5a5',fontSize:'.75rem',margin:0}}>En Lista</p><p style={{color:'#4ade80',fontWeight:'700',fontSize:'1.5rem',margin:'.2rem 0 0'}}>{vPedidos.length}</p></div>
+          <div><p style={{color:'#fca5a5',fontSize:'.75rem',margin:0}}>Monto Lista</p><p style={{color:'#fcd34d',fontWeight:'700',fontSize:'1rem',margin:'.2rem 0 0'}}>${vTotalMonto.toFixed(2)}</p></div>
+          <div><p style={{color:'#fca5a5',fontSize:'.75rem',margin:0}}>Guardados</p><p style={{color:'#FF2222',fontWeight:'700',fontSize:'1.1rem',margin:'.2rem 0 0'}}>{misR.length}</p></div>
+        </div>
+
+        {!showForm&&<button onClick={()=>setShowForm(true)} style={btn('#CC0000',{width:'100%',padding:'1rem',fontSize:'1rem',marginBottom:'1.5rem',borderRadius:'.75rem'})}>
+          + Agregar Producto con Próximo Vencimiento
+        </button>}
+
+        {showForm&&<div style={{background:'rgba(26,26,26,.95)',border:'1px solid #CC0000',borderRadius:'.75rem',padding:'1.5rem',marginBottom:'1.5rem'}}>
+          <h2 style={{color:'white',fontWeight:'700',marginTop:0}}>Agregar a la Lista</h2>
+          <div style={{marginBottom:'1rem'}}>
+            <label style={{color:'#F0F0F0',fontWeight:'700',fontSize:'.9rem',display:'block',marginBottom:'.5rem'}}>📍 Tienda</label>
+            <select value={tId} onChange={e=>setTId(e.target.value)} style={{width:'100%',background:'#222',color:'white',border:'1px solid #CC0000',borderRadius:'.5rem',padding:'.75rem',boxSizing:'border-box'}}>
+              <option value="">-- Selecciona tu tienda --</option>
+              {tiendasV.map(t=><option key={t.id} value={t.id}>{t.n}</option>)}
+            </select>
+          </div>
+          <div style={{marginBottom:'1rem',position:'relative'}}>
+            <label style={{color:'#F0F0F0',fontWeight:'700',fontSize:'.9rem',display:'block',marginBottom:'.5rem'}}>🔍 Buscar Producto</label>
+            <input type="text" placeholder="Código de barra, código FEDURO o nombre..." value={codIn}
+              onChange={e=>{setCodIn(e.target.value);setShowSug(true);if(prod)setProd(null);}}
+              onFocus={()=>codIn&&setShowSug(true)}
+              style={{width:'100%',background:'#222',color:'white',border:'1px solid #CC0000',borderRadius:'.5rem',padding:'.75rem',boxSizing:'border-box',outline:'none'}}/>
+            {showSug&&sugs.length>0&&(
+              <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#1A1A1A',border:'1px solid #CC0000',borderRadius:'.5rem',zIndex:100,maxHeight:'220px',overflowY:'auto',marginTop:'2px',boxShadow:'0 10px 25px rgba(0,0,0,.7)'}}>
+                {sugs.map(p=>(
+                  <button key={p.b} onMouseDown={e=>{e.preventDefault();setProd(p);setCodIn(p.b+' - '+p.n);setShowSug(false);}}
+                    style={{display:'block',width:'100%',textAlign:'left',padding:'.75rem 1rem',border:'none',borderBottom:'1px solid rgba(204,0,0,.3)',background:'transparent',cursor:'pointer',color:'white'}}>
+                    <div style={{color:'#FF6666',fontFamily:'monospace',fontSize:'.75rem'}}>{p.b}</div>
+                    <div style={{fontWeight:'600',fontSize:'.85rem',marginTop:'2px'}}>{p.n}</div>
+                    <div style={{color:'#4ade80',fontSize:'.75rem'}}>{p.m} · {p.t} · {p.u} un · ${p.p}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+            {prod&&(
+              <div style={{marginTop:'.5rem',background:'rgba(34,197,94,.1)',border:'1px solid #22c55e',borderRadius:'.5rem',padding:'.75rem',display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+                <div>
+                  <div style={{color:'#FF6666',fontFamily:'monospace',fontSize:'.75rem'}}>{prod.b} · {prod.c}</div>
+                  <div style={{color:'white',fontWeight:'700',fontSize:'.9rem',marginTop:'2px'}}>{prod.n}</div>
+                  <div style={{color:'#4ade80',fontSize:'.75rem'}}>{prod.m} · {prod.t} de {prod.u} un · ${prod.p} → <strong>${precioUnitario}/un</strong></div>
+                </div>
+                <button onClick={()=>{setProd(null);setCodIn('');}} style={{background:'none',border:'none',color:'#f87171',cursor:'pointer',fontSize:'1.2rem'}}>✕</button>
+              </div>
+            )}
+          </div>
+          <div style={{marginBottom:'1rem'}}>
+            <label style={{color:'#F0F0F0',fontWeight:'700',fontSize:'.9rem',display:'block',marginBottom:'.5rem'}}>📦 Cantidad (unidades individuales)</label>
+            <input type="number" min="1" placeholder="Ej: 10" value={cant} onChange={e=>setCant(e.target.value)}
+              style={{width:'100%',background:'#222',color:'white',border:'1px solid #CC0000',borderRadius:'.5rem',padding:'.75rem',boxSizing:'border-box',outline:'none'}}/>
+          </div>
+          <div style={{marginBottom:'1rem'}}>
+            <label style={{color:'#F0F0F0',fontWeight:'700',fontSize:'.9rem',display:'block',marginBottom:'.5rem'}}>📅 Mes de Vencimiento</label>
+            <select value={mesVenc} onChange={e=>setMesVenc(e.target.value)}
+              style={{width:'100%',background:'#222',color:mesVenc?'white':'#888',border:'1px solid #CC0000',borderRadius:'.5rem',padding:'.75rem',boxSizing:'border-box'}}>
+              <option value="">-- Selecciona el mes --</option>
+              {['Enero 2026','Febrero 2026','Marzo 2026','Abril 2026','Mayo 2026','Junio 2026','Julio 2026','Agosto 2026','Septiembre 2026','Octubre 2026','Noviembre 2026','Diciembre 2026'].map(m=>(
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+          </div>
+          {prod&&cant&&parseFloat(cant)>0&&(
+            <div style={{marginBottom:'1rem',background:'rgba(16,185,129,.1)',border:'1px solid #10b981',borderRadius:'.5rem',padding:'1rem'}}>
+              <p style={{color:'#6ee7b7',fontSize:'.8rem',margin:'0 0 4px',fontWeight:'600'}}>💰 MONTO ESTIMADO</p>
+              <p style={{color:'white',fontSize:'1.4rem',fontWeight:'700',margin:0}}>${montoActual}</p>
+              <p style={{color:'#a7f3d0',fontSize:'.7rem',margin:'4px 0 0'}}>{cant} un. × ${precioUnitario}/un = ${montoActual}</p>
+            </div>
+          )}
+          <div style={{display:'flex',gap:'.75rem'}}>
+            <button onClick={vAgregar} style={btn('#16a34a',{flex:1})}>✓ Agregar a Lista</button>
+            <button onClick={()=>{setCant('');setCodIn('');setProd(null);setShowSug(false);setMesVenc('');setShowForm(false);}} style={btn('#333',{flex:1})}>Cerrar</button>
+          </div>
+        </div>}
+
+        {vPedidos.length>0&&<div style={{background:'rgba(26,26,26,.95)',border:'1px solid #2A2A2A',borderRadius:'.75rem',padding:'1.25rem',marginBottom:'1.5rem'}}>
+          <h2 style={{color:'white',fontWeight:'700',margin:'0 0 1rem',fontSize:'1rem'}}>📋 Lista Pendiente ({vPedidos.length})</h2>
+          {vPedidos.map((p,idx)=>(
+            <ItemEditable key={idx} item={p} idx={idx} onEliminar={vEliminar} onEditar={vEditar}
+              accentColor='#CC0000' borderColor='#CC0000' bgColor='rgba(204,0,0,.1)' labelCant='Unidades'
+              renderDetalle={item=>(
+                <div>
+                  <p style={{color:'white',fontWeight:'700',margin:'0 0 2px',fontSize:'.85rem',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{item.producto}</p>
+                  <p style={{color:'#ccc',fontSize:'.75rem',margin:'0 0 2px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{item.tienda}</p>
+                  <p style={{color:'#aaa',fontSize:'.72rem',margin:0}}>
+                    {item.cantidad} un. · {item.tipo}
+                    {item.mes_vencimiento&&<span style={{color:'#fcd34d',marginLeft:'6px'}}>📅 {item.mes_vencimiento}</span>}
+                    <span style={{color:'#4ade80',marginLeft:'8px',fontWeight:'700'}}>${item.monto_estimado?.toFixed(2)}</span>
+                  </p>
+                </div>
+              )}
+            />
+          ))}
+          <div style={{marginTop:'1rem',paddingTop:'1rem',borderTop:'1px solid #2A2A2A'}}>
+            <p style={{color:'#ccc',margin:'0 0 1rem',fontSize:'.85rem'}}>Total: <strong style={{color:'#fcd34d',fontSize:'1.1rem'}}>${vTotalMonto.toFixed(2)}</strong></p>
+            <button onClick={vGuardarTodo} disabled={saving}
+              style={btn(saving?'#333':'#16a34a',{width:'100%',fontSize:'.95rem',padding:'.75rem',borderRadius:'.75rem'})}>
+              {saving?'Guardando...':'☁️ Guardar Todo en Supabase'}
+            </button>
+          </div>
+        </div>}
+
+        {misR.length>0&&<div style={{background:'rgba(26,26,26,.95)',border:'1px solid #2A2A2A',borderRadius:'.75rem',padding:'1.25rem'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1rem'}}>
+            <h2 style={{color:'white',fontWeight:'700',margin:0,fontSize:'1rem'}}>☁️ Reportes Guardados ({misR.length})</h2>
+            <button onClick={cargar} style={{background:'none',border:'none',color:'#CC0000',cursor:'pointer',fontSize:'.8rem'}}>🔄</button>
+          </div>
+          {load?<p style={{color:'#888',textAlign:'center',padding:'1.5rem'}}>Cargando...</p>
+          :<div style={{display:'flex',flexDirection:'column',gap:'.5rem'}}>
+            {misR.slice(0,10).map(r=>(
+              <div key={r.id} style={{background:'rgba(204,0,0,.08)',border:'1px solid #2A2A2A',borderRadius:'.5rem',padding:'.75rem'}}>
+                <p style={{color:'white',fontWeight:'700',margin:'0 0 2px',fontSize:'.85rem',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.producto}</p>
+                <p style={{color:'#888',fontSize:'.75rem',margin:'0 0 2px'}}>{r.tienda}</p>
+                <p style={{color:'#aaa',fontSize:'.72rem',margin:0}}>{r.cantidad} un. <span style={{color:'#4ade80',fontWeight:'700',marginLeft:'6px'}}>${(parseFloat(r.monto_estimado)||0).toFixed(2)}</span>
+                  {r.mes_vencimiento&&<span style={{color:'#fcd34d',marginLeft:'6px'}}>📅 {r.mes_vencimiento}</span>}
+                </p>
+              </div>
+            ))}
+          </div>}
+        </div>}
+      </div>
+    </div>
+  );
+}
+
+/* ════ MachetazoApp ════ */
+function MachetazoApp(){
+  const [user,setUser]=useState(null);
+  const [srchA,setSrchA]=useState('');
+  const [selA,setSelA]=useState('');
+  const [mPedidos,setMPedidos]=useState([]);
+  const [mTipoPedido,setMTipoPedido]=useState('');
+  const [mTiendaSel,setMTiendaSel]=useState('');
+  const [mProdSel,setMProdSel]=useState(null);
+  const [mCodIn,setMCodIn]=useState('');
+  const [mCant,setMCant]=useState('');
+  const [mShowSug,setMShowSug]=useState(false);
+  const [mShowForm,setMShowForm]=useState(false);
+  const [msg,setMsg]=useState('');
+  const [saving,setSaving]=useState(false);
+
+  const showM=(m)=>{setMsg(m);setTimeout(()=>setMsg(''),3000);};
+  const btn=(bg,extra={})=>({background:bg,color:'white',border:'none',borderRadius:'.5rem',padding:'.75rem 1rem',fontWeight:'700',cursor:'pointer',...extra});
+
+  const misTiendas=user?MACHETAZO_TIENDAS.filter(t=>t.v===user.v):[];
+  const mSugs=useMemo(()=>{
+    if(!mCodIn.trim()||mProdSel)return[];
+    const q=mCodIn.toUpperCase();
+    return MACHETAZO_PRODUCTOS.filter(p=>p.material.includes(q)||p.codigo.includes(q)||p.descripcion.toUpperCase().includes(q)).slice(0,8);
+  },[mCodIn,mProdSel]);
+
+  const mTotalUnidades=mPedidos.reduce((a,p)=>a+p.qtyUnidades,0);
+  const mTotalMonto=mPedidos.reduce((a,p)=>a+(parseFloat(p.monto)||0),0);
+  const mCantActual=mProdSel&&mCant&&parseFloat(mCant)>0?parseInt(mCant):0;
+  const mUnidadesActual=mCantActual&&mProdSel?mCantActual*mProdSel.u:0;
+  const mMontoActual=mCantActual&&mProdSel?(mCantActual*mProdSel.p).toFixed(2):null;
+
+  const logout=()=>{setUser(null);setSelA('');setSrchA('');setMPedidos([]);setMTiendaSel('');setMTipoPedido('');setMProdSel(null);setMCodIn('');setMCant('');setMShowSug(false);setMShowForm(false);};
+
+  const mAgregar=()=>{
+    if(!mTiendaSel||!mProdSel||!mCant||parseFloat(mCant)<=0||!mTipoPedido){alert('Completa todos los campos, incluyendo el Tipo de Pedido');return;}
+    const t=MACHETAZO_TIENDAS.find(x=>x.n===mTiendaSel);
+    if(!t)return;
+    const cajas=parseInt(mCant);
+    setMPedidos(prev=>[...prev,{
+      tN:t.n,tStore:t.store,tCol:t.col,tColL:t.colLetter,tV:t.v,
+      pMat:mProdSel.material,pCod:mProdSel.codigo,pDesc:mProdSel.descripcion,pRow:mProdSel.row,
+      pTipo:mProdSel.t,pUnidadesPorCaja:mProdSel.u,pPrecio:mProdSel.p,
+      qtyCajas:cajas,qtyUnidades:cajas*mProdSel.u,monto:(cajas*mProdSel.p).toFixed(2),
+      tipoPedido:mTipoPedido,_prod:mProdSel
+    }]);
+    showM('Agregado: '+mProdSel.descripcion);
+    setMCant('');setMCodIn('');setMProdSel(null);setMShowSug(false);setMTipoPedido('');
+  };
+
+  const mEditar=(idx,nuevasCajas)=>{
+    setMPedidos(prev=>prev.map((p,i)=>{
+      if(i!==idx)return p;
+      const cajas=parseInt(nuevasCajas);
+      return{...p,qtyCajas:cajas,qtyUnidades:cajas*p.pUnidadesPorCaja,monto:(cajas*p.pPrecio).toFixed(2)};
+    }));
+    showM('Cantidad actualizada');
+  };
+
+  const mGuardarTodo=async()=>{
+    if(mPedidos.length===0){alert('No hay productos en la lista');return;}
+    setSaving(true);let ok=0;
+    for(const p of mPedidos){
+      const datos={
+        vendedor:`MACHETAZO: ${user.v}`,tienda:p.tStore,barcode:p.pCod,codigo:p.pMat,
+        producto:p.pDesc,marca:'MARS',tipo:p.pTipo,tipo_pedido:p.tipoPedido||'—',cantidad:p.qtyUnidades,
+        monto_estimado:parseFloat(p.monto),mes_vencimiento:null,
+        fecha_reporte:new Date().toLocaleDateString('es-ES')
+      };
+      const r=await sb('POST','/reportes',datos);
+      if(r&&!r.error)ok++;
+    }
+    setSaving(false);
+    if(ok===mPedidos.length){showM(''+ok+' reportes guardados');setMPedidos([]);}
+    else showM(''+ok+'/'+mPedidos.length+' guardados.');
+  };
+
+  const mEliminar=(idx)=>setMPedidos(prev=>prev.filter((_,i)=>i!==idx));
+
+  if(!user)return(
+    <div style={{minHeight:'60vh',background:'#111111',display:'flex',alignItems:'center',justifyContent:'center',padding:'1rem'}}>
+      <div style={{width:'100%',maxWidth:'440px',background:'#1A1A1A',border:'1px solid #2A2A2A',borderRadius:'1rem',padding:'2.5rem'}}>
+        <div style={{display:'flex',flexDirection:'column',alignItems:'center',marginBottom:'2rem'}}>
+          <Logo/>
+          <h1 style={{color:'white',fontSize:'1.2rem',fontWeight:'700',marginTop:'1rem',textAlign:'center'}}>MACHETAZO — Pedido Sugerido</h1>
+        </div>
+        <h2 style={{color:'#F0F0F0',fontWeight:'700',marginBottom:'.75rem'}}>Selecciona tu nombre</h2>
+        <input type="text" placeholder="Buscar vendedor..." value={srchA} onChange={e=>setSrchA(e.target.value)}
+          style={{width:'100%',background:'#222',color:'white',border:'1px solid #0ea5e9',borderRadius:'.5rem',padding:'.6rem',marginBottom:'.75rem',outline:'none',boxSizing:'border-box'}}/>
+        <div style={{maxHeight:'220px',overflowY:'auto',marginBottom:'1rem',display:'flex',flexDirection:'column',gap:'.25rem'}}>
+          {[...new Set(MACHETAZO_TIENDAS.map(t=>t.v))].filter(v=>v.toUpperCase().includes(srchA.toUpperCase())).map(v=>(
+            <button key={v} onClick={()=>setSelA(v)}
+              style={{textAlign:'left',padding:'.6rem 1rem',borderRadius:'.5rem',border:selA===v?'1px solid #38bdf8':'1px solid #2A2A2A',background:selA===v?'rgba(14,165,233,.2)':'#222',color:'white',cursor:'pointer',fontSize:'.9rem',fontWeight:selA===v?'700':'400'}}>
+              {v}
+            </button>
+          ))}
+        </div>
+        {selA&&<p style={{color:'#7dd3fc',fontSize:'.85rem',textAlign:'center',marginBottom:'.75rem'}}>✓ <strong>{selA}</strong></p>}
+        <button onClick={()=>{if(selA)setUser({v:selA});}} disabled={!selA}
+          style={btn(selA?'linear-gradient(135deg,#0ea5e9,#38bdf8)':'#333',{width:'100%',fontSize:'1rem',padding:'.85rem'})}>Entrar</button>
+      </div>
+    </div>
+  );
+
+  return(
+    <div style={{minHeight:'60vh',background:'linear-gradient(135deg,#0c2a3f,#0d3a5e)'}}>
+      <div style={{background:'linear-gradient(90deg,#0369a1,#0ea5e9)',padding:'1rem 1.5rem',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <div style={{display:'flex',alignItems:'center',gap:'1rem'}}><Logo/>
+          <div><h1 style={{color:'white',fontWeight:'700',fontSize:'1rem',margin:0}}>MACHETAZO</h1>
+            <p style={{color:'#bae6fd',fontSize:'.75rem',margin:0}}>{user.v}</p></div>
+        </div>
+        <button onClick={logout} style={btn('#0c4a6e',{fontSize:'.8rem',padding:'.5rem .75rem',border:'1px solid #7dd3fc'})}>Salir</button>
+      </div>
+      {msg&&<div style={{background:'rgba(34,197,94,.1)',borderBottom:'1px solid #22c55e',color:'#86efac',padding:'.5rem',textAlign:'center',fontSize:'.85rem'}}>{msg}</div>}
+      <div style={{maxWidth:'700px',margin:'0 auto',padding:'1.5rem'}}>
+        <div style={{background:'rgba(3,105,161,.4)',border:'1px solid #0369a1',borderRadius:'.75rem',padding:'1rem',marginBottom:'1.5rem',display:'grid',gridTemplateColumns:'1fr 1fr 1fr 1fr',gap:'1rem'}}>
+          <div><p style={{color:'#bae6fd',fontSize:'.75rem',margin:0}}>Vendedor</p><p style={{color:'white',fontWeight:'700',margin:'.2rem 0 0',fontSize:'.8rem'}}>{user.v}</p></div>
+          <div><p style={{color:'#bae6fd',fontSize:'.75rem',margin:0}}>Pedidos</p><p style={{color:'#4ade80',fontWeight:'700',fontSize:'1.5rem',margin:'.2rem 0 0'}}>{mPedidos.length}</p></div>
+          <div><p style={{color:'#bae6fd',fontSize:'.75rem',margin:0}}>Total Unidades</p><p style={{color:'#7dd3fc',fontWeight:'700',fontSize:'1.1rem',margin:'.2rem 0 0'}}>{mTotalUnidades}</p></div>
+          <div><p style={{color:'#bae6fd',fontSize:'.75rem',margin:0}}>Monto Total</p><p style={{color:'#fcd34d',fontWeight:'700',fontSize:'1.1rem',margin:'.2rem 0 0'}}>${mTotalMonto.toFixed(2)}</p></div>
+        </div>
+
+        {!mShowForm&&<button onClick={()=>setMShowForm(true)} style={btn('linear-gradient(90deg,#0369a1,#0ea5e9)',{width:'100%',padding:'1rem',fontSize:'1rem',marginBottom:'1.5rem',borderRadius:'.75rem'})}>
+          + Agregar Producto
+        </button>}
+
+        {mShowForm&&<div style={{background:'rgba(3,105,161,.3)',border:'1px solid rgba(56,189,248,.3)',borderRadius:'.75rem',padding:'1.5rem',marginBottom:'1.5rem'}}>
+          <h2 style={{color:'white',fontWeight:'700',marginTop:0}}>Agregar Producto</h2>
+          <div style={{marginBottom:'1rem'}}>
+            <label style={{color:'white',fontWeight:'700',fontSize:'.9rem',display:'block',marginBottom:'.5rem'}}>📍 Tienda</label>
+            <select value={mTiendaSel} onChange={e=>setMTiendaSel(e.target.value)}
+              style={{width:'100%',background:'#0c4a6e',color:'white',border:'1px solid #0ea5e9',borderRadius:'.5rem',padding:'.75rem',boxSizing:'border-box'}}>
+              <option value="">-- Selecciona la tienda --</option>
+              {misTiendas.map(t=><option key={t.n} value={t.n}>{t.n}</option>)}
+            </select>
+          </div>
+          <TipoPedidoSelector value={mTipoPedido} onChange={setMTipoPedido}/>
+          <div style={{marginBottom:'1rem',position:'relative'}}>
+            <label style={{color:'white',fontWeight:'700',fontSize:'.9rem',display:'block',marginBottom:'.5rem'}}>🔍 Buscar Producto</label>
+            <input type="text" placeholder="Material, código o descripción..." value={mCodIn}
+              onChange={e=>{setMCodIn(e.target.value);setMShowSug(true);if(mProdSel)setMProdSel(null);}}
+              onFocus={()=>mCodIn&&setMShowSug(true)}
+              style={{width:'100%',background:'#0c4a6e',color:'white',border:'1px solid #0ea5e9',borderRadius:'.5rem',padding:'.75rem',boxSizing:'border-box',outline:'none'}}/>
+            {mShowSug&&mSugs.length>0&&(
+              <div style={{position:'absolute',top:'100%',left:0,right:0,background:'#0c3d5c',border:'1px solid #0369a1',borderRadius:'.5rem',zIndex:100,maxHeight:'220px',overflowY:'auto',marginTop:'2px',boxShadow:'0 10px 25px rgba(0,0,0,.7)'}}>
+                {mSugs.map(p=>(
+                  <button key={p.material} onMouseDown={e=>{e.preventDefault();setMProdSel(p);setMCodIn(p.material+' - '+p.descripcion);setMShowSug(false);}}
+                    style={{display:'block',width:'100%',textAlign:'left',padding:'.75rem 1rem',border:'none',borderBottom:'1px solid rgba(3,105,161,.5)',background:'transparent',cursor:'pointer',color:'white'}}>
+                    <div style={{display:'flex',justifyContent:'space-between'}}>
+                      <div style={{color:'#7dd3fc',fontFamily:'monospace',fontSize:'.75rem'}}>{p.material}</div>
+                      <div style={{color:'#4ade80',fontSize:'.75rem',fontWeight:'700'}}>{p.t} ×{p.u} · ${p.p}</div>
+                    </div>
+                    <div style={{fontWeight:'600',fontSize:'.85rem',marginTop:'2px'}}>{p.descripcion}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+            {mProdSel&&(
+              <div style={{marginTop:'.5rem',background:'rgba(34,197,94,.1)',border:'1px solid #22c55e',borderRadius:'.5rem',padding:'.75rem',display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+                <div>
+                  <div style={{color:'#7dd3fc',fontFamily:'monospace',fontSize:'.75rem'}}>{mProdSel.material} · {mProdSel.codigo}</div>
+                  <div style={{color:'white',fontWeight:'700',fontSize:'.9rem',marginTop:'2px'}}>{mProdSel.descripcion}</div>
+                  <div style={{color:'#4ade80',fontSize:'.75rem',marginTop:'2px'}}>{mProdSel.t} · {mProdSel.u} un/caja · ${mProdSel.p}/caja</div>
+                </div>
+                <button onClick={()=>{setMProdSel(null);setMCodIn('');}} style={{background:'none',border:'none',color:'#f87171',cursor:'pointer',fontSize:'1.2rem'}}>✕</button>
+              </div>
+            )}
+          </div>
+          <div style={{marginBottom:'1rem'}}>
+            <label style={{color:'white',fontWeight:'700',fontSize:'.9rem',display:'block',marginBottom:'.5rem'}}>📦 Cantidad ({mProdSel?mProdSel.t+'s':'Cajas/Exhibidores'})</label>
+            <input type="number" min="1" placeholder="Ej: 2" value={mCant} onChange={e=>setMCant(e.target.value)}
+              style={{width:'100%',background:'#0c4a6e',color:'white',border:'1px solid #0ea5e9',borderRadius:'.5rem',padding:'.75rem',boxSizing:'border-box',outline:'none'}}/>
+            {mProdSel&&mCant&&parseFloat(mCant)>0&&(
+              <p style={{color:'#7dd3fc',fontSize:'.78rem',margin:'.4rem 0 0'}}>→ {mCantActual} {mProdSel.t} × {mProdSel.u} un = <strong style={{color:'#4ade80'}}>{mUnidadesActual} unidades</strong></p>
+            )}
+          </div>
+          {mProdSel&&mCant&&parseFloat(mCant)>0&&(
+            <div style={{marginBottom:'1rem',background:'rgba(16,185,129,.1)',border:'1px solid #10b981',borderRadius:'.5rem',padding:'1rem'}}>
+              <p style={{color:'#6ee7b7',fontSize:'.8rem',margin:'0 0 4px',fontWeight:'600'}}>💰 MONTO ESTIMADO</p>
+              <p style={{color:'white',fontSize:'1.4rem',fontWeight:'700',margin:0}}>${mMontoActual}</p>
+            </div>
+          )}
+          <div style={{display:'flex',gap:'.75rem'}}>
+            <button onClick={mAgregar} style={btn('#16a34a',{flex:1})}>✓ Agregar</button>
+            <button onClick={()=>{setMCant('');setMCodIn('');setMProdSel(null);setMShowSug(false);setMTipoPedido('');setMShowForm(false);}} style={btn('#0c4a6e',{flex:1,border:'1px solid #0ea5e9'})}>Cerrar</button>
+          </div>
+        </div>}
+
+        {mPedidos.length>0&&<div style={{background:'rgba(3,105,161,.3)',border:'1px solid #0369a1',borderRadius:'.75rem',padding:'1.25rem',marginBottom:'1.5rem'}}>
+          <h2 style={{color:'white',fontWeight:'700',margin:'0 0 1rem',fontSize:'1rem'}}>📋 Lista ({mPedidos.length})</h2>
+          {mPedidos.map((p,idx)=>(
+            <ItemEditable key={idx} item={p} idx={idx} onEliminar={mEliminar} onEditar={mEditar}
+              accentColor='#0ea5e9' borderColor='#0369a1' bgColor='rgba(3,105,161,.4)' labelCant={`Cajas/${p.pTipo}`}
+              renderDetalle={item=>(
+                <div>
+                  <p style={{color:'white',fontWeight:'700',margin:'0 0 2px',fontSize:'.85rem',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{item.pDesc}</p>
+                  <p style={{color:'#7dd3fc',fontFamily:'monospace',fontSize:'.7rem',margin:'0 0 2px'}}>{item.pMat}</p>
+                  <p style={{color:'#bae6fd',fontSize:'.75rem',margin:'0 0 2px'}}>{item.tN}</p>
+                  <p style={{color:'#a7f3d0',fontSize:'.72rem',margin:'0 0 3px'}}>
+                    {item.qtyCajas} {item.pTipo} → <strong>{item.qtyUnidades} un.</strong>
+                    <span style={{color:'#fcd34d',marginLeft:'8px',fontWeight:'700'}}>${item.monto}</span>
+                  </p>
+                  {item.tipoPedido&&<TipoPedidoBadge tipo={item.tipoPedido}/>}
+                </div>
+              )}
+            />
+          ))}
+          <div style={{marginTop:'1rem',paddingTop:'1rem',borderTop:'1px solid rgba(3,105,161,.5)'}}>
+            <p style={{color:'#bae6fd',fontSize:'.8rem',margin:'0 0 4px'}}>Total unidades: <strong style={{color:'#7dd3fc'}}>{mTotalUnidades}</strong></p>
+            <p style={{color:'#bae6fd',fontSize:'.8rem',margin:'0 0 1rem'}}>Monto total: <strong style={{color:'#fcd34d',fontSize:'1.1rem'}}>${mTotalMonto.toFixed(2)}</strong></p>
+            <div style={{display:'flex',gap:'.75rem'}}>
+              <button onClick={()=>descargarMachetazoExcel(mPedidos)} style={btn('#0369a1',{flex:1,fontSize:'.9rem'})}>📥 Excel</button>
+              <button onClick={mGuardarTodo} disabled={saving} style={btn(saving?'#333':'#16a34a',{flex:1,fontSize:'.9rem'})}>
+                {saving?'Guardando...':'☁️ Guardar'}
+              </button>
+            </div>
+          </div>
+        </div>}
+      </div>
+    </div>
+  );
+}
+
+/* ════ ReyApp ════ */
+/* Mount */
+ReactDOM.render(<IngresoApp/>, document.getElementById('react-ingreso'));
+ReactDOM.render(<MachetazoApp/>, document.getElementById('react-machetazo'));
+</script>
+</body>
+</html>
