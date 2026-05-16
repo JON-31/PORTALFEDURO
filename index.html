@@ -784,7 +784,7 @@ tbody tr:last-child td { border-bottom: none; }
       <div class="nav-item" onclick="showView('ofertas', this)"><span class="nav-icon">🎁</span> Ofertas</div>
       <div class="nav-section-label">Ingresos</div>
       <div class="nav-item" onclick="showView('ingreso', this)"><span class="nav-icon">📝</span> Inventario</div>
-      <div class="nav-item" onclick="showView('machetazo-react', this)"><span class="nav-icon">🛒</span> Machetazo</div>
+      <div class="nav-item" id="nav-machetazo" style="display:none" onclick="showView('machetazo-react', this)"><span class="nav-icon">🛒</span> Machetazo</div>
     </nav>
     <div class="sidebar-footer">
       <div style="color:var(--yellow);font-weight:700;font-size:13px;margin-bottom:6px" id="sidebar-vendor-name"></div>
@@ -981,6 +981,9 @@ async function iniciarSesionVendedor(nombreCompleto) {
   if (dashN) dashN.textContent = 'HI ' + firstName;
   var dashA = document.getElementById('dash-avatar');
   if (dashA) dashA.textContent = firstName.charAt(0).toUpperCase();
+  var MACHETAZO_USERS = ['CECILIA VALDES','ALEXIS VAZQUEZ','MANUEL VALDEZ','EDUARDO LÓPEZ','ELEIDI FRANCO','ADESSA COOK','ERICK RUIZ','PEDRO RODRIGUEZ','IRVING TORRES','BELTRAN FRANCO GONZALEZ','JAAZIEL GONZALEZ','SAMUEL BARRIA'];
+  var navMachetazo = document.getElementById('nav-machetazo');
+  if (navMachetazo) navMachetazo.style.display = MACHETAZO_USERS.indexOf(VENDOR_ACTUAL) !== -1 ? '' : 'none';
   renderDashboard();
   renderOfertas();
 }
@@ -1039,16 +1042,16 @@ function renderDashboard() {
   var totalInv = data.reduce(function(a,d){ return a + (d.inventario||0); }, 0);
   var totalProds = data.length;
   var cobProm = totalProds > 0 ? Math.round(data.reduce(function(a,d){ return a + (d.cobertura||0); }, 0) / totalProds) : 0;
-  var criticos = data.filter(function(d){ return d.cobertura < 30; }).length;
+  var criticos = data.filter(function(d){ return d.cobertura > 60; }).length;
   var faltantes = data.filter(function(d){ return !d.inventario || d.inventario === 0; }).length;
-  var cobClass = cobProm < 30 ? ' kpi-alert' : cobProm < 60 ? ' kpi-warn' : '';
+  var cobClass = cobProm > 60 ? ' kpi-alert' : cobProm > 30 ? ' kpi-warn' : '';
   var critClass = criticos > 0 ? ' kpi-alert' : '';
   var tiendas = [...new Set(data.map(function(d){return d.tienda;}))].length;
   document.getElementById('kpi-grid').innerHTML =
-    '<div class="kpi-card kpi-color-yellow"><span class="kpi-icon">&#127991;</span><div class="kpi-label">Total Productos</div><div class="kpi-value">' + totalProds + ' <small style="font-size:16px">SKUs</small></div><div class="kpi-sub">Activos</div></div>' +
-    '<div class="kpi-card kpi-color-blue"><span class="kpi-icon">&#128230;</span><div class="kpi-label">Inventario Total</div><div class="kpi-value">' + totalInv.toLocaleString() + ' <small style="font-size:14px">UDS</small></div><div class="kpi-sub">' + tiendas + ' cadenas</div></div>' +
-    '<div class="kpi-card kpi-color-purple"><span class="kpi-icon">&#128205;</span><div class="kpi-label">Cobertura Total</div><div class="kpi-value">' + cobProm + ' <small style="font-size:16px">D&Iacute;AS</small></div><div class="kpi-sub">Promedio inventario</div></div>' +
-    '<div class="kpi-card kpi-color-red"><span class="kpi-icon">&#128336;</span><div class="kpi-label">Cr&iacute;ticos (&lt;30 d&iacute;as)</div><div class="kpi-value">' + criticos + ' <small style="font-size:14px">SKU/Tienda</small></div><div class="kpi-sub">Riesgo de quiebre</div></div>';
+    '<div class="kpi-card kpi-color-yellow"><span class="kpi-icon">&#127991;</span><div class="kpi-label">PRODUCTOS/CADENA</div><div class="kpi-value">' + totalProds + ' <small style="font-size:16px">SKUs</small></div><div class="kpi-sub">Activos</div></div>' +
+    '<div class="kpi-card kpi-color-blue"><span class="kpi-icon">&#128230;</span><div class="kpi-label">INVENTARIO/CADENA</div><div class="kpi-value">' + totalInv.toLocaleString() + ' <small style="font-size:14px">UDS</small></div><div class="kpi-sub">' + tiendas + ' cadenas</div></div>' +
+    '<div class="kpi-card kpi-color-purple"><span class="kpi-icon">&#128205;</span><div class="kpi-label">COBERTURA/CADENA</div><div class="kpi-value">' + cobProm + ' <small style="font-size:16px">D&Iacute;AS</small></div><div class="kpi-sub">Promedio inventario</div></div>' +
+    '<div class="kpi-card kpi-color-red"><span class="kpi-icon">&#128336;</span><div class="kpi-label">CR&Iacute;TICOS/CADENA</div><div class="kpi-value">' + criticos + ' <small style="font-size:14px">SKU/CADENA</small></div><div class="kpi-sub">Riesgo de quiebre</div></div>';
   if (data.length === 0) {
     document.getElementById('dash-table-body').innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">Sin data. El administrador debe publicar el inventario primero.</td></tr>';
     document.getElementById('dash-count').textContent = '';
@@ -1063,8 +1066,8 @@ function renderDashboard() {
   var rows = Object.entries(stores).sort(function(a,b){ return a[0].localeCompare(b[0]); }).map(function(entry) {
     var t = entry[0]; var s = entry[1];
     var cp = s.cob.length > 0 ? Math.round(s.cob.reduce(function(a,c){ return a+c; }, 0) / s.cob.length) : 0;
-    var badge = cp < 30 ? 'badge-danger' : cp < 60 ? 'badge-warn' : 'badge-ok';
-    var estado = cp < 30 ? 'Critico' : cp < 60 ? 'Atencion' : 'Optimo';
+    var badge = cp > 60 ? 'badge-danger' : cp > 30 ? 'badge-warn' : 'badge-ok';
+    var estado = cp > 60 ? 'Critico' : cp > 30 ? 'Atencion' : 'Optimo';
     return '<tr><td style="font-weight:600">' + t + '</td><td>' + s.prods + '</td><td>' + s.inv.toLocaleString() + '</td><td>' + s.venta.toLocaleString() + '</td><td>' + cp + ' dias</td><td><span class="badge ' + badge + '">' + estado + '</span></td></tr>';
   }).join('');
   document.getElementById('dash-table-body').innerHTML = rows;
@@ -1075,7 +1078,7 @@ function renderVendedor() {
   var misStores = (window.TIENDAS_INGRESO_DATA || []).filter(function(t){ return t.v === VENDOR_ACTUAL; });
   var totalInv = INV_DATA_V.reduce(function(a,d){ return a + (d.inventario||0); }, 0);
   var cobProm = INV_DATA_V.length > 0 ? Math.round(INV_DATA_V.reduce(function(a,d){ return a + (d.cobertura||0); }, 0) / INV_DATA_V.length) : 0;
-  var criticos = INV_DATA_V.filter(function(d){ return d.cobertura < 30; }).length;
+  var criticos = INV_DATA_V.filter(function(d){ return d.cobertura > 60; }).length;
   var tiendas_unicas = [...new Set(INV_DATA_V.map(function(d){ return d.tienda; }).filter(Boolean))];
   var numTiendas = misStores.length || tiendas_unicas.length;
   var storeList = misStores.length > 0 ? misStores : tiendas_unicas.map(function(n){ return {n:n}; });
@@ -1107,8 +1110,8 @@ function renderTiendas() {
   var cards = Object.entries(stores).sort(function(a,b){ return a[0].localeCompare(b[0]); }).map(function(entry) {
     var t = entry[0]; var s = entry[1];
     var cp = s.cob.length > 0 ? Math.round(s.cob.reduce(function(a,c){ return a+c; },0) / s.cob.length) : 0;
-    var criticos = s.cob.filter(function(c){ return c < 30; }).length;
-    var cobColor = cp < 30 ? 'var(--red-light)' : cp < 60 ? 'var(--orange)' : 'var(--green)';
+    var criticos = s.cob.filter(function(c){ return c > 60; }).length;
+    var cobColor = cp > 60 ? 'var(--red-light)' : cp > 30 ? 'var(--orange)' : 'var(--green)';
     var marcas = Object.keys(s.marcas).join(', ');
     return '<div class="kpi-card" style="border-radius:12px;padding:20px">' +
       '<div style="font-weight:700;font-size:14px;color:var(--text);margin-bottom:14px;line-height:1.3">' + t + '</div>' +
@@ -1143,15 +1146,15 @@ function filtrarInventario() {
   var data = INV_DATA_V.filter(function(d) {
     if (fT && d.tienda !== fT) return false;
     if (fM && d.marca !== fM) return false;
-    if (fE === 'critico' && d.cobertura >= 30) return false;
-    if (fE === 'atencion' && (d.cobertura < 30 || d.cobertura >= 60)) return false;
-    if (fE === 'optimo' && d.cobertura < 60) return false;
+    if (fE === 'critico' && d.cobertura <= 60) return false;
+    if (fE === 'atencion' && (d.cobertura > 60 || d.cobertura <= 30)) return false;
+    if (fE === 'optimo' && d.cobertura > 30) return false;
     return true;
   });
   document.getElementById('inv-count').textContent = data.length + ' registros';
   document.getElementById('inv-table-body').innerHTML = data.map(function(d) {
-    var badge = d.cobertura < 30 ? 'badge-danger' : d.cobertura < 60 ? 'badge-warn' : 'badge-ok';
-    var estado = d.cobertura < 30 ? 'Critico' : d.cobertura < 60 ? 'Atencion' : 'Optimo';
+    var badge = d.cobertura > 60 ? 'badge-danger' : d.cobertura > 30 ? 'badge-warn' : 'badge-ok';
+    var estado = d.cobertura > 60 ? 'Critico' : d.cobertura > 30 ? 'Atencion' : 'Optimo';
     return '<tr><td>' + (d.tienda||'—') + '</td><td><span class="badge badge-brand">' + (d.marca||'—') + '</span></td><td style="font-weight:600">' + (d.producto||'—') + '</td><td>' + (d.inventario||0).toLocaleString() + '</td><td>' + (d.venta_prom_3m||0).toLocaleString() + '</td><td>' + (d.cobertura||0) + ' dias</td><td><span class="badge ' + badge + '">' + estado + '</span></td></tr>';
   }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Sin registros</td></tr>';
 }
