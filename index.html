@@ -899,9 +899,14 @@ tbody tr:last-child td { border-bottom: none; }
   </div>
 </div>
 <script>
+var ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wYXRjbWdqcXhwanhoYmNxc3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyOTEzNDUsImV4cCI6MjA5Mjg2NzM0NX0.uDyUMvouWcPlbNOiPClNYezkKIE9ICAEpWZxklUdGZg';
+var SB_URL = 'https://npatcmgjqxpjxhbcqsqv.supabase.co';
+var SESSION_TOKEN = null;
+
 async function sbGetV(ep) {
-  var r = await fetch('https://npatcmgjqxpjxhbcqsqv.supabase.co/rest/v1' + ep, {
-    headers: { 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wYXRjbWdqcXhwanhoYmNxc3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyOTEzNDUsImV4cCI6MjA5Mjg2NzM0NX0.uDyUMvouWcPlbNOiPClNYezkKIE9ICAEpWZxklUdGZg', 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wYXRjbWdqcXhwanhoYmNxc3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyOTEzNDUsImV4cCI6MjA5Mjg2NzM0NX0.uDyUMvouWcPlbNOiPClNYezkKIE9ICAEpWZxklUdGZg' }
+  var token = SESSION_TOKEN || ANON_KEY;
+  var r = await fetch(SB_URL + '/rest/v1' + ep, {
+    headers: { 'Authorization': 'Bearer ' + token, 'apikey': ANON_KEY }
   });
   var t = await r.text(); return t ? JSON.parse(t) : [];
 }
