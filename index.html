@@ -909,18 +909,6 @@ async function sbGetV(ep) {
 var VENDOR_ACTUAL = null;
 var INV_DATA_V = [];
 
-var VENDS_LOGIN = [
-  'MARTIN CASTILLO','CECILIA VALDES','MELLINI SANTAMARIA','ALEXIS VAZQUEZ','MAGDIEL MORAN',
-  'GERTRUDIS PEREZ','MANUEL VALDEZ','LUIS TUNON','EDUARDO LÓPEZ','EVELYN FERNANDEZ',
-  'AURELINO RIVAS','MADELEN ACOSTA','ELEIDI FRANCO','STEFANI BRAVO','KATHYUSKA GUERRA',
-  'GALVEN RIVAS','YESLIN PALERMO','ADESSA COOK','PEDRO RODRIGUEZ','IRVING TORRES',
-  'BELTRAN FRANCO GONZALEZ','CARMEN FISHER','RUTH SANCHEZ','JAAZIEL GONZALEZ',
-  'DEIBITH JOSUE PRADO','ALEXIS SALAZAR','JUSTO VICTOR MACHUCA','ERICK RUIZ',
-  'SAMUEL BARRIA','JAVIER PINZON','ABDIEL JUAREZ'
-];
-
-window._selV = null;
-
 async function doLogin() {
   var username = (document.getElementById('login-username').value||'').trim().toLowerCase();
   var password = (document.getElementById('login-password').value||'').trim();
@@ -933,21 +921,31 @@ async function doLogin() {
   errEl.style.display = 'none';
   btn.textContent = 'Verificando...'; btn.disabled = true;
   try {
-    var url = '/usuarios?select=*&username=eq.' + encodeURIComponent(username) + '&password=eq.' + encodeURIComponent(password);
-    var res = await sbGetV(url);
-    if (!res || res.length === 0) {
+    var authRes = await fetch(SB_URL + '/auth/v1/token?grant_type=password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY },
+      body: JSON.stringify({ email: username + '@marsxtra.pa', password: password })
+    });
+    var authData = await authRes.json();
+    if (!authData.access_token) {
       errEl.textContent = '⛔ Usuario o contraseña incorrectos';
       errEl.style.display = 'block';
       btn.textContent = 'Entrar'; btn.disabled = false;
       return;
     }
-    var userData = res[0];
-    var nombreCompleto = (userData.nombre || userData.nombre_completo || userData.username || username).toUpperCase();
-    VENDOR_ACTUAL = nombreCompleto;
-    localStorage.setItem('mars_session', JSON.stringify({username: username, nombre: nombreCompleto, ts: Date.now()}));
+    SESSION_TOKEN = authData.access_token;
+    var meta = authData.user && authData.user.user_metadata;
+    var nombreCompleto = (meta && meta.nombre ? meta.nombre : username).toUpperCase();
+    localStorage.setItem('mars_session', JSON.stringify({
+      username: username,
+      nombre: nombreCompleto,
+      access_token: authData.access_token,
+      refresh_token: authData.refresh_token,
+      expires_at: Date.now() + ((authData.expires_in || 3600) * 1000)
+    }));
     await iniciarSesionVendedor(nombreCompleto);
   } catch(e) {
-    errEl.textContent = '⛔ Error de conexión. Intenta de nuevo.';
+    errEl.textContent = '⛔ Error de conexion. Intenta de nuevo.';
     errEl.style.display = 'block';
     console.error(e);
   }
@@ -981,7 +979,16 @@ async function iniciarSesionVendedor(nombreCompleto) {
   renderDashboard();
   renderOfertas();
 }
-function cerrarSesion() {
+async function cerrarSesion() {
+  if (SESSION_TOKEN) {
+    try {
+      await fetch(SB_URL + '/auth/v1/logout', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + SESSION_TOKEN, 'apikey': ANON_KEY }
+      });
+    } catch(e) {}
+  }
+  SESSION_TOKEN = null;
   VENDOR_ACTUAL = null; INV_DATA_V = [];
   localStorage.removeItem('mars_session');
   document.getElementById('app-container').style.display = 'none';
@@ -989,22 +996,6 @@ function cerrarSesion() {
   var u = document.getElementById('login-username'); if (u) u.value = '';
   var p = document.getElementById('login-password'); if (p) p.value = '';
   var e = document.getElementById('login-error'); if (e) e.style.display = 'none';
-  document.getElementById('vendor-search').value = '';
-  document.getElementById('selected-vendor-label').style.display = 'none';
-  // Restore session from localStorage
-(function() {
-  try {
-    var sess = localStorage.getItem('mars_session');
-    if (sess) {
-      var parsed = JSON.parse(sess);
-      // Session valid for 12 hours
-      if (parsed && parsed.nombre && parsed.ts && (Date.now() - parsed.ts) < 43200000) {
-        setTimeout(function() { iniciarSesionVendedor(parsed.nombre); }, 100);
-        return;
-      }
-    }
-  } catch(e) {}
-})();
 }
 
 function toggleSidebar() {
@@ -1257,18 +1248,19 @@ async function cargarBodegaVendedor() {
   }
 }
 
-// Restore session from localStorage
+// Restore session from Supabase Auth token
 (function() {
   try {
     var sess = localStorage.getItem('mars_session');
     if (sess) {
       var parsed = JSON.parse(sess);
-      // Session valid for 12 hours
-      if (parsed && parsed.nombre && parsed.ts && (Date.now() - parsed.ts) < 43200000) {
+      if (parsed && parsed.access_token && parsed.expires_at && Date.now() < parsed.expires_at) {
+        SESSION_TOKEN = parsed.access_token;
         setTimeout(function() { iniciarSesionVendedor(parsed.nombre); }, 100);
         return;
       }
     }
+    localStorage.removeItem('mars_session');
   } catch(e) {}
 })();
 </script>
