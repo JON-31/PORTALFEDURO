@@ -624,22 +624,22 @@ tbody tr:last-child td { border-bottom: none; }
   .login-box { padding: 1.75rem 1.25rem; }
 }
 /* LOGIN SCREEN */
-#login-screen { display:flex; min-height:100vh; background:#fff; }
-#login-mosaic { flex:1; display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(4,1fr); overflow:hidden; }
+#login-screen { position:relative; display:flex; min-height:100vh; align-items:center; justify-content:center; }
+#login-mosaic { position:absolute; inset:0; display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(4,1fr); }
 .brand-tile { display:flex; align-items:center; justify-content:center; font-weight:900; color:#fff; padding:12px; text-align:center; font-size:clamp(13px,1.4vw,20px); line-height:1.2; }
-#login-panel { width:440px; min-width:320px; background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:3rem 2.5rem; box-shadow:-8px 0 40px rgba(0,0,0,0.08); }
+#login-panel { position:relative; z-index:10; width:420px; max-width:calc(100vw - 2rem); background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:3rem 2.5rem; border-radius:24px; box-shadow:0 24px 64px rgba(0,0,0,0.32); }
 .login-feduro-logo { display:flex; align-items:center; gap:10px; justify-content:center; margin-bottom:2rem; }
 .login-feduro-badge { background:#1E3A8A; color:#fff; font-weight:900; font-size:18px; padding:5px 12px; border-radius:5px; letter-spacing:1px; }
 .login-feduro-divider { font-size:26px; color:#D1D5DB; font-weight:300; }
 .login-feduro-mars { font-weight:900; font-size:22px; color:#111; letter-spacing:2px; }
 .login-field-label { font-size:11px; color:#6B7280; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px; font-weight:700; }
-.login-input { width:100%; background:#fff; border:1.5px solid #D1D5DB; color:#1F2937; padding:12px 14px; border-radius:8px; font-size:15px; outline:none; box-sizing:border-box; transition:border-color .2s; }
-.login-input:focus { border-color:#1E3A8A; }
+.login-input { width:100%; background:#EEF2F7; border:1.5px solid transparent; color:#1F2937; padding:12px 14px; border-radius:8px; font-size:15px; outline:none; box-sizing:border-box; transition:border-color .2s,background .2s; }
+.login-input:focus { border-color:#1E3A8A; background:#fff; }
 .login-btn-new { width:100%; background:#1E3A8A; color:white; border:none; padding:14px; border-radius:8px; font-size:16px; font-weight:700; cursor:pointer; letter-spacing:1px; transition:background .2s; }
 .login-btn-new:hover { background:#1E40AF; }
 @media (max-width:640px) {
-  #login-mosaic { display:none; }
-  #login-panel { width:100%; min-height:100vh; padding:2rem 1.5rem; box-shadow:none; }
+  #login-mosaic { grid-template-columns:repeat(2,1fr); grid-template-rows:repeat(8,1fr); }
+  #login-panel { padding:2rem 1.5rem; }
 }
 .vendor-option { padding:10px 16px; border-radius:8px; border:1.5px solid var(--border); background:#F5F7FA; color:var(--text); cursor:pointer; font-size:14px; margin-bottom:4px; transition:all .15s; }
 .vendor-option:hover { background:#FFF5F5; border-color:var(--red); }
