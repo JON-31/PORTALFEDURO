@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MARS XTRA — Portal Vendedores</title>
+<title>FEDURO|MARS — Portal de Vendedores</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -624,10 +624,23 @@ tbody tr:last-child td { border-bottom: none; }
   .login-box { padding: 1.75rem 1.25rem; }
 }
 /* LOGIN SCREEN */
-#login-screen { display:flex; align-items:center; justify-content:center; min-height:100vh; background:linear-gradient(135deg,#CC0000 0%,#990000 40%,#1A1A2E 100%); padding:1rem; }
-.login-box { width:100%; max-width:420px; background:#FFFFFF; border:none; border-radius:20px; padding:2.5rem; box-shadow:0 20px 60px rgba(0,0,0,0.3); }
-.login-title { font-family:'Bebas Neue',cursive; font-size:52px; color:var(--red); letter-spacing:4px; text-align:center; line-height:1; margin-bottom:4px; }
-.login-sub { text-align:center; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:2px; margin-bottom:28px; }
+#login-screen { display:flex; min-height:100vh; background:#fff; }
+#login-mosaic { flex:1; display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(4,1fr); overflow:hidden; }
+.brand-tile { display:flex; align-items:center; justify-content:center; font-weight:900; color:#fff; padding:12px; text-align:center; font-size:clamp(13px,1.4vw,20px); line-height:1.2; }
+#login-panel { width:440px; min-width:320px; background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:3rem 2.5rem; box-shadow:-8px 0 40px rgba(0,0,0,0.08); }
+.login-feduro-logo { display:flex; align-items:center; gap:10px; justify-content:center; margin-bottom:2rem; }
+.login-feduro-badge { background:#1E3A8A; color:#fff; font-weight:900; font-size:18px; padding:5px 12px; border-radius:5px; letter-spacing:1px; }
+.login-feduro-divider { font-size:26px; color:#D1D5DB; font-weight:300; }
+.login-feduro-mars { font-weight:900; font-size:22px; color:#111; letter-spacing:2px; }
+.login-field-label { font-size:11px; color:#6B7280; text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px; font-weight:700; }
+.login-input { width:100%; background:#fff; border:1.5px solid #D1D5DB; color:#1F2937; padding:12px 14px; border-radius:8px; font-size:15px; outline:none; box-sizing:border-box; transition:border-color .2s; }
+.login-input:focus { border-color:#1E3A8A; }
+.login-btn-new { width:100%; background:#1E3A8A; color:white; border:none; padding:14px; border-radius:8px; font-size:16px; font-weight:700; cursor:pointer; letter-spacing:1px; transition:background .2s; }
+.login-btn-new:hover { background:#1E40AF; }
+@media (max-width:640px) {
+  #login-mosaic { display:none; }
+  #login-panel { width:100%; min-height:100vh; padding:2rem 1.5rem; box-shadow:none; }
+}
 .vendor-option { padding:10px 16px; border-radius:8px; border:1.5px solid var(--border); background:#F5F7FA; color:var(--text); cursor:pointer; font-size:14px; margin-bottom:4px; transition:all .15s; }
 .vendor-option:hover { background:#FFF5F5; border-color:var(--red); }
 .vendor-option.selected { background:rgba(204,0,0,.1); border-color:var(--red); color:var(--red); font-weight:700; }
@@ -730,31 +743,47 @@ tbody tr:last-child td { border-bottom: none; }
 
 <!-- LOGIN -->
 <div id="login-screen">
-  <div class="login-box">
-    <div class="login-title">MARS</div>
-    <div class="login-sub">Portal Vendedores &middot; XTRA</div>
-    <div style="margin-bottom:16px">
-      <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px;font-weight:600">Usuario</label>
-      <input id="login-username" type="text" placeholder="Ej: avazquez" autocomplete="username"
-        style="width:100%;background:#F5F7FA;border:1.5px solid var(--border);color:var(--text);padding:12px 14px;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box;transition:border-color .2s"
-        onfocus="this.style.borderColor='#CC0000'" onblur="this.style.borderColor='#E4E9F0'"
+  <!-- Mosaico de marcas -->
+  <div id="login-mosaic">
+    <div class="brand-tile" style="background:#F5C518;color:#1a1a1a;font-style:italic;font-size:clamp(14px,1.6vw,22px)">m&m's</div>
+    <div class="brand-tile" style="background:#3D1A08">SNICKERS</div>
+    <div class="brand-tile" style="background:#0D1B6E;font-style:italic">MilkyWay</div>
+    <div class="brand-tile" style="background:#C4922A">TWIX</div>
+    <div class="brand-tile" style="background:#111;letter-spacing:2px">TURIN</div>
+    <div class="brand-tile" style="background:#E53935;font-family:'Bebas Neue',cursive;font-size:clamp(16px,2vw,28px);letter-spacing:2px">SKITTLES</div>
+    <div class="brand-tile" style="background:#F97316">STARBURST</div>
+    <div class="brand-tile" style="background:#166534;letter-spacing:1px;font-size:clamp(11px,1.1vw,15px)">DOUBLEMINT</div>
+    <div class="brand-tile" style="background:#0E4E7A;font-style:italic;font-size:clamp(16px,1.8vw,24px)">Extra</div>
+    <div class="brand-tile" style="background:#9D174D;font-size:clamp(10px,1vw,14px)">Hubba Bubba</div>
+    <div class="brand-tile" style="background:#0F766E;font-size:clamp(11px,1.1vw,15px)">ALTOIDS</div>
+    <div class="brand-tile" style="background:#0369A1;font-size:clamp(11px,1.1vw,14px)">Winterfresh</div>
+    <div class="brand-tile" style="background:#92400E;font-style:italic;font-size:clamp(14px,1.5vw,20px)">Cesar</div>
+    <div class="brand-tile" style="background:#1E3A8A;font-style:italic;font-size:clamp(14px,1.5vw,20px)">whiskas</div>
+    <div class="brand-tile" style="background:#166534;font-size:clamp(14px,1.5vw,20px)">Pedigree</div>
+    <div class="brand-tile" style="background:#7E22CE;font-style:italic;font-size:clamp(14px,1.5vw,20px)">Extra</div>
+  </div>
+  <!-- Panel de login -->
+  <div id="login-panel">
+    <div class="login-feduro-logo">
+      <span class="login-feduro-badge">FEDURO</span>
+      <span class="login-feduro-divider">|</span>
+      <span class="login-feduro-mars">MARS</span>
+    </div>
+    <div style="width:100%;margin-bottom:1rem">
+      <label class="login-field-label">Usuario</label>
+      <input id="login-username" type="text" placeholder="" autocomplete="username" class="login-input"
         onkeydown="if(event.key==='Enter')document.getElementById('login-password').focus()">
     </div>
-    <div style="margin-bottom:20px">
-      <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:6px;font-weight:600">Contrasena</label>
-      <input id="login-password" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" autocomplete="current-password"
-        style="width:100%;background:#F5F7FA;border:1.5px solid var(--border);color:var(--text);padding:12px 14px;border-radius:10px;font-size:14px;outline:none;box-sizing:border-box;transition:border-color .2s"
-        onfocus="this.style.borderColor='#CC0000'" onblur="this.style.borderColor='#E4E9F0'"
+    <div style="width:100%;margin-bottom:1.25rem">
+      <label class="login-field-label">Contrase&ntilde;a</label>
+      <input id="login-password" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" autocomplete="current-password" class="login-input"
         onkeydown="if(event.key==='Enter')doLogin()">
     </div>
-    <div id="login-error" style="display:none;background:#FFF0F0;border:1px solid #FFCCCC;color:#CC0000;border-radius:8px;padding:10px 14px;font-size:13px;text-align:center;margin-bottom:16px;font-weight:600">
-      &#128683; Usuario o contrasena incorrectos
+    <div id="login-error" style="display:none;background:#FEF2F2;border:1px solid #FECACA;color:#DC2626;border-radius:8px;padding:10px 14px;font-size:13px;text-align:center;margin-bottom:14px;font-weight:600;width:100%">
+      &#9940; Usuario o contrase&ntilde;a incorrectos
     </div>
-    <button id="login-btn" onclick="doLogin()"
-      style="width:100%;background:var(--red);color:white;border:none;padding:14px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(204,0,0,0.35);letter-spacing:1px;">
-      Entrar
-    </button>
-    <p style="text-align:center;color:var(--muted);font-size:11px;margin-top:16px">MARS XTRA &copy; 2025</p>
+    <button id="login-btn" onclick="doLogin()" class="login-btn-new">Entrar</button>
+    <p style="text-align:center;color:#9CA3AF;font-size:11px;margin-top:1.5rem">FEDURO|MARS &copy;</p>
   </div>
 </div>
 
@@ -817,7 +846,7 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
         <div class="kpi-grid" id="kpi-grid"></div>
         <div class="section-header">
-          <div class="section-title">Inventario por Tienda</div>
+          <div class="section-title">INVENTARIO POR CADENA</div>
           <span class="table-count" id="dash-count"></span>
         </div>
         <div class="table-wrapper">
@@ -1085,7 +1114,7 @@ function renderVendedor() {
   document.getElementById('vendedor-content').innerHTML =
     '<div class="vendedor-profile">' +
     '<div class="vendedor-name">' + VENDOR_ACTUAL + '</div>' +
-    '<div class="vendedor-role">Vendedor &middot; MARS XTRA</div>' +
+    '<div class="vendedor-role">Vendedor &middot; MARS</div>' +
     '<div class="vendedor-stats">' +
     '<div class="vstat"><div class="vstat-value">' + numTiendas + '</div><div class="vstat-label">Tiendas</div></div>' +
     '<div class="vstat"><div class="vstat-value">' + INV_DATA_V.length + '</div><div class="vstat-label">Productos</div></div>' +
@@ -1159,6 +1188,20 @@ function filtrarInventario() {
   }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px">Sin registros</td></tr>';
 }
 
+function formatOfertaPeriodo(fechaInicio, fechaFin) {
+  var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  function parseFecha(s) {
+    var p = (s || '').split('-');
+    return p.length === 3 ? {y:+p[0], m:+p[1]-1, d:+p[2]} : null;
+  }
+  var ini = parseFecha(fechaInicio), fin = parseFecha(fechaFin);
+  if (!ini || !fin) return (fechaInicio || '') + ' → ' + (fechaFin || '');
+  if (ini.m === fin.m && ini.y === fin.y) {
+    return ini.d + ' al ' + fin.d + ' de ' + MESES[fin.m];
+  }
+  return ini.d + ' de ' + MESES[ini.m] + ' al ' + fin.d + ' de ' + MESES[fin.m];
+}
+
 async function renderOfertas() {
   var container = document.getElementById('ofertas-grid');
   if (!container) return;
@@ -1176,7 +1219,7 @@ async function renderOfertas() {
       var estado = activa ? '<span class="badge badge-ok">ACTIVA</span>' : proxima ? '<span class="badge badge-warn">PROXIMA</span>' : '<span class="badge badge-zero">VENCIDA</span>';
       var tipoClass = o.tipo === 'Mensual' ? 'oferta-mensual' : 'oferta-quincenal';
       var dinHtml = o.dinamica ? '<div style="background:rgba(210,169,76,0.15);color:var(--yellow);padding:6px 12px;border-radius:8px;font-size:11px;font-weight:700;margin:6px 0;text-align:center">' + o.dinamica + '</div>' : '';
-      return '<div class="oferta-card ' + tipoClass + '"><div class="oferta-tipo">' + (o.tipo||'') + '</div><div class="oferta-nombre">' + (o.producto||'') + '</div>' + dinHtml + '<div class="oferta-desc" style="font-size:11px;color:var(--muted)">' + (o.codigo||'') + '</div><div class="oferta-periodo">&#128197; ' + o.fecha_inicio + ' &#8594; ' + o.fecha_fin + ' &nbsp;' + estado + '</div></div>';
+      return '<div class="oferta-card ' + tipoClass + '"><div class="oferta-tipo">' + (o.tipo||'') + '</div><div class="oferta-nombre">' + (o.producto||'') + '</div>' + dinHtml + '<div class="oferta-desc" style="font-size:11px;color:var(--muted)">' + (o.codigo||'') + '</div><div class="oferta-periodo">&#128197; ' + formatOfertaPeriodo(o.fecha_inicio, o.fecha_fin) + ' &nbsp;' + estado + '</div></div>';
     }).join('') || '<p style="color:var(--muted)">No hay ofertas.</p>';
   } catch(e) { container.innerHTML = '<p style="color:var(--muted)">Error cargando ofertas.</p>'; }
 }
