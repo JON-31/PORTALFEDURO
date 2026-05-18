@@ -1,5 +1,4 @@
-﻿
-      <div class='nav-item' onclick='showView('tareas', this)'><span class='nav-icon'>📋</span> Tareas</div><!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -896,9 +895,8 @@ var SB_URL = 'https://npatcmgjqxpjxhbcqsqv.supabase.co';
 var SESSION_TOKEN = null;
 
 async function sbGetV(ep) {
-  var token = SESSION_TOKEN || ANON_KEY;
   var r = await fetch(SB_URL + '/rest/v1' + ep, {
-    headers: { 'Authorization': 'Bearer ' + token, 'apikey': ANON_KEY }
+    headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + ANON_KEY }
   });
   var t = await r.text(); return t ? JSON.parse(t) : [];
 }
@@ -956,7 +954,7 @@ async function cerrarSesion() {
     try {
       await fetch(SB_URL + '/auth/v1/logout', {
         method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + SESSION_TOKEN, 'apikey': ANON_KEY }
+        headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + (SESSION_TOKEN || ANON_KEY) }
       });
     } catch(e) {}
   }
@@ -1247,8 +1245,7 @@ const SURL='https://npatcmgjqxpjxhbcqsqv.supabase.co';
 const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wYXRjbWdqcXhwanhoYmNxc3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyOTEzNDUsImV4cCI6MjA5Mjg2NzM0NX0.uDyUMvouWcPlbNOiPClNYezkKIE9ICAEpWZxklUdGZg';
 
 const sb=async(method,endpoint,data=null)=>{
-  const token=(typeof SESSION_TOKEN!=='undefined'&&SESSION_TOKEN)?SESSION_TOKEN:SKEY;
-  const h={'Content-Type':'application/json','Authorization':'Bearer '+token,'apikey':SKEY,'Prefer':'return=representation'};
+  const h={'Content-Type':'application/json','apikey':SKEY,'Authorization':'Bearer '+SKEY,'Prefer':'return=representation'};
   const o={method,headers:h};
   if(data)o.body=JSON.stringify(data);
   try{const r=await fetch(SURL+'/rest/v1'+endpoint,o);const t=await r.text();return t?JSON.parse(t):[];}
@@ -2279,17 +2276,15 @@ function MachetazoApp(){
 
 // ── SUPABASE HELPERS FOR TAREAS ──
 async function sbGetVAuth(ep) {
-  var token = SESSION_TOKEN || ANON_KEY;
   var r = await fetch(SB_URL + '/rest/v1' + ep, {
-    headers: { 'Authorization': 'Bearer ' + token, 'apikey': ANON_KEY, 'Accept': 'application/json' }
+    headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + ANON_KEY }
   });
   var t = await r.text(); return t ? JSON.parse(t) : [];
 }
 async function sbPatchV(ep, body) {
-  var token = SESSION_TOKEN || ANON_KEY;
   var r = await fetch(SB_URL + '/rest/v1' + ep, {
     method: 'PATCH',
-    headers: { 'Authorization': 'Bearer ' + token, 'apikey': ANON_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+    headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + ANON_KEY, 'Prefer': 'return=minimal' },
     body: JSON.stringify(body)
   });
   return r.ok;

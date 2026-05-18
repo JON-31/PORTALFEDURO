@@ -1112,7 +1112,12 @@ tbody tr:last-child td { border-bottom: none; }
           <div id="gt-seleccion-container" style="display:none;margin-top:20px">
             <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Tareas a asignar</div>
             <div id="gt-seleccion-lista" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px"></div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Vendedor asignado: <strong id="gt-vendedor-label" style="color:var(--text)">—</strong></div>
+            <div style="margin-bottom:12px">
+              <label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Vendedor asignado</label>
+              <select id="gt-vendedor-sel" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card2);color:var(--text)">
+                <option value="">— Seleccionar vendedor —</option>
+              </select>
+            </div>
             <button onclick="gtSubirTareas()" style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;width:100%">📋 Subir Tareas</button>
           </div>
           <div id="gt-msg" style="margin-top:12px;font-size:13px;font-weight:600"></div>
@@ -3691,8 +3696,6 @@ function gtTiendaChanged() {
   if (!tienda) { cont.innerHTML = ''; return; }
   var filtro = GT_CADENAS[cadena];
   var prods = GT_INV_DATA.filter(function(d){ return filtro(d) && d.tienda === tienda && (d.inventario === 0 || d.inventario <= 5); });
-  var vendedorRef = GT_INV_DATA.find(function(d){ return d.tienda === tienda && d.vendedor; });
-  document.getElementById('gt-vendedor-label').textContent = (vendedorRef && vendedorRef.vendedor) ? vendedorRef.vendedor : '—';
   if (prods.length === 0) {
     cont.innerHTML = '<div style="color:var(--muted);padding:16px;font-size:13px">No hay productos con inventario critico (0 o menor a 5) en esta tienda.</div>';
     return;
@@ -3729,7 +3732,8 @@ async function gtSubirTareas() {
   var checks = document.querySelectorAll('.gt-chk:checked');
   var msgEl = document.getElementById('gt-msg');
   if (!tienda || checks.length === 0) return;
-  var vendedor = (document.getElementById('gt-vendedor-label').textContent || '').trim();
+  var vendedor = (document.getElementById('gt-vendedor-sel').value || '').trim();
+  if (!vendedor) { msgEl.textContent = '⚠️ Selecciona un vendedor.'; msgEl.style.color = '#FF8C00'; return; }
   var tasks = [];
   checks.forEach(function(chk) {
     var p = JSON.parse(chk.getAttribute('data-prod').replace(/&quot;/g, '"'));
@@ -3744,6 +3748,7 @@ async function gtSubirTareas() {
     document.querySelectorAll('.gt-chk').forEach(function(c){ c.checked = false; });
     document.getElementById('gt-seleccion-container').style.display = 'none';
     document.getElementById('gt-seleccion-lista').innerHTML = '';
+    document.getElementById('gt-vendedor-sel').value = '';
   } catch(e) {
     msgEl.textContent = '❌ Error: ' + e.message;
     msgEl.style.color = 'var(--red)';
@@ -3757,6 +3762,8 @@ async function gtInicializar() {
   document.getElementById('gt-tienda').innerHTML = '<option value="">— Seleccionar tienda —</option>';
   document.getElementById('gt-productos-container').innerHTML = '';
   document.getElementById('gt-seleccion-container').style.display = 'none';
+  var vendSel = document.getElementById('gt-vendedor-sel');
+  vendSel.innerHTML = '<option value="">— Seleccionar vendedor —</option>' + VENDEDORES.map(function(v){ return '<option value="' + v + '">' + v + '</option>'; }).join('');
   var res = await sbAdmin('GET', '/configuracion?clave=eq.inventario&select=valor');
   if (res && res.length > 0) {
     GT_INV_DATA = JSON.parse(res[0].valor || '[]');
