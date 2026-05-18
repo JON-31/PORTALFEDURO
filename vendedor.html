@@ -1912,7 +1912,7 @@ function IngresoApp(){
     if(vPedidos.length===0){alert('No hay productos en la lista');return;}
     setSaving(true);let ok=0;
     for(const p of vPedidos){
-      const {_prod,_tId,...datos}=p;
+      const datos={vendedor:p.vendedor,tienda:p.tienda,producto:p.producto,cantidad:p.cantidad,mes_vencimiento:p.mes_vencimiento,monto_estimado:p.monto_estimado};
       const r=await sb('POST','/reportes',datos);
       if(r&&!r.error)ok++;
     }
@@ -2130,10 +2130,8 @@ function MachetazoApp(){
     setSaving(true);let ok=0;
     for(const p of mPedidos){
       const datos={
-        vendedor:`MACHETAZO: ${user.v}`,tienda:p.tStore,barcode:p.pCod,codigo:p.pMat,
-        producto:p.pDesc,marca:'MARS',tipo:p.pTipo,tipo_pedido:p.tipoPedido||'—',cantidad:p.qtyUnidades,
-        monto_estimado:parseFloat(p.monto),mes_vencimiento:null,
-        fecha_reporte:new Date().toLocaleDateString('es-ES')
+        vendedor:`MACHETAZO: ${user.v}`,tienda:p.tStore,tipo_pedido:p.tipoPedido||'—',
+        codigo:p.pMat,barcode:p.pCod,producto:p.pDesc,cantidad:p.qtyUnidades
       };
       const r=await sb('POST','/reportes',datos);
       if(r&&!r.error)ok++;

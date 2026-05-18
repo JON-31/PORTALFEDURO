@@ -1091,7 +1091,6 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
 
     <div class="view" id="view-gestionar-tareas">
-        <div class="section-header"><div class="section-title">GESTIONAR TAREAS</div></div>
         <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px">
           <div style="margin-bottom:16px">
             <label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Cadena</label>
@@ -1126,35 +1125,41 @@ tbody tr:last-child td { border-bottom: none; }
       </div>
       <!-- CENTRO DE DESCARGAS -->
       <div class="view" id="view-centro-descargas">
-        <div class="section-header"><div class="section-title">CENTRO DE DESCARGAS</div></div>
         <div style="display:flex;flex-direction:column;gap:16px">
+
           <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px">
               <div><div style="font-weight:700;font-size:15px;margin-bottom:4px">📋 Tareas</div><div style="font-size:12px;color:var(--muted)">Historial de tareas asignadas y completadas</div></div>
-              <div style="display:flex;gap:10px">
-                <button onclick="cdDescargar('tareas')" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer">📥 Descargar Excel</button>
-                <button onclick="cdEliminar('tareas')" style="background:transparent;color:var(--red);border:1px solid var(--red);border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer">🗑️ Eliminar data</button>
-              </div>
+              <button id="cd-download-tareas" onclick="cdDescargar('tareas')" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer">📥 Descargar Excel</button>
+            </div>
+            <div id="cd-preview-tareas" style="font-size:13px;color:var(--muted)">Cargando...</div>
+            <div id="cd-delete-tareas" style="display:none;margin-top:12px">
+              <button onclick="cdEliminar('tareas')" style="background:transparent;color:var(--red);border:1px solid var(--red);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer">🗑️ Eliminar data</button>
             </div>
           </div>
+
           <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-              <div><div style="font-weight:700;font-size:15px;margin-bottom:4px">📦 Inventario</div><div style="font-size:12px;color:var(--muted)">Data de inventario de todas las cadenas</div></div>
-              <div style="display:flex;gap:10px">
-                <button onclick="cdDescargar('inventario')" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer">📥 Descargar Excel</button>
-                <button onclick="cdEliminar('inventario')" style="background:transparent;color:var(--red);border:1px solid var(--red);border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer">🗑️ Eliminar data</button>
-              </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px">
+              <div><div style="font-weight:700;font-size:15px;margin-bottom:4px">📦 Inventario</div><div style="font-size:12px;color:var(--muted)">Reportes de inventario enviados por vendedores</div></div>
+              <button id="cd-download-inventario" onclick="cdDescargar('inventario')" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer">📥 Descargar Excel</button>
+            </div>
+            <div id="cd-preview-inventario" style="font-size:13px;color:var(--muted)">Cargando...</div>
+            <div id="cd-delete-inventario" style="display:none;margin-top:12px">
+              <button onclick="cdEliminar('inventario')" style="background:transparent;color:var(--red);border:1px solid var(--red);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer">🗑️ Eliminar data</button>
             </div>
           </div>
+
           <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-              <div><div style="font-weight:700;font-size:15px;margin-bottom:4px">🛒 Machetazo</div><div style="font-size:12px;color:var(--muted)">Reportes de ingresos Machetazo</div></div>
-              <div style="display:flex;gap:10px">
-                <button onclick="cdDescargar('machetazo')" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer">📥 Descargar Excel</button>
-                <button onclick="cdEliminar('machetazo')" style="background:transparent;color:var(--red);border:1px solid var(--red);border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer">🗑️ Eliminar data</button>
-              </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px">
+              <div><div style="font-weight:700;font-size:15px;margin-bottom:4px">🛒 Machetazo</div><div style="font-size:12px;color:var(--muted)">Pedidos Machetazo enviados por vendedores</div></div>
+              <button id="cd-download-machetazo" onclick="cdDescargar('machetazo')" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer">📥 Descargar Excel</button>
+            </div>
+            <div id="cd-preview-machetazo" style="font-size:13px;color:var(--muted)">Cargando...</div>
+            <div id="cd-delete-machetazo" style="display:none;margin-top:12px">
+              <button onclick="cdEliminar('machetazo')" style="background:transparent;color:var(--red);border:1px solid var(--red);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer">🗑️ Eliminar data</button>
             </div>
           </div>
+
         </div>
       </div>
       </div>
@@ -1364,6 +1369,7 @@ function showView(name, el) {
   if (name === 'gestionar-ofertas') initGestionOfertas();
   if (name === 'bodega') cargarBodegaData();
   if (name === 'gestionar-tareas') gtInicializar();
+  if (name === 'centro-descargas') cdInicializar();
 }
 
 // ===== DASHBOARD =====
@@ -3733,41 +3739,97 @@ async function adSubirLotes() {
   }
 }
 // ── CENTRO DE DESCARGAS ──
-async function cdDescargar(tipo) {
-  var data, headers, filename;
+var CD_DATA = {};
+
+async function cdInicializar() {
+  cdCargar('tareas');
+  cdCargar('inventario');
+  cdCargar('machetazo');
+}
+
+async function cdCargar(tipo) {
+  var prevEl  = document.getElementById('cd-preview-' + tipo);
+  var dlBtn   = document.getElementById('cd-download-' + tipo);
+  var delDiv  = document.getElementById('cd-delete-' + tipo);
+  prevEl.innerHTML = '<span style="color:var(--muted);font-size:13px">Cargando...</span>';
+  delDiv.style.display = 'none';
+  dlBtn.disabled = false; dlBtn.style.opacity = '1';
+
+  var data = [];
   if (tipo === 'tareas') {
-    data = await sbAdmin('GET', '/tareas?select=*&order=fecha_asignacion.desc');
-    headers = ['id','vendedor_nombre','tienda','producto','inventario_sistema','inventario_real','estado','fecha_asignacion','fecha_completada'];
+    data = await sbAdmin('GET', '/tareas?select=*&order=fecha_asignacion.desc') || [];
+  } else if (tipo === 'inventario') {
+    data = await sbAdmin('GET', '/reportes?tipo_pedido=is.null&select=vendedor,tienda,producto,cantidad,mes_vencimiento,monto_estimado&order=id.desc') || [];
+  } else if (tipo === 'machetazo') {
+    data = await sbAdmin('GET', '/reportes?tipo_pedido=not.is.null&select=vendedor,tienda,tipo_pedido,codigo,barcode,producto,cantidad&order=id.desc') || [];
+  }
+  CD_DATA[tipo] = data;
+
+  if (!data.length) {
+    prevEl.innerHTML = '<span style="color:var(--muted);font-size:13px">No hay registros disponibles para descargar</span>';
+    dlBtn.disabled = true; dlBtn.style.opacity = '0.5';
+    return;
+  }
+
+  var cols, labels;
+  if (tipo === 'tareas') {
+    cols   = ['id','vendedor_nombre','tienda','producto','inventario_sistema','estado','fecha_asignacion'];
+    labels = ['#','Vendedor','Tienda','Producto','Inv. Sistema','Estado','Fecha'];
+  } else if (tipo === 'inventario') {
+    cols   = ['vendedor','tienda','producto','cantidad','mes_vencimiento','monto_estimado'];
+    labels = ['Vendedor','Tienda','Producto','Cantidad','Mes Vencimiento','Precio Total'];
+  } else {
+    cols   = ['vendedor','tienda','tipo_pedido','codigo','barcode','producto','cantidad'];
+    labels = ['Vendedor','Tienda','Tipo de Pedido','Material','Código de Barra','Producto','Cantidad'];
+  }
+
+  var th = labels.map(function(l){ return '<th style="text-align:left;padding:5px 8px;border-bottom:1px solid var(--border);color:var(--muted);font-weight:600;font-size:11px;white-space:nowrap">'+l+'</th>'; }).join('');
+  var preview = data.slice(0, 8);
+  var tbody = preview.map(function(row){
+    var tds = cols.map(function(c){ return '<td style="padding:5px 8px;border-bottom:1px solid rgba(90,61,0,0.25);color:var(--text);font-size:12px;white-space:nowrap">'+(row[c]!==null&&row[c]!==undefined?row[c]:'—')+'</td>'; }).join('');
+    return '<tr>'+tds+'</tr>';
+  }).join('');
+  var extra = data.length > 8 ? '<tr><td colspan="'+cols.length+'" style="padding:5px 8px;color:var(--muted);font-size:11px;text-align:center">… y '+(data.length-8)+' registros más</td></tr>' : '';
+  prevEl.innerHTML = '<div style="overflow-x:auto;margin-top:4px"><table style="width:100%;border-collapse:collapse"><thead><tr>'+th+'</tr></thead><tbody>'+tbody+extra+'</tbody></table></div><div style="margin-top:6px;font-size:11px;color:var(--muted)">'+data.length+' registros totales</div>';
+}
+
+async function cdDescargar(tipo) {
+  var data = CD_DATA[tipo];
+  if (!data || data.length === 0) { alert('No hay registros disponibles para descargar'); return; }
+
+  var mappedData, headers, filename;
+  if (tipo === 'tareas') {
+    headers = ['ID','Vendedor','Tienda','Producto','Inv. Sistema','Inv. Real','Estado','Fecha Asignacion','Fecha Completada'];
+    mappedData = data.map(function(r){ return { 'ID':r.id, 'Vendedor':r.vendedor_nombre, 'Tienda':r.tienda, 'Producto':r.producto, 'Inv. Sistema':r.inventario_sistema, 'Inv. Real':r.inventario_real, 'Estado':r.estado, 'Fecha Asignacion':r.fecha_asignacion, 'Fecha Completada':r.fecha_completada }; });
     filename = 'tareas_' + new Date().toISOString().split('T')[0] + '.xlsx';
   } else if (tipo === 'inventario') {
-    var res = await sbAdmin('GET', '/configuracion?clave=eq.inventario&select=valor');
-    data = res && res.length > 0 ? JSON.parse(res[0].valor || '[]') : [];
-    if (data.length > 0) headers = Object.keys(data[0]);
+    headers = ['Vendedor','Tienda','Producto','Cantidad','Mes Vencimiento','Precio Total'];
+    mappedData = data.map(function(r){ return { 'Vendedor':r.vendedor, 'Tienda':r.tienda, 'Producto':r.producto, 'Cantidad':r.cantidad, 'Mes Vencimiento':r.mes_vencimiento, 'Precio Total':r.monto_estimado }; });
     filename = 'inventario_' + new Date().toISOString().split('T')[0] + '.xlsx';
-  } else if (tipo === 'machetazo') {
-    data = await sbAdmin('GET', '/reportes?select=*&order=id.desc');
-    if (data && data.length > 0) headers = Object.keys(data[0]);
+  } else {
+    headers = ['Vendedor','Tienda','Tipo de Pedido','Material','Código de Barra','Producto','Cantidad'];
+    mappedData = data.map(function(r){ return { 'Vendedor':r.vendedor, 'Tienda':r.tienda, 'Tipo de Pedido':r.tipo_pedido, 'Material':r.codigo, 'Código de Barra':r.barcode, 'Producto':r.producto, 'Cantidad':r.cantidad }; });
     filename = 'machetazo_' + new Date().toISOString().split('T')[0] + '.xlsx';
   }
-  if (!data || data.length === 0) { alert('No hay data disponible'); return; }
-  if (!headers) headers = Object.keys(data[0]);
-  var ws = XLSX.utils.json_to_sheet(data, { header: headers });
+
+  var ws = XLSX.utils.json_to_sheet(mappedData, { header: headers });
   var wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, tipo);
   XLSX.writeFile(wb, filename);
+  document.getElementById('cd-delete-' + tipo).style.display = 'block';
 }
+
 async function cdEliminar(tipo) {
   if (!confirm('¿Estás seguro? Esta acción eliminará TODA la data de ' + tipo + ' y no se puede deshacer.')) return;
   if (tipo === 'tareas') {
     await sbAdmin('DELETE', '/tareas?id=gte.0');
-    alert('✅ Data de tareas eliminada');
   } else if (tipo === 'inventario') {
-    await sbAdmin('PATCH', '/configuracion?clave=eq.inventario', { valor: '[]' });
-    alert('✅ Data de inventario eliminada');
+    await sbAdmin('DELETE', '/reportes?tipo_pedido=is.null');
   } else if (tipo === 'machetazo') {
-    await sbAdmin('DELETE', '/reportes?id=gte.0');
-    alert('✅ Data de Machetazo eliminada');
+    await sbAdmin('DELETE', '/reportes?tipo_pedido=not.is.null');
   }
+  alert('✅ Data eliminada');
+  cdCargar(tipo);
 }
 
 // ── INIT ──
@@ -3786,7 +3848,8 @@ document.addEventListener('DOMContentLoaded', function() {
 // ── SUPABASE HELPER FOR ADMIN (vanilla) ──
 async function sbAdmin(method, ep, body) {
   var s = JSON.parse(localStorage.getItem('mars_portal_session')||'{}');
-  var opts = { method: method, headers: { 'Authorization': 'Bearer ' + ANON_KEY, 'apikey': ANON_KEY, 'Content-Type': 'application/json', 'Prefer': method==='POST'?'return=representation':'return=minimal' } };
+  var token = s.access_token || ANON_KEY;
+  var opts = { method: method, headers: { 'Authorization': 'Bearer ' + token, 'apikey': ANON_KEY, 'Content-Type': 'application/json', 'Prefer': method==='POST'?'return=representation':'return=minimal' } };
   if (body) opts.body = JSON.stringify(body);
   var r = await fetch(SB_URL + '/rest/v1' + ep, opts);
   var t = await r.text(); return t ? JSON.parse(t) : [];
