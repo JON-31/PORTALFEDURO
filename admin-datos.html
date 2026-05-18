@@ -704,7 +704,7 @@ tbody tr:last-child td { border-bottom: none; }
    
 
     <!-- DASHBOARD -->
-    <div class="view active" id="view-dashboard">
+    <div class="view" id="view-dashboard">
       <div class="kpi-grid" id="kpi-grid"></div>
       <div class="section-header">
         <div class="section-title">Resumen por Vendedor</div>
@@ -3649,9 +3649,12 @@ function ReyApp(){
 }
 
 /* ════ Mount all React apps ════ */
-ReactDOM.render(<IngresoApp/>, document.getElementById('react-ingreso'));
-ReactDOM.render(<MachetazoApp/>, document.getElementById('react-machetazo'));
-ReactDOM.render(<ReyApp/>, document.getElementById('react-rey'));
+const _c1 = document.getElementById('react-ingreso');
+if (_c1) ReactDOM.render(<IngresoApp/>, _c1);
+const _c2 = document.getElementById('react-machetazo');
+if (_c2) ReactDOM.render(<MachetazoApp/>, _c2);
+const _c3 = document.getElementById('react-rey');
+if (_c3) ReactDOM.render(<ReyApp/>, _c3);
 
 // ── SUPABASE HELPER FOR ADMIN ──
 async function sbAdmin(method, ep, body) {
