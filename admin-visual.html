@@ -635,13 +635,6 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="logo-sub">Admin · Visual</div>
   </div>
   <nav class="sidebar-nav">
-    <div class="nav-section-label">Principal</div>
-      <span class="nav-icon">📊</span> Dashboard
-    </div>
-      <span class="nav-icon">👤</span> Vendedores
-    </div>
-      <span class="nav-icon">🏪</span> Tiendas
-    </div>
     <div class="nav-section-label">Operaciones</div>
       <span class="nav-icon">📦</span> Inventario por Cadena
     </div>
@@ -659,9 +652,6 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
       <span class="nav-icon">🎁</span> Gestionar Ofertas
     </div>
-    <div class="nav-section-label">Tareas y Descargas</div>
-    <div class="nav-item" onclick="showView('gestionar-tareas', this)"><span class="nav-icon">📋</span> Gestionar Tareas</div>
-    <div class="nav-item" onclick="showView('centro-descargas', this)"><span class="nav-icon">💾</span> Centro de Descargas</div>
 
   </nav>
   <div class="sidebar-footer">
@@ -1080,65 +1070,10 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
 
       <!-- GESTIONAR TAREAS -->
-      <div class="view" id="view-gestionar-tareas">
-        <div class="section-header"><div class="section-title">GESTIONAR TAREAS</div></div>
-        <div class="card" style="margin-bottom:20px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-            <div>
-              <label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Vendedor</label>
-              <select id="gt-vendedor" onchange="gtCargarTiendas()" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card2)">
-                <option value="">— Seleccionar vendedor —</option>
-              </select>
-            </div>
-            <div>
-              <label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Tienda</label>
-              <select id="gt-tienda" onchange="gtCargarProductos()" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card2)">
-                <option value="">— Seleccionar tienda —</option>
-              </select>
-            </div>
-          </div>
-          <div id="gt-productos-container"></div>
-          <div id="gt-assign-btn-container" style="display:none;margin-top:16px">
-            <button onclick="gtAsignarTareas()" style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer">📋 Asignar Tareas Seleccionadas</button>
-          </div>
-          <div id="gt-msg" style="margin-top:12px;font-size:13px;font-weight:600"></div>
-        </div>
-        <div id="gt-tareas-existentes"></div>
-      </div>
+      
 
       <!-- CENTRO DE DESCARGAS -->
-      <div class="view" id="view-centro-descargas">
-        <div class="section-header"><div class="section-title">CENTRO DE DESCARGAS</div></div>
-        <div style="display:flex;flex-direction:column;gap:16px">
-          <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-              <div><div style="font-weight:700;font-size:15px;margin-bottom:4px">📋 Tareas</div><div style="font-size:12px;color:var(--muted)">Historial de tareas asignadas y completadas</div></div>
-              <div style="display:flex;gap:10px">
-                <button onclick="cdDescargar('tareas')" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer">📥 Descargar Excel</button>
-                <button onclick="cdEliminar('tareas')" style="background:transparent;color:var(--red);border:1px solid var(--red);border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer">🗑️ Eliminar data</button>
-              </div>
-            </div>
-          </div>
-          <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-              <div><div style="font-weight:700;font-size:15px;margin-bottom:4px">📦 Inventario</div><div style="font-size:12px;color:var(--muted)">Data de inventario de todas las cadenas</div></div>
-              <div style="display:flex;gap:10px">
-                <button onclick="cdDescargar('inventario')" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer">📥 Descargar Excel</button>
-                <button onclick="cdEliminar('inventario')" style="background:transparent;color:var(--red);border:1px solid var(--red);border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer">🗑️ Eliminar data</button>
-              </div>
-            </div>
-          </div>
-          <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-              <div><div style="font-weight:700;font-size:15px;margin-bottom:4px">🛒 Machetazo</div><div style="font-size:12px;color:var(--muted)">Reportes de ingresos Machetazo</div></div>
-              <div style="display:flex;gap:10px">
-                <button onclick="cdDescargar('machetazo')" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer">📥 Descargar Excel</button>
-                <button onclick="cdEliminar('machetazo')" style="background:transparent;color:var(--red);border:1px solid var(--red);border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer">🗑️ Eliminar data</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      
       </div>
     </div>
 
@@ -1344,7 +1279,7 @@ function showView(name, el) {
   if (name === 'ofertas') { renderOfertas(); renderOfertasFromSupabase(); }
   if (name === 'actualizar-data') cargarDataActual();
   if (name === 'gestionar-ofertas') initGestionOfertas();
-  if (name === 'bodega') cargarBodegaData();
+  if (name === 'bodega') cargarBodegaVendedor();
 }
 
 // ===== DASHBOARD =====
@@ -2450,6 +2385,95 @@ async function cargarBodegaData() {
 }
 
 // init() is called after login — see doLoginAdmin() and session restore IIFE above
+
+// Auto-load bodega on page start
+document.addEventListener('DOMContentLoaded', function() {
+  var s = JSON.parse(localStorage.getItem('mars_portal_session') || '{}');
+  var nombre = s.nombre || 'ADMINISTRADOR';
+  var el = document.getElementById('admin-sidebar-user');
+  if (el) el.textContent = nombre;
+  var fd = document.getElementById('footer-date');
+  if (fd) fd.textContent = new Date().toLocaleDateString('es-PA',{day:'2-digit',month:'short',year:'numeric'});
+  cargarBodegaVendedor();
+});
+
+
+
+
+// ===== INVENTARIO EN BODEGA (lectura) =====
+var _bodegaDataCache = [];
+
+function buscarCodigoBodega(descripcion) {
+  if (!descripcion) return '';
+  var desc = descripcion.toUpperCase();
+  var found = null;
+  if (window.MACHETAZO_PRODUCTOS) {
+    found = MACHETAZO_PRODUCTOS.find(function(p){ return p.descripcion && p.descripcion.toUpperCase().indexOf(desc) >= 0 || desc.indexOf(p.descripcion.toUpperCase()) >= 0; });
+    if (found) return found.codigo;
+  }
+  if (window.CAT_DATA) {
+    found = CAT_DATA.find(function(p){ return p.n && (p.n.toUpperCase().indexOf(desc) >= 0 || desc.indexOf(p.n.toUpperCase()) >= 0); });
+    if (found) return found.b;
+  }
+  return '';
+}
+
+function renderBodegaTabla(datos) {
+  var container = document.getElementById('bodega-vendedor-grid');
+  if (!datos || datos.length === 0) {
+    container.innerHTML = '<p style="color:var(--muted);padding:20px">No hay registros de bodega.</p>';
+    return;
+  }
+  var html = '<div style="overflow-x:auto"><table><thead><tr><th>Bodega</th><th>Casa</th><th>Codigo</th><th>Descripcion</th><th>Cantidad</th><th>Vence</th></tr></thead><tbody>';
+  html += datos.map(function(d) {
+    var qty = parseFloat(d.cantidad) || 0;
+    var qtyColor = qty <= 0 ? 'color:#E53935' : qty <= 10 ? 'color:#FF6F00' : 'color:#00C853';
+    var cod = d.codigo || buscarCodigoBodega(d.descripcion) || '—';
+    return '<tr>' +
+      '<td>' + (d.bodega||'—') + '</td>' +
+      '<td><span class="badge badge-brand">' + (d.casa||'—') + '</span></td>' +
+      '<td style="font-family:monospace;font-size:11px;color:var(--muted)">' + cod + '</td>' +
+      '<td style="font-weight:600">' + (d.descripcion||'—') + '</td>' +
+      '<td style="font-family:monospace;' + qtyColor + ';font-weight:700">' + qty.toLocaleString() + '</td>' +
+      '<td>' + (d.vence||'—') + '</td>' +
+      '</tr>';
+  }).join('');
+  html += '</tbody></table></div>';
+  html += '<div style="color:var(--muted);font-size:12px;margin-top:12px;text-align:right">' + datos.length + ' registros</div>';
+  container.innerHTML = html;
+}
+
+function filtrarBodegaVendedor(term) {
+  if (!_bodegaDataCache.length) return;
+  if (!term || !term.trim()) { renderBodegaTabla(_bodegaDataCache); return; }
+  var t = term.trim().toUpperCase();
+  var filtered = _bodegaDataCache.filter(function(d) {
+    var desc = (d.descripcion||'').toUpperCase();
+    var cod = (d.codigo || buscarCodigoBodega(d.descripcion) || '').toUpperCase();
+    return desc.indexOf(t) >= 0 || cod.indexOf(t) >= 0;
+  });
+  renderBodegaTabla(filtered);
+}
+
+async function cargarBodegaVendedor() {
+  var container = document.getElementById('bodega-vendedor-grid');
+  if (!container) return;
+  container.innerHTML = '<p style="color:var(--muted);padding:20px">Cargando...</p>';
+  try {
+    var res = await sbAdmin('GET', '/configuracion?clave=eq.inventario_bodega&select=valor');
+    if (!res || res.length === 0) {
+      container.innerHTML = '<p style="color:var(--muted);padding:20px">No hay inventario en bodega registrado.</p>';
+      return;
+    }
+    _bodegaDataCache = JSON.parse(res[0].valor || '[]');
+    var searchEl = document.getElementById('bodega-search');
+    if (searchEl) searchEl.value = '';
+    renderBodegaTabla(_bodegaDataCache);
+  } catch(e) {
+    container.innerHTML = '<p style="color:var(--muted)">Error cargando datos.</p>';
+  }
+}
+
 </script>
 
 <script type="text/babel">
@@ -3758,7 +3782,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var el = document.getElementById('admin-sidebar-user');
   if (el) el.textContent = nombre;
   document.getElementById('footer-date').textContent = new Date().toLocaleDateString('es-PA',{day:'2-digit',month:'short',year:'numeric'});
-  cargarBodega();
+  cargarBodegaVendedor();
 });
 </script>
 </body>

@@ -635,13 +635,6 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="logo-sub">Admin · Datos</div>
   </div>
   <nav class="sidebar-nav">
-    <div class="nav-section-label">Principal</div>
-      <span class="nav-icon">📊</span> Dashboard
-    </div>
-      <span class="nav-icon">👤</span> Vendedores
-    </div>
-      <span class="nav-icon">🏪</span> Tiendas
-    </div>
     <div class="nav-section-label">Operaciones</div>
       <span class="nav-icon">📦</span> Inventario por Cadena
     </div>
@@ -688,171 +681,13 @@ tbody tr:last-child td { border-bottom: none; }
 
   <div class="content">
 
-    <!-- DASHBOARD -->
-    <div class="view active" id="view-dashboard">
-      <div class="kpi-grid" id="kpi-grid"></div>
-      <div class="section-header">
-        <div class="section-title">Resumen por Vendedor</div>
-      </div>
-      <div class="table-wrapper">
-        <div class="table-header-row">
-          <span class="section-title" style="font-size:15px">Todos los vendedores</span>
-          <span class="table-count" id="dash-count"></span>
-        </div>
-        <div style="overflow-x:auto">
-          <table>
-            <thead>
-              <tr>
-                <th>Vendedor</th>
-                <th>Tiendas</th>
-                <th>Productos</th>
-                <th>Inv. Total</th>
-                <th>Venta Prom 3M</th>
-                <th>Cob. Prom (días)</th>
-                <th>Faltantes</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody id="dash-table-body"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+   
 
-    <!-- VENDEDORES -->
-    <div class="view" id="view-vendedores">
-      <div class="filter-bar">
-        <div class="filter-group">
-          <div class="filter-label">Vendedor</div>
-          <select id="sel-vendedor" onchange="renderVendedorProfile()"></select>
-        </div>
-        <div class="filter-group">
-          <div class="filter-label">Filtrar por Tienda</div>
-          <select id="sel-vendedor-tienda" onchange="renderVendedorTable_filtered()">
-            <option value="">Todas las tiendas</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <div class="filter-label">Filtrar por Marca</div>
-          <select id="sel-vendedor-marca" onchange="renderVendedorTable_filtered()">
-            <option value="">Todas las marcas</option>
-          </select>
-        </div>
-      </div>
-      <div id="vendedor-profile-area"></div>
-      <div class="table-wrapper">
-        <div class="table-header-row">
-          <span class="section-title" style="font-size:15px">Inventario por Tienda</span>
-          <span class="table-count" id="vend-count"></span>
-        </div>
-        <div style="overflow-x:auto">
-          <table>
-            <thead>
-              <tr>
-                <th>Tienda</th>
-                <th>Marca</th>
-                <th>Producto</th>
-                <th>Inventario</th>
-                <th>Venta Prom 3M</th>
-                <th>Cobertura</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody id="vend-table-body"></tbody>
-          </table>
-        </div>
-        <div class="pagination" id="vend-pagination"></div>
-      </div>
-    </div>
+   
 
-    <!-- TIENDAS -->
-    <div class="view" id="view-tiendas">
-      <div class="filter-bar">
-        <div class="filter-group">
-          <div class="filter-label">Tienda</div>
-          <select id="sel-tienda" onchange="renderTiendaView()"></select>
-        </div>
-        <div class="filter-group">
-          <div class="filter-label">Marca</div>
-          <select id="sel-tienda-marca" onchange="renderTiendaView()"></select>
-        </div>
-      </div>
-      <div class="kpi-grid" id="tienda-kpis" style="grid-template-columns:repeat(4,1fr)"></div>
-      <div class="table-wrapper">
-        <div class="table-header-row">
-          <span class="section-title" style="font-size:15px">Productos en Tienda</span>
-          <span class="table-count" id="tienda-count"></span>
-        </div>
-        <div style="overflow-x:auto">
-          <table>
-            <thead>
-              <tr>
-                <th>Producto</th>
-                <th>Marca</th>
-                <th>EAN</th>
-                <th>Inventario</th>
-                <th>Venta Prom 3M</th>
-                <th>Cobertura (días)</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody id="tienda-table-body"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+   
 
-    <!-- INVENTARIO GENERAL -->
-    <div class="view" id="view-inventario">
-      <div class="filter-bar">
-        <div class="filter-group">
-          <div class="filter-label">Buscar producto</div>
-          <input type="text" id="inv-search" placeholder="Nombre del producto..." oninput="renderInventario()">
-        </div>
-        <div class="filter-group">
-          <div class="filter-label">Marca</div>
-          <select id="inv-marca" onchange="renderInventario()"></select>
-        </div>
-        <div class="filter-group">
-          <div class="filter-label">Estado de cobertura</div>
-          <select id="inv-estado" onchange="renderInventario()">
-            <option value="">Todos</option>
-            <option value="critico">Crítico (&lt; 30 días)</option>
-            <option value="atencion">Atención (30-60 días)</option>
-            <option value="ok">Óptimo (&gt; 60 días)</option>
-            <option value="agotado">Agotado (0 inventario)</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <div class="filter-label">Vendedor</div>
-          <select id="inv-vendedor" onchange="renderInventario()"></select>
-        </div>
-      </div>
-      <div class="table-wrapper">
-        <div class="table-header-row">
-          <span class="section-title" style="font-size:15px">Inventario Completo</span>
-          <span class="table-count" id="inv-count"></span>
-        </div>
-        <div style="overflow-x:auto">
-          <table>
-            <thead>
-              <tr>
-                <th>Tienda</th>
-                <th>Vendedor</th>
-                <th>Marca</th>
-                <th>Producto</th>
-                <th>Inventario</th>
-                <th>Venta Prom 3M</th>
-                <th>Cobertura</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody id="inv-table-body"></tbody>
-          </table>
-        </div>
-        <div class="pagination" id="inv-pagination"></div>
-      </div>
-    </div>
+   
 
     <!-- AUDITORÍA -->
     <div class="view" id="view-auditoria">

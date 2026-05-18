@@ -52,7 +52,7 @@ body {
   display: flex;
   flex-direction: column;
   z-index: 100;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .sidebar-logo {
@@ -123,6 +123,7 @@ body {
   font-size: 12px;
   color: var(--muted);
   background: #FAFBFD;
+  flex-shrink: 0;
 }
 
 /* MAIN */
@@ -610,14 +611,10 @@ tbody tr:last-child td { border-bottom: none; }
     transform: translateX(-100%);
     transition: transform 0.25s ease;
     z-index: 200;
-    overflow-y: auto;
   }
   .sidebar.open { transform: translateX(0); }
   .sidebar-footer {
-    position: sticky;
-    bottom: 0;
     background: #FAFBFD;
-    z-index: 10;
   }
   .main { margin-left: 0; }
   .topbar { padding: 0 16px; gap: 8px; }
@@ -1067,7 +1064,7 @@ function renderDashboard() {
   var cobProm = totalProds > 0 ? Math.round(data.reduce(function(a,d){ return a + (d.cobertura||0); }, 0) / totalProds) : 0;
   var criticos = data.filter(function(d){ return d.cobertura > 60; }).length;
   var tiendas = [...new Set(data.map(function(d){return d.tienda;}))].length;
-  document.getElementById('kpi-grid').innerHTML = '';
+  var _kpiEl = document.getElementById('kpi-grid'); if (_kpiEl) _kpiEl.innerHTML = '';
   if (data.length === 0) {
     document.getElementById('dash-table-body').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">Sin data. El administrador debe publicar el inventario primero.</td></tr>';
     document.getElementById('dash-count').textContent = '';
