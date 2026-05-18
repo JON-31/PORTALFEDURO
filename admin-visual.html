@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿NOT FOUND: view-gestionar-ofertas NOT FOUND: view-actualizar-data NOT FOUND: view-ingreso Removing view-auditoria from 22686 to 24091 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -635,24 +635,26 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="logo-sub">Admin · Visual</div>
   </div>
   <nav class="sidebar-nav">
+    <div class="nav-section-label">Analisis</div>
+    <div class="nav-item active" onclick="showView('dashboard', this)">
+      <span class="nav-icon">&#128202;</span> Dashboard
+    </div>
+    <div class="nav-item" onclick="showView('vendedores', this)">
+      <span class="nav-icon">&#128100;</span> Vendedores
+    </div>
+    <div class="nav-item" onclick="showView('tiendas', this)">
+      <span class="nav-icon">&#127978;</span> Tiendas
+    </div>
     <div class="nav-section-label">Operaciones</div>
-      <span class="nav-icon">📦</span> Inventario por Cadena
+    <div class="nav-item" onclick="showView('inventario', this)">
+      <span class="nav-icon">&#128230;</span> Inventario por Cadena
     </div>
-    <div class="nav-item active" onclick="showView('bodega', this)">
-      <span class="nav-icon">🏭</span> Inventario en Bodega
-    </div>
-      <span class="nav-icon">✅</span> Auditoría
+    <div class="nav-item" onclick="showView('bodega', this)">
+      <span class="nav-icon">&#127981;</span> Inventario en Bodega
     </div>
     <div class="nav-item" onclick="showView('ofertas', this)">
-      <span class="nav-icon">🎁</span> Ofertas
+      <span class="nav-icon">&#127873;</span> Ofertas
     </div>
-      <span class="nav-icon">📝</span> Ingresar Inventario
-    </div>
-      <span class="nav-icon">📊</span> Actualizar Data
-    </div>
-      <span class="nav-icon">🎁</span> Gestionar Ofertas
-    </div>
-
   </nav>
   <div class="sidebar-footer">
     <span id="admin-sidebar-user" style="color:var(--muted);font-size:12px;display:block;margin-bottom:6px"></span>
@@ -666,7 +668,7 @@ tbody tr:last-child td { border-bottom: none; }
 <div class="main">
   <div class="topbar">
     <button class="hamburger" onclick="toggleSidebar()" aria-label="Menú">&#9776;</button>
-    <div class="topbar-title" id="topbar-title">Inventario en Bodega</div>
+    <div class="topbar-title" id="topbar-title">Dashboard</div>
     <div class="topbar-chain">🏪 Supermercados XTRA</div>
   </div>
 
@@ -839,44 +841,7 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
 
     <!-- AUDITORÍA -->
-    <div class="view" id="view-auditoria">
-      <div class="filter-bar">
-        <div class="filter-group">
-          <div class="filter-label">Tienda</div>
-          <select id="sel-audit-tienda" onchange="renderAuditoria()"></select>
-        </div>
-        <div class="filter-group">
-          <div class="filter-label">Categoría</div>
-          <select id="sel-audit-cat" onchange="renderAuditoria()">
-            <option value="todas">Todas las categorías</option>
-            <option value="chocolate">🍫 Chocolate</option>
-            <option value="confiteria">🍬 Confitería</option>
-            <option value="mascota">🐾 Mascota</option>
-          </select>
-        </div>
-      </div>
-      <div id="audit-score-area"></div>
-      <div class="table-wrapper">
-        <div class="table-header-row">
-          <span class="section-title" style="font-size:15px">Productos Requeridos</span>
-          <span class="table-count" id="audit-count"></span>
-        </div>
-        <div style="overflow-x:auto">
-          <table>
-            <thead>
-              <tr>
-                <th>Categoría</th>
-                <th>Producto Requerido</th>
-                <th>Inventario Actual</th>
-                <th>Cobertura</th>
-                <th>Presencia</th>
-              </tr>
-            </thead>
-            <tbody id="audit-table-body"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    
 
     <!-- OFERTAS -->
     <div class="view" id="view-ofertas">
@@ -930,152 +895,14 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
 
     <!-- REACT VIEWS: INGRESOS -->
-    <div class="view react-view-container" id="view-ingreso">
-      <div id="react-ingreso"></div>
-    </div>
+    
 
 
     <!-- ADMIN DATA: ACTUALIZAR DATA -->
-    <div class="view" id="view-actualizar-data">
-      <div class="section-header">
-        <div class="section-title">Actualizar Data de Inventario</div>
-      </div>
-      <p style="color:var(--muted);margin-bottom:16px;font-size:13px;">Pega data desde Excel o agrega filas manualmente. Al guardar reemplaza toda la data anterior.</p>
-
-      <!-- ZONA DE PEGAR EXCEL -->
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;">
-        <div class="filter-label" style="margin-bottom:8px;">📋 Pegar desde Excel — Columnas: Formato | Tienda | Marca | Codigo de barra | Producto | Inventario | Venta Unidades Prom (3M) | Dias de cobertura</div>
-        <textarea id="data-paste-area" rows="6"
-          placeholder="Selecciona las celdas en Excel, copia (Ctrl+C) y pega aquí (Ctrl+V)..."
-          style="width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:12px;border-radius:8px;font-size:13px;resize:vertical;font-family:monospace;box-sizing:border-box;"
-          onpaste="setTimeout(parsePasteData,50)"></textarea>
-        <div style="display:flex;gap:10px;margin-top:10px;">
-          <button onclick="parsePasteData()" style="background:var(--yellow);color:#1a1410;border:none;padding:9px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;">📋 Procesar Pegado</button>
-          <button onclick="addDataRow({})" style="background:var(--card2);border:1px solid var(--border);color:var(--text);padding:9px 16px;border-radius:8px;cursor:pointer;font-size:13px;">+ Fila Manual</button>
-          <button onclick="cargarDataActual()" style="background:var(--card2);border:1px solid var(--border);color:var(--muted);padding:9px 16px;border-radius:8px;cursor:pointer;font-size:13px;">↺ Cargar Data Actual</button>
-        </div>
-      </div>
-
-      <div class="table-wrapper" style="margin-bottom:20px;">
-        <div style="overflow-x:auto;">
-          <table id="data-input-table">
-            <thead>
-              <tr>
-                <th>Formato</th>
-                <th>Tienda</th>
-                <th>Vendedor</th>
-                <th>Marca</th>
-                <th>Codigo de barra</th>
-                <th>Producto</th>
-                <th>Inventario</th>
-                <th>Venta UDS 3M</th>
-                <th>Dias Cob.</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="data-input-body">
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div style="display:flex;gap:10px;margin-bottom:12px;">
-        <button onclick="if(confirm('¿Eliminar todas las filas?')){document.getElementById('data-input-body').innerHTML='';}" style="background:var(--card2);border:1px solid var(--border);color:var(--muted);padding:10px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;">🗑️ Eliminar todo</button>
-      </div>
-      <button onclick="guardarInventarioData()" style="background:var(--red);color:white;border:none;padding:14px 32px;border-radius:8px;cursor:pointer;font-size:15px;font-weight:700;width:100%;">💾 GUARDAR Y ACTUALIZAR TODO</button>
-      <div id="data-save-msg" style="margin-top:12px;text-align:center;font-size:14px;"></div>
-    </div>
+    
 
     <!-- ADMIN DATA: GESTIONAR OFERTAS -->
-    <div class="view" id="view-gestionar-ofertas">
-      <div class="section-header">
-        <div class="section-title">Gestionar Ofertas</div>
-      </div>
-      <p style="color:var(--muted);margin-bottom:20px;font-size:13px;">Al guardar se reemplazan todas las ofertas anteriores.</p>
-
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;">
-
-        <!-- Búsqueda de producto -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px;">
-          <div>
-            <div class="filter-label" style="margin-bottom:6px;">Buscar Producto (código o nombre)</div>
-            <div class="autocomplete-wrapper">
-              <input type="text" id="oferta-busqueda" placeholder="Escribe código EAN o nombre..."
-                oninput="filtrarProductosOferta()"
-                style="background:var(--card2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:13px;width:100%;box-sizing:border-box;">
-              <div class="autocomplete-dropdown" id="oferta-dropdown" style="display:none;"></div>
-            </div>
-            <div id="oferta-producto-sel" style="color:var(--yellow);font-size:11px;margin-top:6px;min-height:16px;font-family:monospace;"></div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <div>
-              <div class="filter-label" style="margin-bottom:6px;">Fecha Inicio</div>
-              <input type="date" id="oferta-inicio" style="background:var(--card2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:13px;width:100%;box-sizing:border-box;">
-            </div>
-            <div>
-              <div class="filter-label" style="margin-bottom:6px;">Fecha Fin</div>
-              <input type="date" id="oferta-fin" style="background:var(--card2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:13px;width:100%;box-sizing:border-box;">
-            </div>
-          </div>
-        </div>
-
-        <!-- Dinámica de oferta -->
-        <div style="margin-bottom:18px;">
-          <div class="filter-label" style="margin-bottom:8px;">Dinámica de Oferta</div>
-          <div class="dinamica-group" id="dinamica-pills">
-            <div class="dinamica-pill" onclick="selDinamica(this,'LLEVE 2 UNIDADES POR $2.00')">🎁 LLEVE 2 UNIDADES POR $2.00</div>
-            <div class="dinamica-pill" onclick="selDinamica(this,'PAGUE 2 Y LLEVE 3')">🎁 PAGUE 2 Y LLEVE 3</div>
-            <div class="dinamica-pill" onclick="selDinamica(this,'15% DE DESCUENTO')">🏷️ 15% DE DESCUENTO</div>
-          </div>
-        </div>
-
-        <div style="text-align:right;">
-          <button onclick="agregarOferta()" style="background:var(--red);color:white;border:none;padding:10px 28px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;">+ Agregar Oferta</button>
-        </div>
-      </div>
-
-      <div class="table-wrapper" style="margin-bottom:20px;">
-        <div style="overflow-x:auto;">
-          <table>
-            <thead>
-              <tr><th>#</th><th>Producto</th><th>Código</th><th>Dinámica</th><th>Inicio</th><th>Fin</th><th>Tipo</th><th></th></tr>
-            </thead>
-            <tbody id="ofertas-input-body"></tbody>
-          </table>
-        </div>
-      </div>
-      <div style="display:flex;gap:10px;margin-bottom:12px;">
-        <button onclick="if(confirm('¿Eliminar todas las ofertas de la lista?')){document.getElementById('ofertas-input-body').innerHTML='';}" style="background:var(--card2);border:1px solid var(--border);color:var(--muted);padding:10px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;">🗑️ Eliminar todo</button>
-      </div>
-      
-      <div id="ofertas-save-msg" style="margin-top:12px;text-align:center;font-size:14px;"></div>
-
-      <!-- Ofertas ya guardadas en Supabase -->
-      <div style="margin-top:32px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-          <div style="font-size:14px;font-weight:700;color:var(--text)">📋 Ofertas Guardadas en Supabase</div>
-          <span id="ofertas-guardadas-count" style="font-size:12px;color:var(--muted);background:var(--card2);padding:4px 10px;border-radius:10px;"></span>
-        </div>
-        <div class="table-wrapper">
-          <div style="overflow-x:auto;">
-            <table>
-              <thead>
-                <tr><th>Producto</th><th>Código</th><th>Dinámica</th><th>Inicio</th><th>Fin</th><th>Estado</th><th>Eliminar</th></tr>
-              </thead>
-              <tbody id="ofertas-guardadas-body">
-                <tr><td colspan="7" style="color:var(--muted);text-align:center;padding:16px">Cargando...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-      <!-- GESTIONAR TAREAS -->
-      
-
-      <!-- CENTRO DE DESCARGAS -->
-      
-      </div>
-    </div>
+    
 
   </div>
 </div>

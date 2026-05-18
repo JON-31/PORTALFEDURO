@@ -635,33 +635,47 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="logo-sub">Admin · Datos</div>
   </div>
   <nav class="sidebar-nav">
+    <div class="nav-section-label">Analisis</div>
+    <div class="nav-item" onclick="showView('dashboard', this)">
+      <span class="nav-icon">&#128202;</span> Dashboard
+    </div>
+    <div class="nav-item" onclick="showView('vendedores', this)">
+      <span class="nav-icon">&#128100;</span> Vendedores
+    </div>
+    <div class="nav-item" onclick="showView('tiendas', this)">
+      <span class="nav-icon">&#127978;</span> Tiendas
+    </div>
     <div class="nav-section-label">Operaciones</div>
-      <span class="nav-icon">📦</span> Inventario por Cadena
+    <div class="nav-item" onclick="showView('inventario', this)">
+      <span class="nav-icon">&#128230;</span> Inventario por Cadena
     </div>
     <div class="nav-item active" onclick="showView('bodega', this)">
-      <span class="nav-icon">🏭</span> Inventario en Bodega
+      <span class="nav-icon">&#127981;</span> Inventario en Bodega
     </div>
     <div class="nav-item" onclick="showView('auditoria', this)">
-      <span class="nav-icon">✅</span> Auditoría
+      <span class="nav-icon">&#9989;</span> Auditoria
     </div>
     <div class="nav-item" onclick="showView('ofertas', this)">
-      <span class="nav-icon">🎁</span> Ofertas
+      <span class="nav-icon">&#127873;</span> Ofertas
     </div>
     <div class="nav-section-label">Ingresos</div>
     <div class="nav-item" onclick="showView('ingreso', this)">
-      <span class="nav-icon">📝</span> Ingresar Inventario
+      <span class="nav-icon">&#128221;</span> Ingresar Inventario
     </div>
     <div class="nav-section-label">Admin Data</div>
     <div class="nav-item" onclick="showView('actualizar-data', this)">
-      <span class="nav-icon">📊</span> Actualizar Data
+      <span class="nav-icon">&#128202;</span> Actualizar Data
     </div>
     <div class="nav-item" onclick="showView('gestionar-ofertas', this)">
-      <span class="nav-icon">🎁</span> Gestionar Ofertas
+      <span class="nav-icon">&#127873;</span> Gestionar Ofertas
     </div>
     <div class="nav-section-label">Tareas y Descargas</div>
-    <div class="nav-item" onclick="showView('gestionar-tareas', this)"><span class="nav-icon">📋</span> Gestionar Tareas</div>
-    <div class="nav-item" onclick="showView('centro-descargas', this)"><span class="nav-icon">💾</span> Centro de Descargas</div>
-
+    <div class="nav-item" onclick="showView('gestionar-tareas', this)">
+      <span class="nav-icon">&#128203;</span> Gestionar Tareas
+    </div>
+    <div class="nav-item" onclick="showView('centro-descargas', this)">
+      <span class="nav-icon">&#128190;</span> Centro de Descargas
+    </div>
   </nav>
   <div class="sidebar-footer">
     <span id="admin-sidebar-user" style="color:var(--muted);font-size:12px;display:block;margin-bottom:6px"></span>
@@ -688,6 +702,172 @@ tbody tr:last-child td { border-bottom: none; }
    
 
    
+
+    <!-- DASHBOARD -->
+    <div class="view active" id="view-dashboard">
+      <div class="kpi-grid" id="kpi-grid"></div>
+      <div class="section-header">
+        <div class="section-title">Resumen por Vendedor</div>
+      </div>
+      <div class="table-wrapper">
+        <div class="table-header-row">
+          <span class="section-title" style="font-size:15px">Todos los vendedores</span>
+          <span class="table-count" id="dash-count"></span>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Vendedor</th>
+                <th>Tiendas</th>
+                <th>Productos</th>
+                <th>Inv. Total</th>
+                <th>Venta Prom 3M</th>
+                <th>Cob. Prom (días)</th>
+                <th>Faltantes</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="dash-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- VENDEDORES -->
+    <div class="view" id="view-vendedores">
+      <div class="filter-bar">
+        <div class="filter-group">
+          <div class="filter-label">Vendedor</div>
+          <select id="sel-vendedor" onchange="renderVendedorProfile()"></select>
+        </div>
+        <div class="filter-group">
+          <div class="filter-label">Filtrar por Tienda</div>
+          <select id="sel-vendedor-tienda" onchange="renderVendedorTable_filtered()">
+            <option value="">Todas las tiendas</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <div class="filter-label">Filtrar por Marca</div>
+          <select id="sel-vendedor-marca" onchange="renderVendedorTable_filtered()">
+            <option value="">Todas las marcas</option>
+          </select>
+        </div>
+      </div>
+      <div id="vendedor-profile-area"></div>
+      <div class="table-wrapper">
+        <div class="table-header-row">
+          <span class="section-title" style="font-size:15px">Inventario por Tienda</span>
+          <span class="table-count" id="vend-count"></span>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Tienda</th>
+                <th>Marca</th>
+                <th>Producto</th>
+                <th>Inventario</th>
+                <th>Venta Prom 3M</th>
+                <th>Cobertura</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="vend-table-body"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="vend-pagination"></div>
+      </div>
+    </div>
+
+    <!-- TIENDAS -->
+    <div class="view" id="view-tiendas">
+      <div class="filter-bar">
+        <div class="filter-group">
+          <div class="filter-label">Tienda</div>
+          <select id="sel-tienda" onchange="renderTiendaView()"></select>
+        </div>
+        <div class="filter-group">
+          <div class="filter-label">Marca</div>
+          <select id="sel-tienda-marca" onchange="renderTiendaView()"></select>
+        </div>
+      </div>
+      <div class="kpi-grid" id="tienda-kpis" style="grid-template-columns:repeat(4,1fr)"></div>
+      <div class="table-wrapper">
+        <div class="table-header-row">
+          <span class="section-title" style="font-size:15px">Productos en Tienda</span>
+          <span class="table-count" id="tienda-count"></span>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Marca</th>
+                <th>EAN</th>
+                <th>Inventario</th>
+                <th>Venta Prom 3M</th>
+                <th>Cobertura (días)</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="tienda-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- INVENTARIO GENERAL -->
+    <div class="view" id="view-inventario">
+      <div class="filter-bar">
+        <div class="filter-group">
+          <div class="filter-label">Buscar producto</div>
+          <input type="text" id="inv-search" placeholder="Nombre del producto..." oninput="renderInventario()">
+        </div>
+        <div class="filter-group">
+          <div class="filter-label">Marca</div>
+          <select id="inv-marca" onchange="renderInventario()"></select>
+        </div>
+        <div class="filter-group">
+          <div class="filter-label">Estado de cobertura</div>
+          <select id="inv-estado" onchange="renderInventario()">
+            <option value="">Todos</option>
+            <option value="critico">Crítico (&lt; 30 días)</option>
+            <option value="atencion">Atención (30-60 días)</option>
+            <option value="ok">Óptimo (&gt; 60 días)</option>
+            <option value="agotado">Agotado (0 inventario)</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <div class="filter-label">Vendedor</div>
+          <select id="inv-vendedor" onchange="renderInventario()"></select>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <div class="table-header-row">
+          <span class="section-title" style="font-size:15px">Inventario Completo</span>
+          <span class="table-count" id="inv-count"></span>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Tienda</th>
+                <th>Vendedor</th>
+                <th>Marca</th>
+                <th>Producto</th>
+                <th>Inventario</th>
+                <th>Venta Prom 3M</th>
+                <th>Cobertura</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="inv-table-body"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="inv-pagination"></div>
+      </div>
+    </div>
 
     <!-- AUDITORÍA -->
     <div class="view" id="view-auditoria">
@@ -738,7 +918,7 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
 
     <!-- INVENTARIO EN BODEGA -->
-    <div class="view" id="view-bodega">
+    <div class="view active" id="view-bodega">
       <div class="section-header">
         <div class="section-title">🏭 Inventario en Bodega</div>
       </div>
@@ -1175,7 +1355,7 @@ function showView(name, el) {
   document.getElementById('view-' + name).classList.add('active');
   el.classList.add('active');
   closeSidebar();
-  const titles = { dashboard: 'Dashboard', vendedores: 'Portal de Vendedores', tiendas: 'Gestión de Tiendas', inventario: 'Inventario por Cadena', bodega: 'Inventario en Bodega', auditoria: 'Auditoría de Productos', ofertas: 'Ofertas Vigentes', ingreso: 'Ingresar Inventario', admin: 'Administrador', 'actualizar-data': 'Actualizar Data de Inventario', 'gestionar-ofertas': 'Gestionar Ofertas' };
+  const titles = { dashboard: 'Dashboard', vendedores: 'Portal de Vendedores', tiendas: 'Gestión de Tiendas', inventario: 'Inventario por Cadena', bodega: 'Inventario en Bodega', auditoria: 'Auditoría de Productos', ofertas: 'Ofertas Vigentes', ingreso: 'Ingresar Inventario', admin: 'Administrador', 'actualizar-data': 'Actualizar Data de Inventario', 'gestionar-ofertas': 'Gestionar Ofertas', 'gestionar-tareas': 'Gestionar Tareas', 'centro-descargas': 'Centro de Descargas' };
   document.getElementById('topbar-title').textContent = titles[name] || name;
   if (name === 'vendedores') renderVendedorProfile();
   if (name === 'tiendas') renderTiendaView();
@@ -1185,6 +1365,7 @@ function showView(name, el) {
   if (name === 'actualizar-data') cargarDataActual();
   if (name === 'gestionar-ofertas') initGestionOfertas();
   if (name === 'bodega') cargarBodegaData();
+  if (name === 'gestionar-tareas') gtInicializar();
 }
 
 // ===== DASHBOARD =====
@@ -3544,12 +3725,17 @@ async function gtAsignarTareas() {
   } catch(e) { msgEl.textContent = '❌ Error: ' + e.message; msgEl.style.color = 'var(--red)'; }
 }
 async function gtInicializar() {
+  var sel = document.getElementById('gt-vendedor');
+  sel.innerHTML = '<option value="">— Seleccionar vendedor —</option>';
+  document.getElementById('gt-tienda').innerHTML = '<option value="">— Seleccionar tienda —</option>';
+  document.getElementById('gt-productos-container').innerHTML = '';
+  document.getElementById('gt-assign-btn-container').style.display = 'none';
+  document.getElementById('gt-msg').textContent = '';
   var res = await sbAdmin('GET', '/configuracion?clave=eq.inventario&select=valor');
   if (res && res.length > 0) {
     GT_INV_DATA = JSON.parse(res[0].valor || '[]');
     var vendors = [...new Set(GT_INV_DATA.map(function(d){ return d.vendedor; }).filter(Boolean))].sort();
-    var sel = document.getElementById('gt-vendedor');
-    vendors.forEach(function(v){ sel.innerHTML += '<option value="' + v + '">' + v + '</option>'; });
+    vendors.forEach(function(v){ sel.innerHTML += '<option value="' + v + '">"' + v + '</option>'; });
   }
 }
 
@@ -3598,7 +3784,8 @@ document.addEventListener('DOMContentLoaded', function() {
   var el = document.getElementById('admin-sidebar-user');
   if (el) el.textContent = nombre;
   document.getElementById('footer-date').textContent = new Date().toLocaleDateString('es-PA',{day:'2-digit',month:'short',year:'numeric'});
-  cargarBodega();
+  cargarBodegaData();
+  setTimeout(init, 100);
 });
 </script>
 </body>
