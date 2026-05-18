@@ -1,0 +1,13 @@
+# Nunca subir credenciales o secrets
+.env
+.env.local
+config.secret.js
+supabase.secret.js
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+*.swp
