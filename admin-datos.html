@@ -966,55 +966,42 @@ tbody tr:last-child td { border-bottom: none; }
 
 
     <!-- ADMIN DATA: ACTUALIZAR DATA -->
-    <div class="view" id="view-actualizar-data">
+        <div class="view" id="view-actualizar-data">
       <div class="section-header">
         <div class="section-title">Actualizar Data de Inventario</div>
       </div>
-      <p style="color:var(--muted);margin-bottom:16px;font-size:13px;">Pega data desde Excel o agrega filas manualmente. Al guardar reemplaza toda la data anterior.</p>
-
-      <!-- ZONA DE PEGAR EXCEL -->
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;">
-        <div class="filter-label" style="margin-bottom:8px;">📋 Pegar desde Excel — Columnas: Formato | Tienda | Marca | Codigo de barra | Producto | Inventario | Venta Unidades Prom (3M) | Dias de cobertura</div>
-        <textarea id="data-paste-area" rows="6"
-          placeholder="Selecciona las celdas en Excel, copia (Ctrl+C) y pega aquí (Ctrl+V)..."
-          style="width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:12px;border-radius:8px;font-size:13px;resize:vertical;font-family:monospace;box-sizing:border-box;"
-          onpaste="setTimeout(parsePasteData,50)"></textarea>
-        <div style="display:flex;gap:10px;margin-top:10px;">
-          <button onclick="parsePasteData()" style="background:var(--yellow);color:#1a1410;border:none;padding:9px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;">📋 Procesar Pegado</button>
-          <button onclick="addDataRow({})" style="background:var(--card2);border:1px solid var(--border);color:var(--text);padding:9px 16px;border-radius:8px;cursor:pointer;font-size:13px;">+ Fila Manual</button>
-          <button onclick="cargarDataActual()" style="background:var(--card2);border:1px solid var(--border);color:var(--muted);padding:9px 16px;border-radius:8px;cursor:pointer;font-size:13px;">↺ Cargar Data Actual</button>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px">
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">1. Selecciona la cadena</div>
+        <select id="ad-cadena" onchange="adCadenaChanged()" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card2);color:var(--text)">
+          <option value="">— Seleccionar cadena —</option>
+          <option value="xtra">Supermercados Xtra / Xtra</option>
+          <option value="s99">Super 99 / Importadora Ricamar</option>
+          <option value="machetazo">El Machetazo / Goly</option>
+          <option value="supercarnes">Super Carnes / Importadora Virzi</option>
+        </select>
+      </div>
+      <div id="ad-upload-section" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px">
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px">2. Sube el archivo</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Formato esperado: BODEGA | CASA | CODIGO | DESCRIPCION | CANTIDAD | VENCE</div>
+        <label style="display:inline-flex;align-items:center;gap:8px;background:var(--yellow);color:#1a1410;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700">
+          &#128194; Subir archivo Excel o CSV
+          <input type="file" id="ad-file-input" accept=".xlsx,.csv,.xls" onchange="adProcessFile(this)" style="display:none">
+        </label>
+        <div id="ad-file-name" style="margin-top:10px;font-size:12px;color:var(--muted)"></div>
+      </div>
+      <div id="ad-preview-section" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px">
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">3. Confirmar y subir</div>
+        <div id="ad-preview-info" style="font-size:13px;color:var(--muted);margin-bottom:16px"></div>
+        <div id="ad-progress-container" style="display:none;margin-bottom:16px">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px" id="ad-progress-label">Procesando...</div>
+          <div style="background:var(--card2);border-radius:6px;height:12px;overflow:hidden">
+            <div id="ad-progress-bar" style="height:100%;background:var(--red);width:0%;transition:width 0.3s"></div>
+          </div>
         </div>
+        <button id="ad-upload-btn" onclick="adSubirLotes()" style="background:var(--red);color:white;border:none;padding:12px 28px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700">&#128190; Subir a Supabase</button>
+        <div id="ad-msg" style="margin-top:12px;font-size:13px;font-weight:600"></div>
       </div>
-
-      <div class="table-wrapper" style="margin-bottom:20px;">
-        <div style="overflow-x:auto;">
-          <table id="data-input-table">
-            <thead>
-              <tr>
-                <th>Formato</th>
-                <th>Tienda</th>
-                <th>Vendedor</th>
-                <th>Marca</th>
-                <th>Codigo de barra</th>
-                <th>Producto</th>
-                <th>Inventario</th>
-                <th>Venta UDS 3M</th>
-                <th>Dias Cob.</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="data-input-body">
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div style="display:flex;gap:10px;margin-bottom:12px;">
-        <button onclick="if(confirm('¿Eliminar todas las filas?')){document.getElementById('data-input-body').innerHTML='';}" style="background:var(--card2);border:1px solid var(--border);color:var(--muted);padding:10px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;">🗑️ Eliminar todo</button>
-      </div>
-      <button onclick="guardarInventarioData()" style="background:var(--red);color:white;border:none;padding:14px 32px;border-radius:8px;cursor:pointer;font-size:15px;font-weight:700;width:100%;">💾 GUARDAR Y ACTUALIZAR TODO</button>
-      <div id="data-save-msg" style="margin-top:12px;text-align:center;font-size:14px;"></div>
-    </div>
+    </div></div>
 
     <!-- ADMIN DATA: GESTIONAR OFERTAS -->
     <div class="view" id="view-gestionar-ofertas">
@@ -1100,32 +1087,37 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
 
       <!-- GESTIONAR TAREAS -->
-      <div class="view" id="view-gestionar-tareas">
+      </div>
+
+            <div class="view" id="view-gestionar-tareas">
         <div class="section-header"><div class="section-title">GESTIONAR TAREAS</div></div>
-        <div class="card" style="margin-bottom:20px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
-            <div>
-              <label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Vendedor</label>
-              <select id="gt-vendedor" onchange="gtCargarTiendas()" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card2)">
-                <option value="">— Seleccionar vendedor —</option>
-              </select>
-            </div>
-            <div>
-              <label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Tienda</label>
-              <select id="gt-tienda" onchange="gtCargarProductos()" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card2)">
-                <option value="">— Seleccionar tienda —</option>
-              </select>
-            </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px">
+          <div style="margin-bottom:16px">
+            <label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Cadena</label>
+            <select id="gt-cadena" onchange="gtCadenaChanged()" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card2);color:var(--text)">
+              <option value="">— Seleccionar cadena —</option>
+              <option value="xtra">Supermercados Xtra / Xtra</option>
+              <option value="s99">Super 99 / Importadora Ricamar</option>
+              <option value="machetazo">El Machetazo / Goly</option>
+              <option value="supercarnes">Super Carnes / Importadora Virzi</option>
+            </select>
+          </div>
+          <div style="margin-bottom:16px">
+            <label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Tienda</label>
+            <select id="gt-tienda" onchange="gtTiendaChanged()" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card2);color:var(--text)">
+              <option value="">— Seleccionar tienda —</option>
+            </select>
           </div>
           <div id="gt-productos-container"></div>
-          <div id="gt-assign-btn-container" style="display:none;margin-top:16px">
-            <button onclick="gtAsignarTareas()" style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer">📋 Asignar Tareas Seleccionadas</button>
+          <div id="gt-seleccion-container" style="display:none;margin-top:20px">
+            <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Tareas a asignar</div>
+            <div id="gt-seleccion-lista" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px"></div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Vendedor asignado: <strong id="gt-vendedor-label" style="color:var(--text)">—</strong></div>
+            <button onclick="gtSubirTareas()" style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;width:100%">📋 Subir Tareas</button>
           </div>
           <div id="gt-msg" style="margin-top:12px;font-size:13px;font-weight:600"></div>
         </div>
-        <div id="gt-tareas-existentes"></div>
       </div>
-
       <!-- CENTRO DE DESCARGAS -->
       <div class="view" id="view-centro-descargas">
         <div class="section-header"><div class="section-title">CENTRO DE DESCARGAS</div></div>
@@ -3668,77 +3660,192 @@ async function sbAdmin(method, ep, body) {
 
 // ── GESTIONAR TAREAS ──
 var GT_INV_DATA = [];
-function gtCargarTiendas() {
-  var vendor = document.getElementById('gt-vendedor').value;
+var GT_CADENAS = {
+  xtra: function(d) { return /T\d+/i.test(d.tienda || '') || /^X/i.test(d.formato || ''); },
+  s99: function(d) { return /super\s*99|ricamar|sm\s*rey/i.test(d.tienda || '') || /^(S9|RE)/i.test(d.formato || ''); },
+  machetazo: function(d) { return /machetazo|goly/i.test(d.tienda || '') || /^(GM|GL|MA)/i.test(d.formato || ''); },
+  supercarnes: function(d) { return /super\s*carne|virzi/i.test(d.tienda || '') || /^(SC|VI)/i.test(d.formato || ''); }
+};
+function gtCadenaChanged() {
   var tSel = document.getElementById('gt-tienda');
   tSel.innerHTML = '<option value="">— Seleccionar tienda —</option>';
   document.getElementById('gt-productos-container').innerHTML = '';
-  document.getElementById('gt-assign-btn-container').style.display = 'none';
-  if (!vendor) return;
-  var tiendas = [...new Set(GT_INV_DATA.filter(function(d){ return d.vendedor && d.vendedor.toUpperCase() === vendor.toUpperCase(); }).map(function(d){ return d.tienda; }))].sort();
-  tiendas.forEach(function(t){ tSel.innerHTML += '<option value="' + t + '">' + t + '</option>'; });
-}
-function gtCargarProductos() {
-  var vendor = document.getElementById('gt-vendedor').value;
-  var tienda = document.getElementById('gt-tienda').value;
-  var cont = document.getElementById('gt-productos-container');
-  document.getElementById('gt-assign-btn-container').style.display = 'none';
-  if (!vendor || !tienda) { cont.innerHTML = ''; return; }
-  var prods = GT_INV_DATA.filter(function(d){ return d.vendedor && d.vendedor.toUpperCase() === vendor.toUpperCase() && d.tienda === tienda && (d.inventario === 0 || d.inventario <= 5); });
-  if (prods.length === 0) {
-    cont.innerHTML = '<div style="color:var(--muted);padding:16px;font-size:13px">No hay productos con inventario bajo (≤5) en esta tienda.</div>';
+  document.getElementById('gt-seleccion-container').style.display = 'none';
+  document.getElementById('gt-msg').textContent = '';
+  var cadena = document.getElementById('gt-cadena').value;
+  if (!cadena) return;
+  var filtro = GT_CADENAS[cadena];
+  var tiendas = [...new Set(GT_INV_DATA.filter(filtro).map(function(d){ return d.tienda; }).filter(Boolean))].sort();
+  if (tiendas.length === 0) {
+    document.getElementById('gt-productos-container').innerHTML = '<div style="color:var(--muted);padding:16px;font-size:13px">No hay tiendas para esta cadena. Actualiza el inventario primero.</div>';
     return;
   }
-  var html = '<div style="font-size:12px;color:var(--muted);margin-bottom:10px">Productos con inventario 0 o bajo — selecciona para asignar tareas:</div>';
-  html += '<div style="display:flex;flex-direction:column;gap:8px">';
-  prods.forEach(function(p,i){
-    html += '<label style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;cursor:pointer">' +
-      '<input type="checkbox" id="gt-chk-' + i + '" data-inv="' + JSON.stringify(p).replace(/"/g,'&quot;') + '" style="width:16px;height:16px;cursor:pointer" onchange="gtCheckChanged()">' +
-      '<span style="flex:1;font-size:13px"><strong>' + (p.producto||p.sku||'—') + '</strong>' +
-      '<span style="margin-left:8px;font-size:11px;color:var(--muted)">Inv: ' + (p.inventario||0) + ' uds</span></span>' +
-      '</label>';
+  tiendas.forEach(function(t){ tSel.innerHTML += '<option value="' + t + '">' + t + '</option>'; });
+}
+function gtTiendaChanged() {
+  var cadena = document.getElementById('gt-cadena').value;
+  var tienda = document.getElementById('gt-tienda').value;
+  var cont = document.getElementById('gt-productos-container');
+  document.getElementById('gt-seleccion-container').style.display = 'none';
+  document.getElementById('gt-msg').textContent = '';
+  if (!tienda) { cont.innerHTML = ''; return; }
+  var filtro = GT_CADENAS[cadena];
+  var prods = GT_INV_DATA.filter(function(d){ return filtro(d) && d.tienda === tienda && (d.inventario === 0 || d.inventario <= 5); });
+  var vendedorRef = GT_INV_DATA.find(function(d){ return d.tienda === tienda && d.vendedor; });
+  document.getElementById('gt-vendedor-label').textContent = (vendedorRef && vendedorRef.vendedor) ? vendedorRef.vendedor : '—';
+  if (prods.length === 0) {
+    cont.innerHTML = '<div style="color:var(--muted);padding:16px;font-size:13px">No hay productos con inventario critico (0 o menor a 5) en esta tienda.</div>';
+    return;
+  }
+  var html = '<div style="font-size:12px;color:var(--muted);margin-bottom:10px">Selecciona los productos para asignar tarea:</div><div style="display:flex;flex-direction:column;gap:6px">';
+  prods.forEach(function(p, i) {
+    var inv = p.inventario || 0;
+    var invColor = inv === 0 ? '#FF4444' : '#FF8C00';
+    html += '<label style="display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;cursor:pointer;background:var(--card2)">' +
+      '<input type="checkbox" class="gt-chk" data-prod="' + JSON.stringify(p).replace(/"/g,'&quot;') + '" style="width:16px;height:16px;cursor:pointer;flex-shrink:0" onchange="gtActualizarSeleccion()">' +
+      '<span style="flex:1;font-size:13px"><strong>' + (p.producto || p.sku || '—') + '</strong>' +
+      '<span style="margin-left:8px;font-size:11px;color:' + invColor + '">Inv: ' + inv + '</span></span></label>';
   });
   html += '</div>';
   cont.innerHTML = html;
 }
-function gtCheckChanged() {
-  var anyChecked = document.querySelectorAll('#gt-productos-container input[type=checkbox]:checked').length > 0;
-  document.getElementById('gt-assign-btn-container').style.display = anyChecked ? 'block' : 'none';
-}
-async function gtAsignarTareas() {
-  var vendor = document.getElementById('gt-vendedor').value;
-  var tienda = document.getElementById('gt-tienda').value;
-  var checks = document.querySelectorAll('#gt-productos-container input[type=checkbox]:checked');
-  if (!vendor || !tienda || checks.length === 0) return;
-  var msgEl = document.getElementById('gt-msg');
-  msgEl.textContent = 'Guardando...'; msgEl.style.color = 'var(--muted)';
-  var tasks = [];
-  checks.forEach(function(chk){
-    var inv = JSON.parse(chk.getAttribute('data-inv').replace(/&quot;/g,'"'));
-    tasks.push({ vendedor_nombre: vendor.toUpperCase(), tienda: tienda, producto: inv.producto||inv.sku||'—', inventario_sistema: inv.inventario||0, estado: 'pendiente', fecha_asignacion: new Date().toISOString() });
+function gtActualizarSeleccion() {
+  var checks = document.querySelectorAll('.gt-chk:checked');
+  var lista = document.getElementById('gt-seleccion-lista');
+  var cont = document.getElementById('gt-seleccion-container');
+  if (checks.length === 0) { cont.style.display = 'none'; lista.innerHTML = ''; return; }
+  cont.style.display = 'block';
+  lista.innerHTML = '';
+  checks.forEach(function(chk) {
+    var p = JSON.parse(chk.getAttribute('data-prod').replace(/&quot;/g, '"'));
+    var item = document.createElement('div');
+    item.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:rgba(204,0,0,0.08);border:1px solid rgba(204,0,0,0.2);border-radius:6px;font-size:12px';
+    item.innerHTML = '<span>' + (p.producto || p.sku || '—') + '</span><span style="color:var(--muted)">Inv: ' + (p.inventario||0) + '</span>';
+    lista.appendChild(item);
   });
+}
+async function gtSubirTareas() {
+  var tienda = document.getElementById('gt-tienda').value;
+  var checks = document.querySelectorAll('.gt-chk:checked');
+  var msgEl = document.getElementById('gt-msg');
+  if (!tienda || checks.length === 0) return;
+  var vendedor = (document.getElementById('gt-vendedor-label').textContent || '').trim();
+  var tasks = [];
+  checks.forEach(function(chk) {
+    var p = JSON.parse(chk.getAttribute('data-prod').replace(/&quot;/g, '"'));
+    tasks.push({ vendedor_nombre: vendedor.toUpperCase(), tienda: tienda, producto: p.producto || p.sku || '—', inventario_sistema: p.inventario || 0, estado: 'pendiente', fecha_asignacion: new Date().toISOString() });
+  });
+  msgEl.textContent = 'Guardando ' + tasks.length + ' tarea(s)...';
+  msgEl.style.color = 'var(--muted)';
   try {
     await sbAdmin('POST', '/tareas', tasks);
-    msgEl.textContent = '✅ ' + tasks.length + ' tarea(s) asignada(s) correctamente'; msgEl.style.color = 'var(--green)';
-    document.getElementById('gt-productos-container').innerHTML = '';
-    document.getElementById('gt-assign-btn-container').style.display = 'none';
-  } catch(e) { msgEl.textContent = '❌ Error: ' + e.message; msgEl.style.color = 'var(--red)'; }
+    msgEl.textContent = '✅ ' + tasks.length + ' tarea(s) asignada(s) a ' + vendedor;
+    msgEl.style.color = 'var(--green)';
+    document.querySelectorAll('.gt-chk').forEach(function(c){ c.checked = false; });
+    document.getElementById('gt-seleccion-container').style.display = 'none';
+    document.getElementById('gt-seleccion-lista').innerHTML = '';
+  } catch(e) {
+    msgEl.textContent = '❌ Error: ' + e.message;
+    msgEl.style.color = 'var(--red)';
+  }
 }
 async function gtInicializar() {
-  var sel = document.getElementById('gt-vendedor');
-  sel.innerHTML = '<option value="">— Seleccionar vendedor —</option>';
+  var msgEl = document.getElementById('gt-msg');
+  msgEl.textContent = 'Cargando inventario...';
+  msgEl.style.color = 'var(--muted)';
+  document.getElementById('gt-cadena').value = '';
   document.getElementById('gt-tienda').innerHTML = '<option value="">— Seleccionar tienda —</option>';
   document.getElementById('gt-productos-container').innerHTML = '';
-  document.getElementById('gt-assign-btn-container').style.display = 'none';
-  document.getElementById('gt-msg').textContent = '';
+  document.getElementById('gt-seleccion-container').style.display = 'none';
   var res = await sbAdmin('GET', '/configuracion?clave=eq.inventario&select=valor');
   if (res && res.length > 0) {
     GT_INV_DATA = JSON.parse(res[0].valor || '[]');
-    var vendors = [...new Set(GT_INV_DATA.map(function(d){ return d.vendedor; }).filter(Boolean))].sort();
-    vendors.forEach(function(v){ sel.innerHTML += '<option value="' + v + '">"' + v + '</option>'; });
+    msgEl.textContent = GT_INV_DATA.length + ' productos cargados. Selecciona una cadena.';
+    msgEl.style.color = 'var(--muted)';
+  } else {
+    GT_INV_DATA = [];
+    msgEl.textContent = '⚠️ No hay data de inventario. Ve a Actualizar Data primero.';
+    msgEl.style.color = '#FF8C00';
   }
 }
-
+// ── ACTUALIZAR DATA ──
+var AD_RECORDS = [];
+function adCadenaChanged() {
+  var cadena = document.getElementById('ad-cadena').value;
+  document.getElementById('ad-upload-section').style.display = cadena ? 'block' : 'none';
+  document.getElementById('ad-preview-section').style.display = 'none';
+  AD_RECORDS = [];
+  document.getElementById('ad-file-name').textContent = '';
+  document.getElementById('ad-msg').textContent = '';
+}
+async function adProcessFile(input) {
+  var file = input.files[0];
+  if (!file) return;
+  document.getElementById('ad-file-name').textContent = file.name;
+  var msgEl = document.getElementById('ad-msg');
+  msgEl.textContent = 'Leyendo archivo...';
+  msgEl.style.color = 'var(--muted)';
+  try {
+    var data = await file.arrayBuffer();
+    var wb = XLSX.read(data, {type: 'array'});
+    var ws = wb.Sheets[wb.SheetNames[0]];
+    var rows = XLSX.utils.sheet_to_json(ws, {header: 1, defval: ''});
+    if (rows.length < 2) { msgEl.textContent = '❌ El archivo esta vacio o sin datos'; msgEl.style.color = 'var(--red)'; return; }
+    var headers = rows[0].map(function(h){ return String(h).trim().toUpperCase().replace(/[ÁÀÄÂ]/g,'A').replace(/[ÉÈËÊ]/g,'E').replace(/[ÍÌÏÎ]/g,'I').replace(/[ÓÒÖÔ]/g,'O').replace(/[ÚÙÜÛ]/g,'U').replace(/Ñ/g,'N'); });
+    var colBodega = headers.findIndex(function(h){ return h === 'BODEGA'; });
+    var colCasa   = headers.findIndex(function(h){ return h === 'CASA'; });
+    var colCodigo = headers.findIndex(function(h){ return h === 'CODIGO' || h === 'COD' || h === 'EAN'; });
+    var colDesc   = headers.findIndex(function(h){ return h === 'DESCRIPCION' || h === 'DESC'; });
+    var colCant   = headers.findIndex(function(h){ return h === 'CANTIDAD' || h === 'CANT' || h === 'QTY'; });
+    var colVence  = headers.findIndex(function(h){ return h === 'VENCE' || h === 'VENCIMIENTO'; });
+    if (colBodega < 0 || colDesc < 0 || colCant < 0) {
+      msgEl.textContent = '❌ Columnas requeridas no encontradas. El archivo debe tener: BODEGA, DESCRIPCION, CANTIDAD';
+      msgEl.style.color = 'var(--red)'; return;
+    }
+    var cadena = document.getElementById('ad-cadena').value;
+    AD_RECORDS = [];
+    for (var i = 1; i < rows.length; i++) {
+      var row = rows[i];
+      var bodega = String(row[colBodega] || '').trim();
+      if (!bodega) continue;
+      AD_RECORDS.push({ cadena: cadena, bodega: bodega, casa: colCasa>=0?String(row[colCasa]||'').trim():'', codigo: colCodigo>=0?String(row[colCodigo]||'').trim():'', descripcion: colDesc>=0?String(row[colDesc]||'').trim():'', cantidad: colCant>=0?(parseFloat(String(row[colCant]).replace(',','.'))||0):0, vence: colVence>=0?String(row[colVence]||'').trim():'' });
+    }
+    document.getElementById('ad-preview-info').textContent = '📊 ' + AD_RECORDS.length + ' registros listos para subir.';
+    document.getElementById('ad-preview-section').style.display = 'block';
+    document.getElementById('ad-progress-container').style.display = 'none';
+    msgEl.textContent = '';
+  } catch(e) { msgEl.textContent = '❌ Error leyendo archivo: ' + e.message; msgEl.style.color = 'var(--red)'; }
+}
+async function adSubirLotes() {
+  if (AD_RECORDS.length === 0) return;
+  var msgEl = document.getElementById('ad-msg');
+  var btn = document.getElementById('ad-upload-btn');
+  var progContainer = document.getElementById('ad-progress-container');
+  var progBar = document.getElementById('ad-progress-bar');
+  var progLabel = document.getElementById('ad-progress-label');
+  btn.disabled = true; progContainer.style.display = 'block'; msgEl.textContent = '';
+  var BATCH = 50; var total = AD_RECORDS.length; var saved = []; var failed = false;
+  for (var i = 0; i < total; i += BATCH) {
+    var lote = AD_RECORDS.slice(i, i + BATCH);
+    var processed = Math.min(i + BATCH, total);
+    progLabel.textContent = 'Procesando ' + processed + ' / ' + total + ' registros...';
+    progBar.style.width = Math.round(processed / total * 100) + '%';
+    saved = saved.concat(lote);
+    try {
+      await sbAdmin('PATCH', '/configuracion?clave=eq.inventario_bodega', {valor: JSON.stringify(saved)});
+    } catch(e) {
+      msgEl.textContent = '⚠️ Error en lote ' + processed + ': ' + e.message + '. Los lotes anteriores fueron guardados.';
+      msgEl.style.color = '#FF8C00'; failed = true; break;
+    }
+    if (i + BATCH < total) { await new Promise(function(r){ setTimeout(r, 500); }); }
+  }
+  progBar.style.width = '100%'; btn.disabled = false;
+  if (!failed) {
+    progLabel.textContent = '✅ Completado. ' + total + ' registros procesados.';
+    msgEl.textContent = '✅ Completado. ' + total + ' registros subidos a Supabase.';
+    msgEl.style.color = 'var(--green)'; AD_RECORDS = [];
+  }
+}
 // ── CENTRO DE DESCARGAS ──
 async function cdDescargar(tipo) {
   var data, headers, filename;

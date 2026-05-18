@@ -1,4 +1,4 @@
-﻿NOT FOUND: view-gestionar-ofertas NOT FOUND: view-actualizar-data NOT FOUND: view-ingreso Removing view-auditoria from 22686 to 24091 <!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -852,46 +852,19 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
 
     <!-- INVENTARIO EN BODEGA -->
-    <div class="view" id="view-bodega">
-        <div style="background:#F0FFF4;border:1px solid #A7F3D0;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#065F46;font-weight:600">👁️ Vista de solo lectura — contacta a Admin Datos para modificar el inventario</div>
+        <div class="view" id="view-bodega">
+        <div style="background:#F0FFF4;border:1px solid #A7F3D0;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#065F46;font-weight:600">&#128065;&#65039; Vista de solo lectura — para modificar el inventario usa Admin Datos</div>
       <div class="section-header">
-        <div class="section-title">🏭 Inventario en Bodega</div>
+        <div class="section-title">&#127981; Inventario en Bodega</div>
       </div>
-      <p style="color:var(--muted);margin-bottom:16px;font-size:13px;">Pega la data directamente desde Excel (Tab entre columnas, Enter entre filas). Al guardar reemplaza la data anterior.</p>
-
-      <!-- ZONA DE PEGAR EXCEL -->
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;">
-        <div class="filter-label" style="margin-bottom:8px;">📋 Pegar desde Excel — Columnas esperadas: Bodega | Casa | Descripción | Cantidad | Vence</div>
-        <textarea id="bodega-paste-area" rows="6"
-          placeholder="Selecciona las celdas en Excel, copia (Ctrl+C) y pega aquí (Ctrl+V)..."
-          style="width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:12px;border-radius:8px;font-size:13px;resize:vertical;font-family:monospace;box-sizing:border-box;"
-          onpaste="setTimeout(parseBodegaData,50)"></textarea>
-        <div style="display:flex;gap:10px;margin-top:10px;">
-          <button onclick="parseBodegaData()" style="background:var(--yellow);color:#1a1410;border:none;padding:9px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;">📋 Procesar Pegado</button>
-          
-          <button onclick="cargarBodegaData()" style="background:var(--card2);border:1px solid var(--border);color:var(--muted);padding:9px 16px;border-radius:8px;cursor:pointer;font-size:13px;">↺ Cargar Guardado</button>
-        </div>
+      <div style="margin-bottom:14px">
+        <input type="text" id="av-bodega-search" placeholder="&#128269; Buscar por descripcion o codigo..."
+          oninput="avFiltrarBodega(this.value)"
+          style="width:100%;max-width:420px;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:13px;outline:none;box-sizing:border-box">
       </div>
-
-      <div class="table-wrapper" style="margin-bottom:20px;">
-        <div style="overflow-x:auto;">
-          <table id="bodega-input-table">
-            <thead>
-              <tr>
-                <th>Bodega</th>
-                <th>Casa</th>
-                <th>Descripción</th>
-                <th>Cantidad</th>
-                <th>Vence</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="bodega-input-body"></tbody>
-          </table>
-        </div>
+      <div id="av-bodega-container">
+        <p style="color:var(--muted);padding:20px">Cargando inventario en bodega...</p>
       </div>
-      <button onclick="guardarBodegaData()" style="background:var(--red);color:white;border:none;padding:14px 32px;border-radius:8px;cursor:pointer;font-size:15px;font-weight:700;width:100%;">💾 GUARDAR INVENTARIO EN BODEGA</button>
-      <div id="bodega-save-msg" style="margin-top:12px;text-align:center;font-size:14px;"></div>
     </div>
 
     <!-- REACT VIEWS: INGRESOS -->
@@ -1106,7 +1079,7 @@ function showView(name, el) {
   if (name === 'ofertas') { renderOfertas(); renderOfertasFromSupabase(); }
   if (name === 'actualizar-data') cargarDataActual();
   if (name === 'gestionar-ofertas') initGestionOfertas();
-  if (name === 'bodega') cargarBodegaVendedor();
+  if (name === 'bodega') avCargarBodega();
 }
 
 // ===== DASHBOARD =====
@@ -3602,6 +3575,53 @@ async function cdEliminar(tipo) {
   }
 }
 
+// ── BODEGA VISUAL (READ ONLY) ──
+var AV_BODEGA_DATA = [];
+
+async function avCargarBodega() {
+  var cont = document.getElementById('av-bodega-container');
+  if (!cont) return;
+  cont.innerHTML = '<p style="color:var(--muted);padding:20px">Cargando...</p>';
+  var res = await sbAdmin('GET', '/configuracion?clave=eq.inventario_bodega&select=valor');
+  if (res && res.length > 0) {
+    AV_BODEGA_DATA = JSON.parse(res[0].valor || '[]');
+  } else {
+    AV_BODEGA_DATA = [];
+  }
+  avRenderBodega(AV_BODEGA_DATA);
+}
+
+function avFiltrarBodega(q) {
+  if (!q) { avRenderBodega(AV_BODEGA_DATA); return; }
+  var lq = q.toLowerCase();
+  avRenderBodega(AV_BODEGA_DATA.filter(function(r){
+    return (r.descripcion||'').toLowerCase().includes(lq) || (r.codigo||'').toLowerCase().includes(lq) || (r.bodega||'').toLowerCase().includes(lq);
+  }));
+}
+
+function avRenderBodega(data) {
+  var cont = document.getElementById('av-bodega-container');
+  if (!data || data.length === 0) {
+    cont.innerHTML = '<p style="color:var(--muted);padding:20px">No hay data de inventario en bodega.</p>';
+    return;
+  }
+  var html = '<div class="table-wrapper"><div style="overflow-x:auto"><table><thead><tr>' +
+    '<th>Bodega</th><th>Casa</th><th>Codigo</th><th>Descripcion</th><th>Cantidad</th><th>Vence</th>' +
+    '</tr></thead><tbody>';
+  data.forEach(function(r) {
+    html += '<tr>' +
+      '<td>' + (r.bodega||'—') + '</td>' +
+      '<td>' + (r.casa||'—') + '</td>' +
+      '<td style="font-size:11px;color:var(--muted)">' + (r.codigo||'—') + '</td>' +
+      '<td>' + (r.descripcion||'—') + '</td>' +
+      '<td style="font-weight:700">' + (r.cantidad||0) + '</td>' +
+      '<td>' + (r.vence||'—') + '</td>' +
+      '</tr>';
+  });
+  html += '</tbody></table></div></div>';
+  cont.innerHTML = html;
+}
+
 // ── INIT ──
 document.addEventListener('DOMContentLoaded', function() {
   var s = JSON.parse(localStorage.getItem('mars_portal_session')||'{}');
@@ -3609,7 +3629,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var el = document.getElementById('admin-sidebar-user');
   if (el) el.textContent = nombre;
   document.getElementById('footer-date').textContent = new Date().toLocaleDateString('es-PA',{day:'2-digit',month:'short',year:'numeric'});
-  cargarBodegaVendedor();
+  avCargarBodega();
 });
 </script>
 </body>

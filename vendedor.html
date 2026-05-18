@@ -1247,7 +1247,8 @@ const SURL='https://npatcmgjqxpjxhbcqsqv.supabase.co';
 const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wYXRjbWdqcXhwanhoYmNxc3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyOTEzNDUsImV4cCI6MjA5Mjg2NzM0NX0.uDyUMvouWcPlbNOiPClNYezkKIE9ICAEpWZxklUdGZg';
 
 const sb=async(method,endpoint,data=null)=>{
-  const h={'Content-Type':'application/json','Authorization':'Bearer '+SKEY,'apikey':SKEY,'Prefer':'return=representation'};
+  const token=(typeof SESSION_TOKEN!=='undefined'&&SESSION_TOKEN)?SESSION_TOKEN:SKEY;
+  const h={'Content-Type':'application/json','Authorization':'Bearer '+token,'apikey':SKEY,'Prefer':'return=representation'};
   const o={method,headers:h};
   if(data)o.body=JSON.stringify(data);
   try{const r=await fetch(SURL+'/rest/v1'+endpoint,o);const t=await r.text();return t?JSON.parse(t):[];}
