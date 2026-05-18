@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FEDURO|MARS — Auditoría</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red: #CC0000;
+  --dark: #1A2340;
+  --text: #1A2340;
+  --muted: #8A94A6;
+  --border: #E4E9F0;
+  --bg: #F0F2F5;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+/* SIDEBAR */
+.sidebar { position:fixed; top:0; left:0; width:240px; height:100vh; background:#fff; border-right:1px solid var(--border); display:flex; flex-direction:column; z-index:100; }
+.sidebar-logo { padding:28px 24px 20px; border-bottom:1px solid var(--border); }
+.logo-title { font-family:'Bebas Neue',cursive; font-size:28px; color:var(--red); letter-spacing:4px; }
+.logo-sub { font-size:11px; color:var(--muted); letter-spacing:2px; margin-top:2px; text-transform:uppercase; }
+.sidebar-nav { flex:1; padding:20px 0; overflow-y:auto; }
+.nav-section-label { font-size:10px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:1.5px; padding:8px 24px 4px; }
+.nav-item { display:flex; align-items:center; gap:10px; padding:11px 24px; cursor:pointer; font-size:13px; font-weight:500; color:var(--text); transition:all 0.15s; border-left:3px solid transparent; }
+.nav-item:hover { background:#F5F7FA; color:var(--red); }
+.nav-item.active { background:#FFF5F5; color:var(--red); border-left-color:var(--red); font-weight:700; }
+.nav-icon { font-size:16px; width:20px; text-align:center; }
+.sidebar-footer { padding:16px 20px; border-top:1px solid var(--border); font-size:12px; color:var(--muted); }
+
+/* TOPBAR */
+.main { margin-left:240px; display:flex; flex-direction:column; min-height:100vh; }
+.topbar { height:60px; background:#fff; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 28px; position:sticky; top:0; z-index:50; }
+.topbar-title { font-family:'Bebas Neue',cursive; font-size:20px; letter-spacing:2px; color:var(--text); }
+.hamburger { display:none; background:none; border:none; font-size:22px; cursor:pointer; padding:4px 8px; }
+.content { padding:28px; flex:1; }
+
+/* CARDS */
+.card { background:#fff; border-radius:12px; border:1px solid var(--border); padding:24px; margin-bottom:20px; }
+.card-title { font-size:16px; font-weight:700; color:var(--text); margin-bottom:6px; }
+.card-sub { font-size:13px; color:var(--muted); }
+.coming-soon { text-align:center; padding:80px 20px; }
+.coming-soon-icon { font-size:64px; margin-bottom:20px; }
+.coming-soon-title { font-family:'Bebas Neue',cursive; font-size:36px; color:var(--red); letter-spacing:3px; margin-bottom:8px; }
+.coming-soon-text { font-size:14px; color:var(--muted); }
+
+/* OVERLAY + MOBILE */
+.sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:99; }
+.sidebar-overlay.active { display:block; }
+@media (max-width:768px) {
+  .sidebar { transform:translateX(-100%); transition:transform 0.25s ease; z-index:200; }
+  .sidebar.open { transform:translateX(0); }
+  .main { margin-left:0; }
+  .hamburger { display:block; }
+  .topbar { padding:0 16px; }
+  .content { padding:16px; }
+}
+</style>
+</head>
+<body>
+<script>
+// Session check
+(function() {
+  var s = JSON.parse(localStorage.getItem('mars_portal_session') || 'null');
+  if (!s || s.type !== 'auditoria') { window.location.href = 'index.html'; }
+})();
+</script>
+
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-title">FEDURO|MARS</div>
+    <div class="logo-sub">Portal de Auditoría</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Módulos</div>
+    <div class="nav-item active" onclick="showView('auditar',this)">
+      <span class="nav-icon">✅</span> Auditoría
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <span id="sidebar-user" style="display:block;margin-bottom:6px;font-weight:600;color:var(--dark)"></span>
+    <span id="footer-date"></span>
+    <button onclick="cerrarSesion()" style="margin-top:10px;width:100%;background:none;border:1px solid var(--border);color:var(--muted);padding:7px;border-radius:8px;cursor:pointer;font-size:12px;">&#8592; Salir</button>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <button class="hamburger" onclick="toggleSidebar()">&#9776;</button>
+      <div class="topbar-title">AUDITORÍA</div>
+    </div>
+    <div style="font-size:12px;color:var(--muted)" id="topbar-user"></div>
+  </div>
+  <div class="content">
+    <div id="view-auditar" class="coming-soon">
+      <div class="coming-soon-icon">🔍</div>
+      <div class="coming-soon-title">Módulo de Auditoría</div>
+      <div class="coming-soon-text">Este módulo está en construcción.<br>Pronto estará disponible.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('active');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('active');
+}
+function showView(name, el) {
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  if (el) el.classList.add('active');
+  closeSidebar();
+}
+function cerrarSesion() {
+  localStorage.removeItem('mars_portal_session');
+  window.location.href = 'index.html';
+}
+// Init
+(function() {
+  var s = JSON.parse(localStorage.getItem('mars_portal_session') || 'null');
+  var nombre = s ? (s.nombre || 'AUDITORIA') : '';
+  document.getElementById('sidebar-user').textContent = nombre;
+  document.getElementById('topbar-user').textContent = nombre;
+  document.getElementById('footer-date').textContent = new Date().toLocaleDateString('es-PA',{day:'2-digit',month:'short',year:'numeric'});
+})();
+</script>
+</body>
+</html>
