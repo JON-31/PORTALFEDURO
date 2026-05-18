@@ -3650,8 +3650,8 @@ function ReyApp(){
 
 /* ════ Mount all React apps ════ */
 try { const _c1 = document.getElementById('react-ingreso'); if (_c1) ReactDOM.render(<IngresoApp/>, _c1); } catch(e) { console.warn('IngresoApp:', e.message); }
-try { const _c2 = document.getElementById('react-machetazo'); if (_c2) ReactDOM.render(<MachetazoApp/>, _c2); } catch(e) {}
-try { const _c3 = document.getElementById('react-rey'); if (_c3) ReactDOM.render(<ReyApp/>, _c3); } catch(e) {}
+try { const _c2 = document.getElementById('react-machetazo'); if (_c2) ReactDOM.render(<MachetazoApp/>, _c2); } catch(e) { console.warn('MachetazoApp:', e.message); }
+try { const _c3 = document.getElementById('react-rey'); if (_c3) ReactDOM.render(<ReyApp/>, _c3); } catch(e) { console.warn('ReyApp:', e.message); }
 
 // ── ACTUALIZAR DATA ──
 var AD_RECORDS = [];
