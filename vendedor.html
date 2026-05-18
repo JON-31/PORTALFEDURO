@@ -962,13 +962,9 @@ async function cerrarSesion() {
   }
   SESSION_TOKEN = null;
   VENDOR_ACTUAL = null; INV_DATA_V = [];
-  localStorage.removeItem('mars_session');
+  localStorage.removeItem('mars_portal_session');
   clearInactivityTimer();
   window.location.href = 'index.html';
-  window.location.href = 'index.html';
-  var u = document.getElementById('login-username'); if (u) u.value = '';
-  var p = document.getElementById('login-password'); if (p) p.value = '';
-  var e = document.getElementById('login-error'); if (e) e.style.display = 'none';
 }
 
 /* ── FASE 5: inactividad 1 hora ── */
@@ -981,7 +977,7 @@ function resetInactivityTimer() {
     msg.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center';
     msg.innerHTML = '<div style="background:#fff;border-radius:16px;padding:2rem 2.5rem;text-align:center;max-width:320px"><p style="font-size:1rem;font-weight:700;color:#1A2340;margin:0 0 1rem">Tu sesión expiró por inactividad.</p><button onclick="location.reload()" style="background:#CC0000;color:#fff;border:none;padding:.75rem 2rem;border-radius:8px;font-weight:700;cursor:pointer;font-size:.95rem">Cerrar sesión</button></div>';
     document.body.appendChild(msg);
-    cerrarSesionVendedor();
+    cerrarSesion();
   }, INACTIVITY_MS);
 }
 function clearInactivityTimer() { clearTimeout(_inactivityTimer); }
