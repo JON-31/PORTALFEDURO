@@ -820,7 +820,6 @@ tbody tr:last-child td { border-bottom: none; }
           </div>
         </div>
         <div id="dash-vendedor-profile"></div>
-        <div class="kpi-grid" id="kpi-grid"></div>
         <div class="section-header">
           <div class="section-title">REPORTE POR TIENDA</div>
           <span class="table-count" id="dash-count"></span>
@@ -1099,12 +1098,6 @@ function renderDashboard() {
   var cobProm = totalProds > 0 ? Math.round(data.reduce(function(a,d){ return a + (d.cobertura||0); }, 0) / totalProds) : 0;
   var criticos = data.filter(function(d){ return d.cobertura > 60; }).length;
   var tiendas = [...new Set(data.map(function(d){return d.tienda;}))].length;
-  document.getElementById('kpi-grid').innerHTML =
-    '<div class="kpi-card kpi-color-yellow"><span class="kpi-icon">&#127991;</span><div class="kpi-label">PRODUCTOS/CADENA</div><div class="kpi-value">' + totalProds + ' <small style="font-size:16px">SKUs</small></div><div class="kpi-sub">Activos</div></div>' +
-    '<div class="kpi-card kpi-color-blue"><span class="kpi-icon">&#128230;</span><div class="kpi-label">INVENTARIO/CADENA</div><div class="kpi-value">' + totalInv.toLocaleString() + ' <small style="font-size:14px">UDS</small></div><div class="kpi-sub">' + tiendas + ' tiendas</div></div>' +
-    '<div class="kpi-card kpi-color-green"><span class="kpi-icon">&#128200;</span><div class="kpi-label">VENTA PROM/CADENA</div><div class="kpi-value">' + totalVenta.toLocaleString() + ' <small style="font-size:14px">UDS</small></div><div class="kpi-sub">Promedio 3 meses</div></div>' +
-    '<div class="kpi-card kpi-color-purple"><span class="kpi-icon">&#128205;</span><div class="kpi-label">COBERTURA/CADENA</div><div class="kpi-value">' + cobProm + ' <small style="font-size:16px">D&Iacute;AS</small></div><div class="kpi-sub">Promedio inventario</div></div>' +
-    '<div class="kpi-card kpi-color-red"><span class="kpi-icon">&#128336;</span><div class="kpi-label">CR&Iacute;TICOS/CADENA</div><div class="kpi-value">' + criticos + ' <small style="font-size:14px">SKU/CADENA</small></div><div class="kpi-sub">Riesgo de quiebre</div></div>';
   if (data.length === 0) {
     document.getElementById('dash-table-body').innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">Sin data. El administrador debe publicar el inventario primero.</td></tr>';
     document.getElementById('dash-count').textContent = '';
