@@ -3649,135 +3649,10 @@ function ReyApp(){
 }
 
 /* ════ Mount all React apps ════ */
-const _c1 = document.getElementById('react-ingreso');
-if (_c1) ReactDOM.render(<IngresoApp/>, _c1);
-const _c2 = document.getElementById('react-machetazo');
-if (_c2) ReactDOM.render(<MachetazoApp/>, _c2);
-const _c3 = document.getElementById('react-rey');
-if (_c3) ReactDOM.render(<ReyApp/>, _c3);
+try { const _c1 = document.getElementById('react-ingreso'); if (_c1) ReactDOM.render(<IngresoApp/>, _c1); } catch(e) { console.warn('IngresoApp:', e.message); }
+try { const _c2 = document.getElementById('react-machetazo'); if (_c2) ReactDOM.render(<MachetazoApp/>, _c2); } catch(e) {}
+try { const _c3 = document.getElementById('react-rey'); if (_c3) ReactDOM.render(<ReyApp/>, _c3); } catch(e) {}
 
-// ── SUPABASE HELPER FOR ADMIN ──
-async function sbAdmin(method, ep, body) {
-  var s = JSON.parse(localStorage.getItem('mars_portal_session')||'{}');
-  var token = s.access_token || ANON_KEY;
-  var opts = { method: method, headers: { 'Authorization': 'Bearer ' + ANON_KEY, 'apikey': ANON_KEY, 'Content-Type': 'application/json', 'Prefer': method==='POST'?'return=representation':'return=minimal' } };
-  if (body) opts.body = JSON.stringify(body);
-  var r = await fetch(SB_URL + '/rest/v1' + ep, opts);
-  var t = await r.text(); return t ? JSON.parse(t) : [];
-}
-
-// ── GESTIONAR TAREAS ──
-var GT_INV_DATA = [];
-var GT_CADENAS = {
-  xtra: function(d) { return /T\d+/i.test(d.tienda || '') || /^X/i.test(d.formato || ''); },
-  s99: function(d) { return /super\s*99|ricamar|sm\s*rey/i.test(d.tienda || '') || /^(S9|RE)/i.test(d.formato || ''); },
-  machetazo: function(d) { return /machetazo|goly/i.test(d.tienda || '') || /^(GM|GL|MA)/i.test(d.formato || ''); },
-  supercarnes: function(d) { return /super\s*carne|virzi/i.test(d.tienda || '') || /^(SC|VI)/i.test(d.formato || ''); }
-};
-function gtCadenaChanged() {
-  var tSel = document.getElementById('gt-tienda');
-  tSel.innerHTML = '<option value="">— Seleccionar tienda —</option>';
-  document.getElementById('gt-productos-container').innerHTML = '';
-  document.getElementById('gt-seleccion-container').style.display = 'none';
-  document.getElementById('gt-msg').textContent = '';
-  var cadena = document.getElementById('gt-cadena').value;
-  if (!cadena) return;
-  var filtro = GT_CADENAS[cadena];
-  var tiendas = [...new Set(GT_INV_DATA.filter(filtro).map(function(d){ return d.tienda; }).filter(Boolean))].sort();
-  if (tiendas.length === 0) {
-    document.getElementById('gt-productos-container').innerHTML = '<div style="color:var(--muted);padding:16px;font-size:13px">No hay tiendas para esta cadena. Actualiza el inventario primero.</div>';
-    return;
-  }
-  tiendas.forEach(function(t){ tSel.innerHTML += '<option value="' + t + '">' + t + '</option>'; });
-}
-function gtTiendaChanged() {
-  var cadena = document.getElementById('gt-cadena').value;
-  var tienda = document.getElementById('gt-tienda').value;
-  var cont = document.getElementById('gt-productos-container');
-  document.getElementById('gt-seleccion-container').style.display = 'none';
-  document.getElementById('gt-msg').textContent = '';
-  if (!tienda) { cont.innerHTML = ''; return; }
-  var filtro = GT_CADENAS[cadena];
-  var prods = GT_INV_DATA.filter(function(d){ return filtro(d) && d.tienda === tienda && (d.inventario === 0 || d.inventario <= 5); });
-  if (prods.length === 0) {
-    cont.innerHTML = '<div style="color:var(--muted);padding:16px;font-size:13px">No hay productos con inventario critico (0 o menor a 5) en esta tienda.</div>';
-    return;
-  }
-  var html = '<div style="font-size:12px;color:var(--muted);margin-bottom:10px">Selecciona los productos para asignar tarea:</div><div style="display:flex;flex-direction:column;gap:6px">';
-  prods.forEach(function(p, i) {
-    var inv = p.inventario || 0;
-    var invColor = inv === 0 ? '#FF4444' : '#FF8C00';
-    html += '<label style="display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;cursor:pointer;background:var(--card2)">' +
-      '<input type="checkbox" class="gt-chk" data-prod="' + JSON.stringify(p).replace(/"/g,'&quot;') + '" style="width:16px;height:16px;cursor:pointer;flex-shrink:0" onchange="gtActualizarSeleccion()">' +
-      '<span style="flex:1;font-size:13px"><strong>' + (p.producto || p.sku || '—') + '</strong>' +
-      '<span style="margin-left:8px;font-size:11px;color:' + invColor + '">Inv: ' + inv + '</span></span></label>';
-  });
-  html += '</div>';
-  cont.innerHTML = html;
-}
-function gtActualizarSeleccion() {
-  var checks = document.querySelectorAll('.gt-chk:checked');
-  var lista = document.getElementById('gt-seleccion-lista');
-  var cont = document.getElementById('gt-seleccion-container');
-  if (checks.length === 0) { cont.style.display = 'none'; lista.innerHTML = ''; return; }
-  cont.style.display = 'block';
-  lista.innerHTML = '';
-  checks.forEach(function(chk) {
-    var p = JSON.parse(chk.getAttribute('data-prod').replace(/&quot;/g, '"'));
-    var item = document.createElement('div');
-    item.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:rgba(204,0,0,0.08);border:1px solid rgba(204,0,0,0.2);border-radius:6px;font-size:12px';
-    item.innerHTML = '<span>' + (p.producto || p.sku || '—') + '</span><span style="color:var(--muted)">Inv: ' + (p.inventario||0) + '</span>';
-    lista.appendChild(item);
-  });
-}
-async function gtSubirTareas() {
-  var tienda = document.getElementById('gt-tienda').value;
-  var checks = document.querySelectorAll('.gt-chk:checked');
-  var msgEl = document.getElementById('gt-msg');
-  if (!tienda || checks.length === 0) return;
-  var vendedor = (document.getElementById('gt-vendedor-sel').value || '').trim();
-  if (!vendedor) { msgEl.textContent = '⚠️ Selecciona un vendedor.'; msgEl.style.color = '#FF8C00'; return; }
-  var tasks = [];
-  checks.forEach(function(chk) {
-    var p = JSON.parse(chk.getAttribute('data-prod').replace(/&quot;/g, '"'));
-    tasks.push({ vendedor_nombre: vendedor.toUpperCase(), tienda: tienda, producto: p.producto || p.sku || '—', inventario_sistema: p.inventario || 0, estado: 'pendiente', fecha_asignacion: new Date().toISOString() });
-  });
-  msgEl.textContent = 'Guardando ' + tasks.length + ' tarea(s)...';
-  msgEl.style.color = 'var(--muted)';
-  try {
-    await sbAdmin('POST', '/tareas', tasks);
-    msgEl.textContent = '✅ ' + tasks.length + ' tarea(s) asignada(s) a ' + vendedor;
-    msgEl.style.color = 'var(--green)';
-    document.querySelectorAll('.gt-chk').forEach(function(c){ c.checked = false; });
-    document.getElementById('gt-seleccion-container').style.display = 'none';
-    document.getElementById('gt-seleccion-lista').innerHTML = '';
-    document.getElementById('gt-vendedor-sel').value = '';
-  } catch(e) {
-    msgEl.textContent = '❌ Error: ' + e.message;
-    msgEl.style.color = 'var(--red)';
-  }
-}
-async function gtInicializar() {
-  var msgEl = document.getElementById('gt-msg');
-  msgEl.textContent = 'Cargando inventario...';
-  msgEl.style.color = 'var(--muted)';
-  document.getElementById('gt-cadena').value = '';
-  document.getElementById('gt-tienda').innerHTML = '<option value="">— Seleccionar tienda —</option>';
-  document.getElementById('gt-productos-container').innerHTML = '';
-  document.getElementById('gt-seleccion-container').style.display = 'none';
-  var vendSel = document.getElementById('gt-vendedor-sel');
-  vendSel.innerHTML = '<option value="">— Seleccionar vendedor —</option>' + VENDEDORES.map(function(v){ return '<option value="' + v + '">' + v + '</option>'; }).join('');
-  var res = await sbAdmin('GET', '/configuracion?clave=eq.inventario&select=valor');
-  if (res && res.length > 0) {
-    GT_INV_DATA = JSON.parse(res[0].valor || '[]');
-    msgEl.textContent = GT_INV_DATA.length + ' productos cargados. Selecciona una cadena.';
-    msgEl.style.color = 'var(--muted)';
-  } else {
-    GT_INV_DATA = [];
-    msgEl.textContent = '⚠️ No hay data de inventario. Ve a Actualizar Data primero.';
-    msgEl.style.color = '#FF8C00';
-  }
-}
 // ── ACTUALIZAR DATA ──
 var AD_RECORDS = [];
 function adCadenaChanged() {
@@ -3904,6 +3779,130 @@ document.addEventListener('DOMContentLoaded', function() {
   cargarBodegaData();
   setTimeout(init, 100);
 });
+</script>
+
+<script>
+// ── SUPABASE HELPER FOR ADMIN (vanilla) ──
+async function sbAdmin(method, ep, body) {
+  var s = JSON.parse(localStorage.getItem('mars_portal_session')||'{}');
+  var opts = { method: method, headers: { 'Authorization': 'Bearer ' + ANON_KEY, 'apikey': ANON_KEY, 'Content-Type': 'application/json', 'Prefer': method==='POST'?'return=representation':'return=minimal' } };
+  if (body) opts.body = JSON.stringify(body);
+  var r = await fetch(SB_URL + '/rest/v1' + ep, opts);
+  var t = await r.text(); return t ? JSON.parse(t) : [];
+}
+
+// ── GESTIONAR TAREAS (vanilla) ──
+var GT_INV_DATA = [];
+var GT_CADENAS = {
+  xtra: function(d) { return /T\d+/i.test(d.tienda || '') || /^X/i.test(d.formato || ''); },
+  s99: function(d) { return /super\s*99|ricamar|sm\s*rey/i.test(d.tienda || '') || /^(S9|RE)/i.test(d.formato || ''); },
+  machetazo: function(d) { return /machetazo|goly/i.test(d.tienda || '') || /^(GM|GL|MA)/i.test(d.formato || ''); },
+  supercarnes: function(d) { return /super\s*carne|virzi/i.test(d.tienda || '') || /^(SC|VI)/i.test(d.formato || ''); }
+};
+function gtCadenaChanged() {
+  var tSel = document.getElementById('gt-tienda');
+  tSel.innerHTML = '<option value="">— Seleccionar tienda —</option>';
+  document.getElementById('gt-productos-container').innerHTML = '';
+  document.getElementById('gt-seleccion-container').style.display = 'none';
+  document.getElementById('gt-msg').textContent = '';
+  var cadena = document.getElementById('gt-cadena').value;
+  if (!cadena) return;
+  var filtro = GT_CADENAS[cadena];
+  var tiendas = [...new Set(GT_INV_DATA.filter(filtro).map(function(d){ return d.tienda; }).filter(Boolean))].sort();
+  if (tiendas.length === 0) {
+    document.getElementById('gt-productos-container').innerHTML = '<div style="color:var(--muted);padding:16px;font-size:13px">No hay tiendas para esta cadena. Actualiza el inventario primero.</div>';
+    return;
+  }
+  tiendas.forEach(function(t){ tSel.innerHTML += '<option value="' + t + '">' + t + '</option>'; });
+}
+function gtTiendaChanged() {
+  var cadena = document.getElementById('gt-cadena').value;
+  var tienda = document.getElementById('gt-tienda').value;
+  var cont = document.getElementById('gt-productos-container');
+  document.getElementById('gt-seleccion-container').style.display = 'none';
+  document.getElementById('gt-msg').textContent = '';
+  if (!tienda) { cont.innerHTML = ''; return; }
+  var filtro = GT_CADENAS[cadena];
+  var prods = GT_INV_DATA.filter(function(d){ return filtro(d) && d.tienda === tienda && (d.inventario === 0 || d.inventario <= 5); });
+  if (prods.length === 0) {
+    cont.innerHTML = '<div style="color:var(--muted);padding:16px;font-size:13px">No hay productos con inventario critico (0 o menor a 5) en esta tienda.</div>';
+    return;
+  }
+  var html = '<div style="font-size:12px;color:var(--muted);margin-bottom:10px">Selecciona los productos para asignar tarea:</div><div style="display:flex;flex-direction:column;gap:6px">';
+  prods.forEach(function(p) {
+    var inv = p.inventario || 0;
+    var invColor = inv === 0 ? '#FF4444' : '#FF8C00';
+    html += '<label style="display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;cursor:pointer;background:var(--card2)">' +
+      '<input type="checkbox" class="gt-chk" data-prod="' + JSON.stringify(p).replace(/"/g,'&quot;') + '" style="width:16px;height:16px;cursor:pointer;flex-shrink:0" onchange="gtActualizarSeleccion()">' +
+      '<span style="flex:1;font-size:13px"><strong>' + (p.producto || p.sku || '—') + '</strong>' +
+      '<span style="margin-left:8px;font-size:11px;color:' + invColor + '">Inv: ' + inv + '</span></span></label>';
+  });
+  html += '</div>';
+  cont.innerHTML = html;
+}
+function gtActualizarSeleccion() {
+  var checks = document.querySelectorAll('.gt-chk:checked');
+  var lista = document.getElementById('gt-seleccion-lista');
+  var cont = document.getElementById('gt-seleccion-container');
+  if (checks.length === 0) { cont.style.display = 'none'; lista.innerHTML = ''; return; }
+  cont.style.display = 'block';
+  lista.innerHTML = '';
+  checks.forEach(function(chk) {
+    var p = JSON.parse(chk.getAttribute('data-prod').replace(/&quot;/g, '"'));
+    var item = document.createElement('div');
+    item.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:rgba(204,0,0,0.08);border:1px solid rgba(204,0,0,0.2);border-radius:6px;font-size:12px';
+    item.innerHTML = '<span>' + (p.producto || p.sku || '—') + '</span><span style="color:var(--muted)">Inv: ' + (p.inventario||0) + '</span>';
+    lista.appendChild(item);
+  });
+}
+async function gtSubirTareas() {
+  var tienda = document.getElementById('gt-tienda').value;
+  var checks = document.querySelectorAll('.gt-chk:checked');
+  var msgEl = document.getElementById('gt-msg');
+  if (!tienda || checks.length === 0) return;
+  var vendedor = (document.getElementById('gt-vendedor-sel').value || '').trim();
+  if (!vendedor) { msgEl.textContent = '⚠️ Selecciona un vendedor.'; msgEl.style.color = '#FF8C00'; return; }
+  var tasks = [];
+  checks.forEach(function(chk) {
+    var p = JSON.parse(chk.getAttribute('data-prod').replace(/&quot;/g, '"'));
+    tasks.push({ vendedor_nombre: vendedor.toUpperCase(), tienda: tienda, producto: p.producto || p.sku || '—', inventario_sistema: p.inventario || 0, estado: 'pendiente', fecha_asignacion: new Date().toISOString() });
+  });
+  msgEl.textContent = 'Guardando ' + tasks.length + ' tarea(s)...';
+  msgEl.style.color = 'var(--muted)';
+  try {
+    await sbAdmin('POST', '/tareas', tasks);
+    msgEl.textContent = '✅ ' + tasks.length + ' tarea(s) asignada(s) a ' + vendedor;
+    msgEl.style.color = 'var(--green)';
+    document.querySelectorAll('.gt-chk').forEach(function(c){ c.checked = false; });
+    document.getElementById('gt-seleccion-container').style.display = 'none';
+    document.getElementById('gt-seleccion-lista').innerHTML = '';
+    document.getElementById('gt-vendedor-sel').value = '';
+  } catch(e) {
+    msgEl.textContent = '❌ Error: ' + e.message;
+    msgEl.style.color = 'var(--red)';
+  }
+}
+async function gtInicializar() {
+  var msgEl = document.getElementById('gt-msg');
+  msgEl.textContent = 'Cargando inventario...';
+  msgEl.style.color = 'var(--muted)';
+  document.getElementById('gt-cadena').value = '';
+  document.getElementById('gt-tienda').innerHTML = '<option value="">— Seleccionar tienda —</option>';
+  document.getElementById('gt-productos-container').innerHTML = '';
+  document.getElementById('gt-seleccion-container').style.display = 'none';
+  var vendSel = document.getElementById('gt-vendedor-sel');
+  vendSel.innerHTML = '<option value="">— Seleccionar vendedor —</option>' + VENDEDORES.map(function(v){ return '<option value="' + v + '">' + v + '</option>'; }).join('');
+  var res = await sbAdmin('GET', '/configuracion?clave=eq.inventario&select=valor');
+  if (res && res.length > 0) {
+    GT_INV_DATA = JSON.parse(res[0].valor || '[]');
+    msgEl.textContent = GT_INV_DATA.length + ' productos cargados. Selecciona una cadena.';
+    msgEl.style.color = 'var(--muted)';
+  } else {
+    GT_INV_DATA = [];
+    msgEl.textContent = '⚠️ No hay data de inventario. Ve a Actualizar Data primero.';
+    msgEl.style.color = '#FF8C00';
+  }
+}
 </script>
 </body>
 </html>
