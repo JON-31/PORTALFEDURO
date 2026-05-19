@@ -999,8 +999,8 @@ tbody tr:last-child td { border-bottom: none; }
           </div>
         </div>
         <button id="ad-upload-btn" onclick="adSubirLotes()" style="background:var(--red);color:white;border:none;padding:12px 28px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700">&#128190; Subir a Supabase</button>
-        <div id="ad-msg" style="margin-top:12px;font-size:13px;font-weight:600"></div>
       </div>
+      <div id="ad-msg" style="margin-top:12px;font-size:13px;font-weight:600;padding:0 4px"></div>
     </div>
 
     <!-- ADMIN DATA: GESTIONAR OFERTAS -->
@@ -3768,60 +3768,114 @@ async function adProcessFile(input) {
   var msgEl = document.getElementById('ad-msg');
   msgEl.textContent = 'Leyendo archivo...';
   msgEl.style.color = 'var(--muted)';
+
+  // Robust number parser: handles "1.234,56" / "1,234.56" / "1234" / "12,5"
+  var parseNum = function(v) {
+    if (v === null || v === undefined || v === '') return 0;
+    var s = String(v).trim().replace(/\s/g, '');
+    if (!s || s === '-') return 0;
+    // European format: dot as thousands, comma as decimal → "1.234,56"
+    if (/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(s)) s = s.replace(/\./g, '').replace(',', '.');
+    // English format: comma as thousands → "1,234" or "1,234.56"
+    else if (/^\d{1,3}(,\d{3})+(\.\d+)?$/.test(s)) s = s.replace(/,/g, '');
+    // Simple comma as decimal: "12,5"
+    else s = s.replace(',', '.');
+    return parseFloat(s) || 0;
+  };
+
+  // Clean barcode: strip trailing .0, handle scientific notation from Excel
+  var cleanBarcode = function(v) {
+    var s = String(v || '').trim().replace(/\.0+$/, '');
+    if (/[eE]/.test(s)) { try { s = String(Math.round(parseFloat(s))); } catch(ex){} }
+    return s;
+  };
+
   try {
     var data = await file.arrayBuffer();
     var wb = XLSX.read(data, {type: 'array'});
     var ws = wb.Sheets[wb.SheetNames[0]];
-    var rows = XLSX.utils.sheet_to_json(ws, {header: 1, defval: '', raw: false});
+    // raw:false preserves text-formatted cells (barcodes), raw:true preserves numbers.
+    // Use raw:true and clean barcodes explicitly to get best of both.
+    var rows = XLSX.utils.sheet_to_json(ws, {header: 1, defval: '', raw: true});
     if (rows.length < 2) { msgEl.textContent = '❌ El archivo esta vacio o sin datos'; msgEl.style.color = 'var(--red)'; return; }
     var normalize = function(h){ return String(h).trim().toUpperCase().replace(/[ÁÀÄÂ]/g,'A').replace(/[ÉÈËÊ]/g,'E').replace(/[ÍÌÏÎ]/g,'I').replace(/[ÓÒÖÔ]/g,'O').replace(/[ÚÙÜÛ]/g,'U').replace(/Ñ/g,'N'); };
     var headers = rows[0].map(normalize);
+    console.log('Headers detectados:', headers);
+
+    // fi: exact match against list; fiSub: fallback substring match
     var fi = function(names){ return headers.findIndex(function(h){ return names.indexOf(h) !== -1; }); };
+    var fiSub = function(subs){ return headers.findIndex(function(h){ return subs.some(function(s){ return h.indexOf(s) >= 0; }); }); };
+    // fiAny: exact then substring fallback
+    var fiAny = function(names, subs) { var i = fi(names); return i >= 0 ? i : fiSub(subs || names); };
+
     var cadena = document.getElementById('ad-cadena').value;
     AD_RECORDS = [];
 
     if (cadena === 'xtra') {
-      var cFormato  = fi(['FORMATO']);
-      var cTienda   = fi(['TIENDA']);
-      var cMarca    = fi(['MARCA']);
-      var cBarcode  = fi(['CODIGO DE BARRA','CODIGO DE BARRAS','EAN','BARCODE']);
-      var cProducto = fi(['PRODUCTO','DESCRIPCION']);
-      var cInv      = fi(['INVENTARIO','INV']);
-      var cVenta    = fi(['VENTA UNIDADES PROMEDIO','VENTA PROMEDIO','VENTA']);
-      var cCob      = fi(['COBERTURA','COB']);
+      var cFormato  = fiAny(['FORMATO'],['FORMATO','FMT']);
+      var cTienda   = fiAny(['TIENDA'],['TIENDA','SUCURSAL','LOCAL']);
+      var cMarca    = fiAny(['MARCA'],['MARCA','BRAND']);
+      var cBarcode  = fiAny(['CODIGO DE BARRA','CODIGO DE BARRAS','EAN','BARCODE','COD BARRA','CODIGO BARRAS'],['BARCODE','BARRA','EAN','COD BAR']);
+      var cProducto = fiAny(['PRODUCTO','DESCRIPCION','DESC PRODUCTO'],['PRODUCTO','DESCRIPCION','DESC']);
+      var cInv      = fiAny(['INVENTARIO','INV','STOCK'],['INVENTARIO','STOCK','INV']);
+      var cVenta    = fiAny(['VENTA UNIDADES PROMEDIO','VENTA PROMEDIO','VTA PROMEDIO','VENTA UND PROMEDIO','VENTA UNID PROMEDIO','VTA UND PROM'],['VENTA','VTA']);
+      var cCob      = fiAny(['COBERTURA','COB','DIAS COBERTURA','DIAS COB'],['COBERTURA','COB']);
+      console.log('Xtra col indices — tienda:'+cTienda+' prod:'+cProducto+' inv:'+cInv+' venta:'+cVenta+' cob:'+cCob);
       var missing = [];
       if (cTienda < 0) missing.push('TIENDA');
       if (cProducto < 0) missing.push('PRODUCTO');
       if (cInv < 0) missing.push('INVENTARIO');
-      if (missing.length) { msgEl.textContent = '❌ Columnas no encontradas: ' + missing.join(', '); msgEl.style.color = 'var(--red)'; return; }
+      if (missing.length) { msgEl.textContent = '❌ Columnas no encontradas: ' + missing.join(', ') + '. Headers: ' + headers.join(' | '); msgEl.style.color = 'var(--red)'; return; }
       for (var i = 1; i < rows.length; i++) {
         var row = rows[i];
         var tienda = String(row[cTienda]||'').trim();
         if (!tienda) continue;
-        AD_RECORDS.push({ cadena: 'xtra', vendedor: TIENDAS_VENDEDORES[tienda] || '', formato: cFormato>=0?String(row[cFormato]||'').trim():'', tienda: tienda, marca: cMarca>=0?String(row[cMarca]||'').trim():'', barcode: cBarcode>=0?String(row[cBarcode]||'').trim():'', producto: String(row[cProducto]||'').trim(), inventario: cInv>=0?(parseFloat(String(row[cInv]).replace(',','.'))||0):0, venta_promedio: cVenta>=0?(parseFloat(String(row[cVenta]).replace(',','.'))||0):0, cobertura: cCob>=0?(parseFloat(String(row[cCob]).replace(',','.'))||0):0 });
+        AD_RECORDS.push({
+          cadena: 'xtra',
+          vendedor: TIENDAS_VENDEDORES[tienda] || '',
+          formato: cFormato>=0?String(row[cFormato]||'').trim():'',
+          tienda: tienda,
+          marca: cMarca>=0?String(row[cMarca]||'').trim():'',
+          barcode: cBarcode>=0?cleanBarcode(row[cBarcode]):'',
+          producto: String(row[cProducto]||'').trim(),
+          inventario: parseNum(row[cInv]),
+          venta_promedio: cVenta>=0?parseNum(row[cVenta]):0,
+          cobertura: cCob>=0?parseNum(row[cCob]):0
+        });
       }
     } else if (cadena === 'machetazo') {
-      var cTienda   = fi(['TIENDA']);
-      var cMarca    = fi(['MARCA']);
-      var cBarcode  = fi(['CODIGO DE BARRA','CODIGO DE BARRAS','CODIGO','EAN','BARCODE']);
-      var cMaterial = fi(['MATERIAL','COD','CODIGO INTERNO']);
-      var cDesc     = fi(['DESCRIPCION','PRODUCTO']);
-      var cInv      = fi(['INVENTARIO','INV']);
-      var cVenta    = fi(['VENTA PROMEDIO','VENTA UNIDADES PROMEDIO','VENTA']);
-      var cCob      = fi(['COBERTURA','COB']);
+      var cTienda   = fiAny(['TIENDA'],['TIENDA','SUCURSAL','LOCAL']);
+      var cMarca    = fiAny(['MARCA'],['MARCA','BRAND']);
+      var cBarcode  = fiAny(['CODIGO DE BARRA','CODIGO DE BARRAS','CODIGO','EAN','BARCODE','COD BARRA'],['BARCODE','BARRA','EAN','COD BAR','CODIGO']);
+      var cMaterial = fiAny(['MATERIAL','COD','CODIGO INTERNO','CODIGO MATERIAL'],['MATERIAL','MAT']);
+      var cDesc     = fiAny(['DESCRIPCION','PRODUCTO','DESC','NOMBRE PRODUCTO'],['DESCRIPCION','PRODUCTO','DESC']);
+      var cInv      = fiAny(['INVENTARIO','INV','STOCK'],['INVENTARIO','STOCK','INV']);
+      var cVenta    = fiAny(['VENTA PROMEDIO','VENTA UNIDADES PROMEDIO','VTA PROMEDIO','VENTA UND PROMEDIO'],['VENTA','VTA']);
+      var cCob      = fiAny(['COBERTURA','COB','DIAS COBERTURA'],['COBERTURA','COB']);
+      console.log('Machetazo col indices — tienda:'+cTienda+' desc:'+cDesc+' inv:'+cInv+' venta:'+cVenta+' cob:'+cCob);
       var missing = [];
       if (cTienda < 0) missing.push('TIENDA');
       if (cDesc < 0) missing.push('DESCRIPCION');
       if (cInv < 0) missing.push('INVENTARIO');
-      if (missing.length) { msgEl.textContent = '❌ Columnas no encontradas: ' + missing.join(', '); msgEl.style.color = 'var(--red)'; return; }
+      if (missing.length) { msgEl.textContent = '❌ Columnas no encontradas: ' + missing.join(', ') + '. Headers: ' + headers.join(' | '); msgEl.style.color = 'var(--red)'; return; }
       for (var i = 1; i < rows.length; i++) {
         var row = rows[i];
         var tienda = String(row[cTienda]||'').trim();
         if (!tienda) continue;
-        AD_RECORDS.push({ cadena: 'machetazo', vendedor: buscarVendedorMachetazo(tienda), tienda: tienda, marca: cMarca>=0?String(row[cMarca]||'').trim():'', barcode: cBarcode>=0?String(row[cBarcode]||'').trim():'', codigo: cMaterial>=0?String(row[cMaterial]||'').trim():'', producto: String(row[cDesc]||'').trim(), inventario: cInv>=0?(parseFloat(String(row[cInv]).replace(',','.'))||0):0, venta_promedio: cVenta>=0?(parseFloat(String(row[cVenta]).replace(',','.'))||0):0, cobertura: cCob>=0?(parseFloat(String(row[cCob]).replace(',','.'))||0):0 });
+        AD_RECORDS.push({
+          cadena: 'machetazo',
+          vendedor: buscarVendedorMachetazo(tienda),
+          tienda: tienda,
+          marca: cMarca>=0?String(row[cMarca]||'').trim():'',
+          barcode: cBarcode>=0?cleanBarcode(row[cBarcode]):'',
+          codigo: cMaterial>=0?String(row[cMaterial]||'').trim():'',
+          producto: String(row[cDesc]||'').trim(),
+          inventario: parseNum(row[cInv]),
+          venta_promedio: cVenta>=0?parseNum(row[cVenta]):0,
+          cobertura: cCob>=0?parseNum(row[cCob]):0
+        });
       }
     } else {
-      // Sin validación — importar todas las filas con sus headers originales
       for (var i = 1; i < rows.length; i++) {
         var row = rows[i];
         if (!row[0] && !row[1]) continue;
@@ -3831,6 +3885,11 @@ async function adProcessFile(input) {
       }
     }
 
+    if (AD_RECORDS.length === 0) {
+      msgEl.textContent = '⚠️ El archivo fue leído pero no se encontraron filas con datos. Verifica que la primera fila tenga los headers.';
+      msgEl.style.color = '#FF8C00';
+      return;
+    }
     document.getElementById('ad-preview-info').textContent = '📊 ' + AD_RECORDS.length + ' registros listos para subir.';
     document.getElementById('ad-preview-section').style.display = 'block';
     document.getElementById('ad-progress-container').style.display = 'none';
