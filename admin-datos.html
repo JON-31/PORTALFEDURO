@@ -999,6 +999,7 @@ tbody tr:last-child td { border-bottom: none; }
           </div>
         </div>
         <button id="ad-upload-btn" onclick="adSubirLotes()" style="background:var(--red);color:white;border:none;padding:12px 28px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700">&#128190; Subir a Supabase</button>
+        <button onclick="adLimpiarCadena()" style="background:transparent;color:var(--red);border:1px solid var(--red);padding:12px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;margin-left:10px">🗑️ Limpiar cadena</button>
       </div>
       <div id="ad-msg" style="margin-top:12px;font-size:13px;font-weight:600;padding:0 4px"></div>
     </div>
@@ -3758,26 +3759,53 @@ async function adSubirLotes() {
   var progBar = document.getElementById('ad-progress-bar');
   var progLabel = document.getElementById('ad-progress-label');
   btn.disabled = true; progContainer.style.display = 'block'; msgEl.textContent = '';
-  var BATCH = 50; var total = AD_RECORDS.length; var saved = []; var failed = false;
-  for (var i = 0; i < total; i += BATCH) {
-    var lote = AD_RECORDS.slice(i, i + BATCH);
-    var processed = Math.min(i + BATCH, total);
-    progLabel.textContent = 'Procesando ' + processed + ' / ' + total + ' registros...';
-    progBar.style.width = Math.round(processed / total * 100) + '%';
-    saved = saved.concat(lote);
-    try {
-      await sbUpsert('configuracion', {clave: 'inventario', valor: JSON.stringify(saved)});
-    } catch(e) {
-      msgEl.textContent = '⚠️ Error en lote ' + processed + ': ' + e.message + '. Los lotes anteriores fueron guardados.';
-      msgEl.style.color = '#FF8C00'; failed = true; break;
+  var cadenaActual = document.getElementById('ad-cadena').value;
+  // Read existing data to preserve other cadenas
+  progLabel.textContent = 'Leyendo datos existentes...'; progBar.style.width = '20%';
+  var existingData = [];
+  try {
+    var existingRes = await sbGet('/configuracion?clave=eq.inventario&select=valor');
+    if (existingRes && existingRes.length > 0 && existingRes[0].valor) {
+      existingData = JSON.parse(existingRes[0].valor);
+      if (!Array.isArray(existingData)) existingData = [];
     }
-    if (i + BATCH < total) { await new Promise(function(r){ setTimeout(r, 500); }); }
-  }
-  progBar.style.width = '100%'; btn.disabled = false;
-  if (!failed) {
-    progLabel.textContent = '✅ Completado. ' + total + ' registros procesados.';
-    msgEl.textContent = '✅ Completado. ' + total + ' registros subidos a Supabase.';
+  } catch(e) { existingData = []; }
+  // Remove old records for this cadena only, keep all others
+  var otherRecords = existingData.filter(function(r) { return r.cadena !== cadenaActual; });
+  var mergedRecords = otherRecords.concat(AD_RECORDS);
+  progLabel.textContent = 'Guardando ' + AD_RECORDS.length + ' registros (' + cadenaActual + ')...'; progBar.style.width = '60%';
+  try {
+    await sbUpsert('configuracion', {clave: 'inventario', valor: JSON.stringify(mergedRecords)});
+    progBar.style.width = '100%'; btn.disabled = false;
+    progLabel.textContent = '✅ ' + AD_RECORDS.length + ' registros de ' + cadenaActual + ' guardados. ' + otherRecords.length + ' de otras cadenas preservados.';
+    msgEl.textContent = '✅ Completado. ' + AD_RECORDS.length + ' registros subidos a Supabase.';
     msgEl.style.color = 'var(--green)'; AD_RECORDS = [];
+  } catch(e) {
+    progBar.style.width = '100%'; btn.disabled = false;
+    msgEl.textContent = '⚠️ Error: ' + e.message; msgEl.style.color = '#FF8C00';
+  }
+}
+async function adLimpiarCadena() {
+  var cadenaActual = document.getElementById('ad-cadena').value;
+  if (!confirm('¿Eliminar TODOS los registros de cadena "' + cadenaActual + '" de Supabase? Esta acción no se puede deshacer.')) return;
+  var msgEl = document.getElementById('ad-msg');
+  msgEl.textContent = 'Limpiando datos de ' + cadenaActual + '...'; msgEl.style.color = 'var(--muted)';
+  var existingData = [];
+  try {
+    var existingRes = await sbGet('/configuracion?clave=eq.inventario&select=valor');
+    if (existingRes && existingRes.length > 0 && existingRes[0].valor) {
+      existingData = JSON.parse(existingRes[0].valor);
+      if (!Array.isArray(existingData)) existingData = [];
+    }
+  } catch(e) { existingData = []; }
+  var filtered = existingData.filter(function(r) { return r.cadena !== cadenaActual; });
+  var removed = existingData.length - filtered.length;
+  try {
+    await sbUpsert('configuracion', {clave: 'inventario', valor: JSON.stringify(filtered)});
+    msgEl.textContent = '✅ ' + removed + ' registros de ' + cadenaActual + ' eliminados. ' + filtered.length + ' registros de otras cadenas intactos.';
+    msgEl.style.color = 'var(--green)';
+  } catch(e) {
+    msgEl.textContent = '⚠️ Error al limpiar: ' + e.message; msgEl.style.color = '#FF8C00';
   }
 }
 // ── CENTRO DE DESCARGAS ──
