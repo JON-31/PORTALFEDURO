@@ -926,7 +926,7 @@ tbody tr:last-child td { border-bottom: none; }
 
       <!-- ZONA DE PEGAR EXCEL -->
       <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;">
-        <div class="filter-label" style="margin-bottom:8px;">📋 Pegar desde Excel — Columnas esperadas: Bodega | Casa | Descripción | Cantidad | Vence</div>
+        <div class="filter-label" style="margin-bottom:8px;">📋 Pegar desde Excel — Columnas esperadas: Codigo de Barra | Descripcion | UNID / FACT | B8 | M8</div>
         <textarea id="bodega-paste-area" rows="6"
           placeholder="Selecciona las celdas en Excel, copia (Ctrl+C) y pega aquí (Ctrl+V)..."
           style="width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:12px;border-radius:8px;font-size:13px;resize:vertical;font-family:monospace;box-sizing:border-box;"
@@ -943,11 +943,11 @@ tbody tr:last-child td { border-bottom: none; }
           <table id="bodega-input-table">
             <thead>
               <tr>
-                <th>Bodega</th>
-                <th>Casa</th>
-                <th>Descripción</th>
-                <th>Cantidad</th>
-                <th>Vence</th>
+                <th>Codigo de Barra</th>
+                <th>Descripcion</th>
+                <th>UNID / FACT</th>
+                <th>B8</th>
+                <th>M8</th>
                 <th></th>
               </tr>
             </thead>
@@ -982,7 +982,7 @@ tbody tr:last-child td { border-bottom: none; }
       </div>
       <div id="ad-upload-section" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px">
         <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px">2. Sube el archivo</div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Formato esperado: BODEGA | CASA | CODIGO | DESCRIPCION | CANTIDAD | VENCE</div>
+        <div id="ad-formato-desc" style="font-size:12px;color:var(--muted);margin-bottom:14px">Selecciona una cadena para ver las columnas requeridas.</div>
         <label style="display:inline-flex;align-items:center;gap:8px;background:var(--yellow);color:#1a1410;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700">
           &#128194; Subir archivo Excel o CSV
           <input type="file" id="ad-file-input" accept=".xlsx,.csv,.xls" onchange="adProcessFile(this)" style="display:none">
@@ -1133,6 +1133,12 @@ tbody tr:last-child td { border-bottom: none; }
       <div id="gt-seleccion-container" style="display:none;margin-top:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px">
         <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Tareas a asignar (<span id="gt-sel-count">0</span>)</div>
         <div id="gt-seleccion-lista" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;max-height:200px;overflow-y:auto"></div>
+        <div style="margin-bottom:12px">
+          <label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Tienda</label>
+          <select id="gt-tienda-sel" onchange="gtTiendaChanged()" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card2);color:var(--text)">
+            <option value="">— Seleccionar tienda —</option>
+          </select>
+        </div>
         <div style="margin-bottom:12px">
           <label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Vendedor asignado</label>
           <select id="gt-vendedor-sel" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card2);color:var(--text)">
@@ -1423,7 +1429,7 @@ function showView(name, el) {
   if (name === 'inventario') renderInventario();
   if (name === 'auditoria') renderAuditoria();
   if (name === 'ofertas') { renderOfertas(); renderOfertasFromSupabase(); }
-  if (name === 'actualizar-data') cargarDataActual();
+  // actualizar-data view uses its own adCadenaChanged flow — no auto-load needed
   if (name === 'gestionar-ofertas') initGestionOfertas();
   if (name === 'bodega') cargarBodegaData();
   if (name === 'gestionar-tareas') gtInicializar();
@@ -2458,11 +2464,11 @@ function addBodegaRow(data) {
   var body = document.getElementById('bodega-input-body');
   var tr = document.createElement('tr');
   tr.innerHTML =
-    '<td><input type="text" placeholder="Bodega" value="'+(data.bodega||'')+'" style="background:var(--card2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:12px;width:100%;box-sizing:border-box"></td>'+
-    '<td><input type="text" placeholder="Casa/División" value="'+(data.casa||'')+'" style="background:var(--card2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:12px;width:100%;box-sizing:border-box"></td>'+
-    '<td><input type="text" placeholder="Descripción" value="'+(data.descripcion||'')+'" style="background:var(--card2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:12px;width:100%;min-width:180px;box-sizing:border-box"></td>'+
-    '<td><input type="number" placeholder="0" value="'+(data.cantidad||'')+'" style="background:var(--card2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:12px;width:80px;box-sizing:border-box"></td>'+
-    '<td><input type="text" placeholder="MM/AAAA" value="'+(data.vence||'')+'" style="background:var(--card2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:12px;width:100px;box-sizing:border-box"></td>'+
+    '<td><input type="text" placeholder="0000000000000" value="'+(data.codigoBarras||'')+'" style="background:var(--card2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:12px;width:130px;box-sizing:border-box"></td>'+
+    '<td><input type="text" placeholder="Descripcion" value="'+(data.descripcion||'')+'" style="background:var(--card2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:12px;width:100%;min-width:180px;box-sizing:border-box"></td>'+
+    '<td><input type="text" placeholder="UND" value="'+(data.unidFact||'')+'" style="background:var(--card2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:12px;width:70px;box-sizing:border-box"></td>'+
+    '<td><input type="number" placeholder="0" value="'+(data.b8||'')+'" style="background:var(--card2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:12px;width:70px;box-sizing:border-box"></td>'+
+    '<td><input type="number" placeholder="0" value="'+(data.m8||'')+'" style="background:var(--card2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:12px;width:70px;box-sizing:border-box"></td>'+
     '<td><button class="del-row-btn" onclick="this.closest(\'tr\').remove()">✕</button></td>';
   body.appendChild(tr);
 }
@@ -2476,11 +2482,11 @@ function parseBodegaData() {
     var cols = row.split('\t');
     if (!cols[0] || cols[0].trim() === '') return;
     addBodegaRow({
-      bodega: (cols[0]||'').trim(),
-      casa: (cols[1]||'').trim(),
-      descripcion: (cols[2]||'').trim(),
-      cantidad: (cols[3]||'').replace(',','.').trim(),
-      vence: (cols[4]||'').trim(),
+      codigoBarras: (cols[0]||'').trim(),
+      descripcion: (cols[1]||'').trim(),
+      unidFact: (cols[2]||'').trim(),
+      b8: (cols[3]||'').replace(',','.').trim(),
+      m8: (cols[4]||'').replace(',','.').trim(),
     });
     added++;
   });
@@ -2497,11 +2503,11 @@ async function guardarBodegaData() {
     var inputs = tr.querySelectorAll('input');
     if (inputs[0] && inputs[0].value.trim()) {
       datos.push({
-        bodega: inputs[0].value.trim(),
-        casa: inputs[1].value.trim(),
-        descripcion: inputs[2].value.trim(),
-        cantidad: parseFloat(inputs[3].value) || 0,
-        vence: inputs[4].value.trim(),
+        codigoBarras: inputs[0].value.trim(),
+        descripcion: inputs[1].value.trim(),
+        unidFact: inputs[2].value.trim(),
+        b8: parseFloat(inputs[3].value) || 0,
+        m8: parseFloat(inputs[4].value) || 0,
       });
     }
   });
@@ -3726,6 +3732,14 @@ function adCadenaChanged() {
   document.getElementById('ad-preview-section').style.display = 'none';
   AD_RECORDS = [];
   document.getElementById('ad-file-name').textContent = '';
+  var desc = document.getElementById('ad-formato-desc');
+  if (cadena === 'xtra') {
+    desc.textContent = 'Columnas requeridas: FORMATO | TIENDA | MARCA | CODIGO DE BARRA | PRODUCTO | INVENTARIO | VENTA UNIDADES PROMEDIO | COBERTURA';
+  } else if (cadena === 'machetazo') {
+    desc.textContent = 'Columnas requeridas: TIENDA | MARCA | CODIGO DE BARRA | MATERIAL | DESCRIPCION | INVENTARIO | VENTA PROMEDIO | COBERTURA';
+  } else {
+    desc.textContent = 'Sin validación de columnas — todas las filas serán importadas.';
+  }
   document.getElementById('ad-msg').textContent = '';
 }
 async function adProcessFile(input) {
@@ -3741,25 +3755,63 @@ async function adProcessFile(input) {
     var ws = wb.Sheets[wb.SheetNames[0]];
     var rows = XLSX.utils.sheet_to_json(ws, {header: 1, defval: ''});
     if (rows.length < 2) { msgEl.textContent = '❌ El archivo esta vacio o sin datos'; msgEl.style.color = 'var(--red)'; return; }
-    var headers = rows[0].map(function(h){ return String(h).trim().toUpperCase().replace(/[ÁÀÄÂ]/g,'A').replace(/[ÉÈËÊ]/g,'E').replace(/[ÍÌÏÎ]/g,'I').replace(/[ÓÒÖÔ]/g,'O').replace(/[ÚÙÜÛ]/g,'U').replace(/Ñ/g,'N'); });
-    var colBodega = headers.findIndex(function(h){ return h === 'BODEGA'; });
-    var colCasa   = headers.findIndex(function(h){ return h === 'CASA'; });
-    var colCodigo = headers.findIndex(function(h){ return h === 'CODIGO' || h === 'COD' || h === 'EAN'; });
-    var colDesc   = headers.findIndex(function(h){ return h === 'DESCRIPCION' || h === 'DESC'; });
-    var colCant   = headers.findIndex(function(h){ return h === 'CANTIDAD' || h === 'CANT' || h === 'QTY'; });
-    var colVence  = headers.findIndex(function(h){ return h === 'VENCE' || h === 'VENCIMIENTO'; });
-    if (colBodega < 0 || colDesc < 0 || colCant < 0) {
-      msgEl.textContent = '❌ Columnas requeridas no encontradas. El archivo debe tener: BODEGA, DESCRIPCION, CANTIDAD';
-      msgEl.style.color = 'var(--red)'; return;
-    }
+    var normalize = function(h){ return String(h).trim().toUpperCase().replace(/[ÁÀÄÂ]/g,'A').replace(/[ÉÈËÊ]/g,'E').replace(/[ÍÌÏÎ]/g,'I').replace(/[ÓÒÖÔ]/g,'O').replace(/[ÚÙÜÛ]/g,'U').replace(/Ñ/g,'N'); };
+    var headers = rows[0].map(normalize);
+    var fi = function(names){ return headers.findIndex(function(h){ return names.indexOf(h) !== -1; }); };
     var cadena = document.getElementById('ad-cadena').value;
     AD_RECORDS = [];
-    for (var i = 1; i < rows.length; i++) {
-      var row = rows[i];
-      var bodega = String(row[colBodega] || '').trim();
-      if (!bodega) continue;
-      AD_RECORDS.push({ cadena: cadena, bodega: bodega, casa: colCasa>=0?String(row[colCasa]||'').trim():'', codigo: colCodigo>=0?String(row[colCodigo]||'').trim():'', descripcion: colDesc>=0?String(row[colDesc]||'').trim():'', cantidad: colCant>=0?(parseFloat(String(row[colCant]).replace(',','.'))||0):0, vence: colVence>=0?String(row[colVence]||'').trim():'' });
+
+    if (cadena === 'xtra') {
+      var cFormato  = fi(['FORMATO']);
+      var cTienda   = fi(['TIENDA']);
+      var cMarca    = fi(['MARCA']);
+      var cBarcode  = fi(['CODIGO DE BARRA','CODIGO DE BARRAS','EAN','BARCODE']);
+      var cProducto = fi(['PRODUCTO','DESCRIPCION']);
+      var cInv      = fi(['INVENTARIO','INV']);
+      var cVenta    = fi(['VENTA UNIDADES PROMEDIO','VENTA PROMEDIO','VENTA']);
+      var cCob      = fi(['COBERTURA','COB']);
+      var missing = [];
+      if (cTienda < 0) missing.push('TIENDA');
+      if (cProducto < 0) missing.push('PRODUCTO');
+      if (cInv < 0) missing.push('INVENTARIO');
+      if (missing.length) { msgEl.textContent = '❌ Columnas no encontradas: ' + missing.join(', '); msgEl.style.color = 'var(--red)'; return; }
+      for (var i = 1; i < rows.length; i++) {
+        var row = rows[i];
+        var tienda = String(row[cTienda]||'').trim();
+        if (!tienda) continue;
+        AD_RECORDS.push({ cadena: 'xtra', formato: cFormato>=0?String(row[cFormato]||'').trim():'', tienda: tienda, marca: cMarca>=0?String(row[cMarca]||'').trim():'', barcode: cBarcode>=0?String(row[cBarcode]||'').trim():'', producto: String(row[cProducto]||'').trim(), inventario: cInv>=0?(parseFloat(String(row[cInv]).replace(',','.'))||0):0, venta_promedio: cVenta>=0?(parseFloat(String(row[cVenta]).replace(',','.'))||0):0, cobertura: cCob>=0?(parseFloat(String(row[cCob]).replace(',','.'))||0):0 });
+      }
+    } else if (cadena === 'machetazo') {
+      var cTienda   = fi(['TIENDA']);
+      var cMarca    = fi(['MARCA']);
+      var cBarcode  = fi(['CODIGO DE BARRA','CODIGO DE BARRAS','CODIGO','EAN','BARCODE']);
+      var cMaterial = fi(['MATERIAL','COD','CODIGO INTERNO']);
+      var cDesc     = fi(['DESCRIPCION','PRODUCTO']);
+      var cInv      = fi(['INVENTARIO','INV']);
+      var cVenta    = fi(['VENTA PROMEDIO','VENTA UNIDADES PROMEDIO','VENTA']);
+      var cCob      = fi(['COBERTURA','COB']);
+      var missing = [];
+      if (cTienda < 0) missing.push('TIENDA');
+      if (cDesc < 0) missing.push('DESCRIPCION');
+      if (cInv < 0) missing.push('INVENTARIO');
+      if (missing.length) { msgEl.textContent = '❌ Columnas no encontradas: ' + missing.join(', '); msgEl.style.color = 'var(--red)'; return; }
+      for (var i = 1; i < rows.length; i++) {
+        var row = rows[i];
+        var tienda = String(row[cTienda]||'').trim();
+        if (!tienda) continue;
+        AD_RECORDS.push({ cadena: 'machetazo', tienda: tienda, marca: cMarca>=0?String(row[cMarca]||'').trim():'', barcode: cBarcode>=0?String(row[cBarcode]||'').trim():'', codigo: cMaterial>=0?String(row[cMaterial]||'').trim():'', producto: String(row[cDesc]||'').trim(), inventario: cInv>=0?(parseFloat(String(row[cInv]).replace(',','.'))||0):0, venta_promedio: cVenta>=0?(parseFloat(String(row[cVenta]).replace(',','.'))||0):0, cobertura: cCob>=0?(parseFloat(String(row[cCob]).replace(',','.'))||0):0 });
+      }
+    } else {
+      // Sin validación — importar todas las filas con sus headers originales
+      for (var i = 1; i < rows.length; i++) {
+        var row = rows[i];
+        if (!row[0] && !row[1]) continue;
+        var rec = { cadena: cadena };
+        headers.forEach(function(h, idx){ rec[h.toLowerCase().replace(/ /g,'_')] = String(row[idx]||'').trim(); });
+        AD_RECORDS.push(rec);
+      }
     }
+
     document.getElementById('ad-preview-info').textContent = '📊 ' + AD_RECORDS.length + ' registros listos para subir.';
     document.getElementById('ad-preview-section').style.display = 'block';
     document.getElementById('ad-progress-container').style.display = 'none';
@@ -3782,7 +3834,7 @@ async function adSubirLotes() {
     progBar.style.width = Math.round(processed / total * 100) + '%';
     saved = saved.concat(lote);
     try {
-      await sbAdmin('PATCH', '/configuracion?clave=eq.inventario_bodega', {valor: JSON.stringify(saved)});
+      await sbAdmin('PATCH', '/configuracion?clave=eq.inventario', {valor: JSON.stringify(saved)});
     } catch(e) {
       msgEl.textContent = '⚠️ Error en lote ' + processed + ': ' + e.message + '. Los lotes anteriores fueron guardados.';
       msgEl.style.color = '#FF8C00'; failed = true; break;
@@ -3848,8 +3900,9 @@ async function cdCargar(tipo) {
   prevEl.textContent = 'Cargando datos...';
   var data;
   prevEl.innerHTML = '<span style="color:var(--muted);font-size:13px">Cargando...</span>';
-  delDiv.style.display = 'none';
-  dlBtn.disabled = false; dlBtn.style.opacity = '1';
+  document.getElementById('cd-delete-' + tipo).style.display = 'none';
+  document.getElementById('cd-download-' + tipo).disabled = false;
+  document.getElementById('cd-download-' + tipo).style.opacity = '1';
 
   if (tipo === 'tareas') {
     data = await sbAdmin('GET', '/tareas?select=*&order=fecha_asignacion.desc') || [];
@@ -3946,7 +3999,8 @@ document.addEventListener('DOMContentLoaded', function() {
 // ── SUPABASE HELPER FOR ADMIN (vanilla) ──
 async function sbAdmin(method, ep, body) {
   var s = JSON.parse(localStorage.getItem('mars_portal_session')||'{}');
-  var token = s.access_token || ANON_KEY;
+  var now = Math.floor(Date.now()/1000);
+  var token = (s.access_token && s.expires_at && s.expires_at > now) ? s.access_token : ANON_KEY;
   var opts = { method: method, headers: { 'Authorization': 'Bearer ' + token, 'apikey': ANON_KEY, 'Content-Type': 'application/json', 'Prefer': method==='POST'?'return=representation':'return=minimal' } };
   if (body) opts.body = JSON.stringify(body);
   var r = await fetch(SB_URL + '/rest/v1' + ep, opts);
@@ -4048,6 +4102,17 @@ function gtToggleTodos(chkAll) {
   document.querySelectorAll('.gt-chk').forEach(function(c){ c.checked = chkAll.checked; });
   gtActualizarSeleccion();
 }
+function gtTiendaChanged() {
+  var tienda = document.getElementById('gt-tienda-sel').value;
+  if (!tienda) return;
+  var vendedor = TIENDAS_VENDEDORES[tienda];
+  if (vendedor) {
+    var sel = document.getElementById('gt-vendedor-sel');
+    for (var i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].value === vendedor) { sel.selectedIndex = i; break; }
+    }
+  }
+}
 function gtActualizarSeleccion() {
   var checks = document.querySelectorAll('.gt-chk:checked');
   var lista = document.getElementById('gt-seleccion-lista');
@@ -4056,8 +4121,10 @@ function gtActualizarSeleccion() {
   if (checks.length === 0) { cont.style.display = 'none'; lista.innerHTML = ''; return; }
   cont.style.display = 'block';
   lista.innerHTML = '';
+  var tiendas = [];
   checks.forEach(function(chk) {
     var p = JSON.parse(chk.getAttribute('data-prod').replace(/&quot;/g, '"'));
+    if (p.tienda && tiendas.indexOf(p.tienda) < 0) tiendas.push(p.tienda);
     var inv = p.inventario || 0;
     var item = document.createElement('div');
     item.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:rgba(204,0,0,0.08);border:1px solid rgba(204,0,0,0.2);border-radius:6px;font-size:12px';
@@ -4066,6 +4133,10 @@ function gtActualizarSeleccion() {
       '<span style="color:' + (inv === 0 ? '#FF4444' : '#FF8C00') + ';font-weight:700;margin-left:12px">Inv: ' + inv + '</span>';
     lista.appendChild(item);
   });
+  tiendas.sort();
+  var tiendaSel = document.getElementById('gt-tienda-sel');
+  tiendaSel.innerHTML = '<option value="">— Seleccionar tienda —</option>' + tiendas.map(function(t){ return '<option value="'+t+'">'+t+'</option>'; }).join('');
+  if (tiendas.length === 1) { tiendaSel.value = tiendas[0]; gtTiendaChanged(); }
 }
 async function gtSubirTareas() {
   var checks = document.querySelectorAll('.gt-chk:checked');
@@ -4091,6 +4162,7 @@ async function gtSubirTareas() {
     document.getElementById('gt-seleccion-lista').innerHTML = '';
     document.getElementById('gt-sel-count').textContent = '0';
     document.getElementById('gt-vendedor-sel').value = '';
+    document.getElementById('gt-tienda-sel').innerHTML = '<option value="">— Seleccionar tienda —</option>';
   } catch(e) {
     msgEl.textContent = '❌ Error: ' + e.message;
     msgEl.style.color = 'var(--red)';
