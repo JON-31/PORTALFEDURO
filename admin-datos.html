@@ -2415,17 +2415,17 @@ const TIPOS_PEDIDO=[
 ];
 
 const MACHETAZO_TIENDAS=[
-  {n:'COMPANIA GOLY,S.A. CALIDONIA',v:'CECILIA VALDES',col:7,colLetter:'G',store:'CALIDONIA'},
-  {n:'COMPANIA GOLY S A ARRAIJAN',v:'ALEXIS VAZQUEZ',col:10,colLetter:'J',store:'ARRAIJAN'},
-  {n:'COMPANIA GOLY S A COSTA SUR',v:'MANUEL VALDEZ',col:17,colLetter:'Q',store:'COSTA SUR'},
-  {n:'COMPANIA GOLY, S.A. CORONADO',v:'EDUARDO LÓPEZ',col:15,colLetter:'O',store:'CORONADO'},
-  {n:'COMPANIA GOLY,S.A. BRISAS DEL GOLF',v:'ELEIDI FRANCO',col:18,colLetter:'R',store:'BRISAS'},
-  {n:'COMPANIA GOLY,S.A. NUEVO TOCUMEN',v:'ADESSA COOK',col:19,colLetter:'S',store:'NUEVO TOCUMEN'},
-  {n:'COMPANIA GOLY,S.A. EL DORADO',v:'IRVING TORRES',col:22,colLetter:'V',store:'DORADO'},
-  {n:'COMPANIA GOLY S A TOCUMEN',v:'BELTRAN FRANCO GONZALEZ',col:9,colLetter:'I',store:'TOCUMEN'},
-  {n:'COMPANIA GOLY S A S MIGUELITO',v:'JAAZIEL GONZALEZ',col:8,colLetter:'H',store:'SAN MIGUELITO'},
-  {n:'COMPANIA GOLY-MACHETAZO EXPRESS 3',v:'SAMUEL BARRIA',col:14,colLetter:'N',store:'METRO MALL'},
-  {n:'COMPANIA GOLY S A OJO DE AGUA',v:'ERICK RUIZ',col:21,colLetter:'U',store:'VIA ESPAÑA'},
+  {n:'GOLY CALIDONIA',v:'CECILIA VALDES',col:7,colLetter:'G',store:'CALIDONIA'},
+  {n:'GOLY ARRAIJAN',v:'ALEXIS VAZQUEZ',col:10,colLetter:'J',store:'ARRAIJAN'},
+  {n:'GOLY COSTA SUR',v:'MANUEL VALDEZ',col:17,colLetter:'Q',store:'COSTA SUR'},
+  {n:'GOLY CORONADO',v:'EDUARDO LÓPEZ',col:15,colLetter:'O',store:'CORONADO'},
+  {n:'GOLY BRISAS',v:'ELEIDI FRANCO',col:18,colLetter:'R',store:'BRISAS'},
+  {n:'GOLY NUEVO TOCUMEN',v:'ADESSA COOK',col:19,colLetter:'S',store:'NUEVO TOCUMEN'},
+  {n:'GOLY EL DORADO',v:'IRVING TORRES',col:22,colLetter:'V',store:'DORADO'},
+  {n:'GOLY TOCUMEN',v:'BELTRAN FRANCO GONZALEZ',col:9,colLetter:'I',store:'TOCUMEN'},
+  {n:'GOLY SAN MIGUELITO',v:'JAAZIEL GONZALEZ',col:8,colLetter:'H',store:'SAN MIGUELITO'},
+  {n:'GOLY METRO MALL',v:'SAMUEL BARRIA',col:14,colLetter:'N',store:'METRO MALL'},
+  {n:'GOLY OJO DE AGUA',v:'ERICK RUIZ',col:21,colLetter:'U',store:'VIA ESPAÑA'},
 ];
 
 const MACHETAZO_PRODUCTOS=[
@@ -3700,14 +3700,26 @@ async function adProcessFile(input) {
       if (cDesc < 0) missing.push('DESCRIPCION');
       if (cInv < 0) missing.push('INVENTARIO');
       if (missing.length) { msgEl.textContent = '❌ Columnas no encontradas: ' + missing.join(', ') + '. Headers: ' + headers.join(' | '); msgEl.style.color = 'var(--red)'; return; }
+      var MACHETAZO_NOMBRE_MAP={
+        'SAN MIGUELITO':'GOLY SAN MIGUELITO','S MIGUELITO':'GOLY SAN MIGUELITO',
+        'ARRAIJAN':'GOLY ARRAIJAN','TOCUMEN':'GOLY TOCUMEN',
+        'NUEVO TOCUMEN':'GOLY NUEVO TOCUMEN','CALIDONIA':'GOLY CALIDONIA',
+        'METRO MALL':'GOLY METRO MALL','OJO DE AGUA':'GOLY OJO DE AGUA',
+        'COSTA SUR':'GOLY COSTA SUR','BRISAS':'GOLY BRISAS','BRISAS DEL GOLF':'GOLY BRISAS',
+        'CORONADO':'GOLY CORONADO','EL DORADO':'GOLY EL DORADO','DORADO':'GOLY EL DORADO',
+        'SANTIAGO':'GOLY SANTIAGO','PENONOME':'GOLY PENONOME','CHITRE':'GOLY CHITRE',
+        'SANTA ANA':'GOLY SANTA ANA','SUPERPOLLMART':'GOLY SUPERPOLLMART',
+        'EXPRESS VESPANA':'GOLY EXPRESS VESPAÑA','EXPRESS VESPAÑA':'GOLY EXPRESS VESPAÑA',
+      };
       for (var i = 1; i < rows.length; i++) {
         var row = rows[i];
         var tienda = String(row[cTienda]||'').trim();
         if (!tienda) continue;
+        var tiendaGoly = MACHETAZO_NOMBRE_MAP[tienda.toUpperCase()] || tienda;
         AD_RECORDS.push({
           cadena: 'machetazo',
           vendedor: buscarVendedorMachetazo(tienda),
-          tienda: tienda,
+          tienda: tiendaGoly,
           marca: cMarca>=0?String(row[cMarca]||'').trim():'',
           barcode: cBarcode>=0?cleanBarcode(row[cBarcode]):'',
           codigo: cMaterial>=0?String(row[cMaterial]||'').trim():'',
