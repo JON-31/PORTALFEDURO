@@ -1001,7 +1001,7 @@ tbody tr:last-child td { border-bottom: none; }
         <button id="ad-upload-btn" onclick="adSubirLotes()" style="background:var(--red);color:white;border:none;padding:12px 28px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:700">&#128190; Subir a Supabase</button>
         <div id="ad-msg" style="margin-top:12px;font-size:13px;font-weight:600"></div>
       </div>
-    </div></div>
+    </div>
 
     <!-- ADMIN DATA: GESTIONAR OFERTAS -->
     <div class="view" id="view-gestionar-ofertas">
@@ -1091,80 +1091,138 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
 
     <div class="view" id="view-gestionar-tareas">
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px">
-          <div style="margin-bottom:16px">
+      <div class="section-header">
+        <div class="section-title">Gestionar Tareas</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div>
             <label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Cadena</label>
             <select id="gt-cadena" onchange="gtCadenaChanged()" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card2);color:var(--text)">
               <option value="">— Seleccionar cadena —</option>
-              <option value="xtra">Supermercados Xtra / Xtra</option>
-              <option value="s99">Super 99 / Importadora Ricamar</option>
-              <option value="machetazo">El Machetazo / Goly</option>
-              <option value="supercarnes">Super Carnes / Importadora Virzi</option>
+              <option value="s99">Super 99 / Ricamar</option>
+              <option value="machetazo">Machetazo / Goly</option>
+              <option value="xtra">Xtra</option>
+              <option value="supercarnes">Super Carnes / Virzi</option>
             </select>
           </div>
-          <div style="margin-bottom:16px">
-            <label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Tienda</label>
-            <select id="gt-tienda" onchange="gtTiendaChanged()" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card2);color:var(--text)">
-              <option value="">— Seleccionar tienda —</option>
+          <div>
+            <label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Estado de Inventario</label>
+            <select id="gt-estado" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card2);color:var(--text)">
+              <option value="">Todos</option>
+              <option value="agotado">Agotado (= 0)</option>
+              <option value="critico">Crítico (1–5)</option>
+              <option value="insuficiente">Insuficiente (6–15)</option>
+              <option value="optimo">Óptimo (16–50)</option>
+              <option value="sobrestock">Sobrestock (&gt; 50)</option>
             </select>
           </div>
-          <div id="gt-productos-container"></div>
-          <div id="gt-seleccion-container" style="display:none;margin-top:20px">
-            <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Tareas a asignar</div>
-            <div id="gt-seleccion-lista" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px"></div>
-            <div style="margin-bottom:12px">
-              <label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Vendedor asignado</label>
-              <select id="gt-vendedor-sel" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card2);color:var(--text)">
-                <option value="">— Seleccionar vendedor —</option>
-              </select>
-            </div>
-            <button onclick="gtSubirTareas()" style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;width:100%">📋 Subir Tareas</button>
-          </div>
-          <div id="gt-msg" style="margin-top:12px;font-size:13px;font-weight:600"></div>
         </div>
-      </div>
-      <!-- CENTRO DE DESCARGAS -->
-      <div class="view" id="view-centro-descargas">
-        <div style="display:flex;flex-direction:column;gap:16px">
-
-          <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px">
-              <div><div style="font-weight:700;font-size:15px;margin-bottom:4px">📋 Tareas</div><div style="font-size:12px;color:var(--muted)">Historial de tareas asignadas y completadas</div></div>
-              <button id="cd-download-tareas" onclick="cdDescargar('tareas')" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer">📥 Descargar Excel</button>
-            </div>
-            <div id="cd-preview-tareas" style="font-size:13px;color:var(--muted)">Cargando...</div>
-            <div id="cd-delete-tareas" style="display:none;margin-top:12px">
-              <button onclick="cdEliminar('tareas')" style="background:transparent;color:var(--red);border:1px solid var(--red);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer">🗑️ Eliminar data</button>
-            </div>
+        <div id="gt-tiendas-container" style="display:none;margin-bottom:16px">
+          <label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Tiendas <span id="gt-tiendas-count" style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px">(0 seleccionadas)</span></label>
+          <div style="margin-bottom:8px;display:flex;gap:8px">
+            <button type="button" onclick="gtSeleccionarTodas(true)" style="font-size:11px;padding:4px 10px;background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer">Todas</button>
+            <button type="button" onclick="gtSeleccionarTodas(false)" style="font-size:11px;padding:4px 10px;background:var(--card2);border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer">Ninguna</button>
           </div>
-
-          <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px">
-              <div><div style="font-weight:700;font-size:15px;margin-bottom:4px">📦 Inventario</div><div style="font-size:12px;color:var(--muted)">Reportes de inventario enviados por vendedores</div></div>
-              <button id="cd-download-inventario" onclick="cdDescargar('inventario')" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer">📥 Descargar Excel</button>
-            </div>
-            <div id="cd-preview-inventario" style="font-size:13px;color:var(--muted)">Cargando...</div>
-            <div id="cd-delete-inventario" style="display:none;margin-top:12px">
-              <button onclick="cdEliminar('inventario')" style="background:transparent;color:var(--red);border:1px solid var(--red);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer">🗑️ Eliminar data</button>
-            </div>
-          </div>
-
-          <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px">
-              <div><div style="font-weight:700;font-size:15px;margin-bottom:4px">🛒 Machetazo</div><div style="font-size:12px;color:var(--muted)">Pedidos Machetazo enviados por vendedores</div></div>
-              <button id="cd-download-machetazo" onclick="cdDescargar('machetazo')" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer">📥 Descargar Excel</button>
-            </div>
-            <div id="cd-preview-machetazo" style="font-size:13px;color:var(--muted)">Cargando...</div>
-            <div id="cd-delete-machetazo" style="display:none;margin-top:12px">
-              <button onclick="cdEliminar('machetazo')" style="background:transparent;color:var(--red);border:1px solid var(--red);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer">🗑️ Eliminar data</button>
-            </div>
-          </div>
-
+          <div id="gt-tiendas-checks" style="display:flex;flex-wrap:wrap;gap:8px;max-height:160px;overflow-y:auto;padding:10px;background:var(--card2);border:1px solid var(--border);border-radius:8px"></div>
         </div>
+        <button onclick="gtBuscarProductos()" style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:10px 24px;font-size:13px;font-weight:700;cursor:pointer">🔍 Buscar Productos</button>
+        <div id="gt-msg" style="margin-top:10px;font-size:13px;font-weight:600"></div>
       </div>
+      <div id="gt-productos-container"></div>
+      <div id="gt-seleccion-container" style="display:none;margin-top:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Tareas a asignar (<span id="gt-sel-count">0</span>)</div>
+        <div id="gt-seleccion-lista" style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;max-height:200px;overflow-y:auto"></div>
+        <div style="margin-bottom:12px">
+          <label style="display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Vendedor asignado</label>
+          <select id="gt-vendedor-sel" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card2);color:var(--text)">
+            <option value="">— Seleccionar vendedor —</option>
+          </select>
+        </div>
+        <button onclick="gtSubirTareas()" style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;width:100%">📋 Subir Tareas</button>
       </div>
     </div>
+      <!-- CENTRO DE DESCARGAS -->
+      <div class="view" id="view-centro-descargas">
+        <div class="section-header">
+          <div class="section-title">Centro de Descargas</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
 
+          <!-- TAREAS -->
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+            <div onclick="cdToggle('tareas')" style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;cursor:pointer;user-select:none">
+              <div style="display:flex;align-items:center;gap:12px">
+                <span style="font-size:20px">📋</span>
+                <div>
+                  <div style="font-weight:700;font-size:14px">Tareas</div>
+                  <div style="font-size:12px;color:var(--muted)">Historial de tareas asignadas y completadas</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px">
+                <span id="cd-count-tareas" style="font-size:12px;background:var(--card2);padding:3px 10px;border-radius:10px;color:var(--muted)">—</span>
+                <span id="cd-arrow-tareas" style="font-size:18px;color:var(--muted);display:inline-block;transition:transform .2s">›</span>
+              </div>
+            </div>
+            <div id="cd-body-tareas" style="display:none;border-top:1px solid var(--border);padding:16px 20px">
+              <div id="cd-preview-tareas" style="font-size:13px;color:var(--muted)">Cargando...</div>
+              <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;align-items:center">
+                <button id="cd-download-tareas" onclick="cdDescargar('tareas')" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer">📥 Descargar Excel</button>
+                <button id="cd-delete-tareas" onclick="cdEliminar('tareas')" style="display:none;background:transparent;color:var(--red);border:1px solid var(--red);border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer">🗑️ Eliminar Data</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- INVENTARIO -->
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+            <div onclick="cdToggle('inventario')" style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;cursor:pointer;user-select:none">
+              <div style="display:flex;align-items:center;gap:12px">
+                <span style="font-size:20px">📦</span>
+                <div>
+                  <div style="font-weight:700;font-size:14px">Inventario</div>
+                  <div style="font-size:12px;color:var(--muted)">Reportes de inventario enviados por vendedores</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px">
+                <span id="cd-count-inventario" style="font-size:12px;background:var(--card2);padding:3px 10px;border-radius:10px;color:var(--muted)">—</span>
+                <span id="cd-arrow-inventario" style="font-size:18px;color:var(--muted);display:inline-block;transition:transform .2s">›</span>
+              </div>
+            </div>
+            <div id="cd-body-inventario" style="display:none;border-top:1px solid var(--border);padding:16px 20px">
+              <div id="cd-preview-inventario" style="font-size:13px;color:var(--muted)">Cargando...</div>
+              <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;align-items:center">
+                <button id="cd-download-inventario" onclick="cdDescargar('inventario')" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer">📥 Descargar Excel</button>
+                <button id="cd-delete-inventario" onclick="cdEliminar('inventario')" style="display:none;background:transparent;color:var(--red);border:1px solid var(--red);border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer">🗑️ Eliminar Data</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- MACHETAZO -->
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+            <div onclick="cdToggle('machetazo')" style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;cursor:pointer;user-select:none">
+              <div style="display:flex;align-items:center;gap:12px">
+                <span style="font-size:20px">🛒</span>
+                <div>
+                  <div style="font-weight:700;font-size:14px">Machetazo</div>
+                  <div style="font-size:12px;color:var(--muted)">Pedidos Machetazo enviados por vendedores</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px">
+                <span id="cd-count-machetazo" style="font-size:12px;background:var(--card2);padding:3px 10px;border-radius:10px;color:var(--muted)">—</span>
+                <span id="cd-arrow-machetazo" style="font-size:18px;color:var(--muted);display:inline-block;transition:transform .2s">›</span>
+              </div>
+            </div>
+            <div id="cd-body-machetazo" style="display:none;border-top:1px solid var(--border);padding:16px 20px">
+              <div id="cd-preview-machetazo" style="font-size:13px;color:var(--muted)">Cargando...</div>
+              <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;align-items:center">
+                <button id="cd-download-machetazo" onclick="cdDescargar('machetazo')" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer">📥 Descargar Excel</button>
+                <button id="cd-delete-machetazo" onclick="cdEliminar('machetazo')" style="display:none;background:transparent;color:var(--red);border:1px solid var(--red);border-radius:8px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer">🗑️ Eliminar Data</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
   </div>
 </div>
 <script>
@@ -3740,67 +3798,106 @@ async function adSubirLotes() {
 }
 // ── CENTRO DE DESCARGAS ──
 var CD_DATA = {};
+var CD_OPEN = null;
+
+function cdToggle(tipo) {
+  var tipos = ['tareas','inventario','machetazo'];
+  if (CD_OPEN === tipo) {
+    document.getElementById('cd-body-' + tipo).style.display = 'none';
+    document.getElementById('cd-arrow-' + tipo).style.transform = 'rotate(0deg)';
+    CD_OPEN = null;
+    return;
+  }
+  tipos.forEach(function(t) {
+    document.getElementById('cd-body-' + t).style.display = 'none';
+    document.getElementById('cd-arrow-' + t).style.transform = 'rotate(0deg)';
+  });
+  document.getElementById('cd-body-' + tipo).style.display = 'block';
+  document.getElementById('cd-arrow-' + tipo).style.transform = 'rotate(90deg)';
+  CD_OPEN = tipo;
+  if (!CD_DATA[tipo]) cdCargar(tipo);
+}
 
 async function cdInicializar() {
-  cdCargar('tareas');
-  cdCargar('inventario');
-  cdCargar('machetazo');
+  CD_DATA = {};
+  CD_OPEN = null;
+  ['tareas','inventario','machetazo'].forEach(function(t) {
+    document.getElementById('cd-body-' + t).style.display = 'none';
+    document.getElementById('cd-arrow-' + t).style.transform = 'rotate(0deg)';
+    document.getElementById('cd-count-' + t).textContent = '—';
+    document.getElementById('cd-preview-' + t).textContent = 'Toca para cargar.';
+    document.getElementById('cd-delete-' + t).style.display = 'none';
+  });
+  cdCargarConteo('tareas');
+  cdCargarConteo('inventario');
+  cdCargarConteo('machetazo');
+}
+
+async function cdCargarConteo(tipo) {
+  var ep = tipo === 'tareas'
+    ? '/tareas?select=id'
+    : tipo === 'inventario'
+      ? '/reportes?mes_vencimiento=not.is.null&select=id'
+      : '/reportes?mes_vencimiento=is.null&select=id';
+  var data = await sbAdmin('GET', ep) || [];
+  document.getElementById('cd-count-' + tipo).textContent = data.length + ' reg.';
 }
 
 async function cdCargar(tipo) {
   var prevEl  = document.getElementById('cd-preview-' + tipo);
-  var dlBtn   = document.getElementById('cd-download-' + tipo);
-  var delDiv  = document.getElementById('cd-delete-' + tipo);
+  prevEl.textContent = 'Cargando datos...';
+  var data;
   prevEl.innerHTML = '<span style="color:var(--muted);font-size:13px">Cargando...</span>';
   delDiv.style.display = 'none';
   dlBtn.disabled = false; dlBtn.style.opacity = '1';
 
-  var data = [];
   if (tipo === 'tareas') {
     data = await sbAdmin('GET', '/tareas?select=*&order=fecha_asignacion.desc') || [];
   } else if (tipo === 'inventario') {
-    data = await sbAdmin('GET', '/reportes?tipo_pedido=is.null&select=vendedor,tienda,producto,cantidad,mes_vencimiento,monto_estimado&order=id.desc') || [];
-  } else if (tipo === 'machetazo') {
-    data = await sbAdmin('GET', '/reportes?tipo_pedido=not.is.null&select=vendedor,tienda,tipo_pedido,codigo,barcode,producto,cantidad&order=id.desc') || [];
+    data = await sbAdmin('GET', '/reportes?mes_vencimiento=not.is.null&select=vendedor,tienda,producto,cantidad,mes_vencimiento,monto_estimado&order=id.desc') || [];
+  } else {
+    data = await sbAdmin('GET', '/reportes?mes_vencimiento=is.null&select=vendedor,tienda,tipo,codigo,barcode,producto,cantidad&order=id.desc') || [];
   }
   CD_DATA[tipo] = data;
+  document.getElementById('cd-count-' + tipo).textContent = data.length + ' reg.';
 
   if (!data.length) {
-    prevEl.innerHTML = '<span style="color:var(--muted);font-size:13px">No hay registros disponibles para descargar</span>';
-    dlBtn.disabled = true; dlBtn.style.opacity = '0.5';
+    prevEl.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px">No hay registros disponibles</div>';
+    document.getElementById('cd-download-' + tipo).disabled = true;
+    document.getElementById('cd-download-' + tipo).style.opacity = '0.5';
     return;
   }
+  document.getElementById('cd-download-' + tipo).disabled = false;
+  document.getElementById('cd-download-' + tipo).style.opacity = '1';
 
   var cols, labels;
   if (tipo === 'tareas') {
-    cols   = ['id','vendedor_nombre','tienda','producto','inventario_sistema','estado','fecha_asignacion'];
-    labels = ['#','Vendedor','Tienda','Producto','Inv. Sistema','Estado','Fecha'];
+    cols   = ['vendedor_nombre','tienda','producto','inventario_sistema','estado','fecha_asignacion'];
+    labels = ['Vendedor','Tienda','Producto','Inv. Sistema','Estado','Fecha'];
   } else if (tipo === 'inventario') {
     cols   = ['vendedor','tienda','producto','cantidad','mes_vencimiento','monto_estimado'];
     labels = ['Vendedor','Tienda','Producto','Cantidad','Mes Vencimiento','Precio Total'];
   } else {
-    cols   = ['vendedor','tienda','tipo_pedido','codigo','barcode','producto','cantidad'];
+    cols   = ['vendedor','tienda','tipo','codigo','barcode','producto','cantidad'];
     labels = ['Vendedor','Tienda','Tipo de Pedido','Material','Código de Barra','Producto','Cantidad'];
   }
 
-  var th = labels.map(function(l){ return '<th style="text-align:left;padding:5px 8px;border-bottom:1px solid var(--border);color:var(--muted);font-weight:600;font-size:11px;white-space:nowrap">'+l+'</th>'; }).join('');
-  var preview = data.slice(0, 8);
-  var tbody = preview.map(function(row){
-    var tds = cols.map(function(c){ return '<td style="padding:5px 8px;border-bottom:1px solid rgba(90,61,0,0.25);color:var(--text);font-size:12px;white-space:nowrap">'+(row[c]!==null&&row[c]!==undefined?row[c]:'—')+'</td>'; }).join('');
-    return '<tr>'+tds+'</tr>';
+  var th = labels.map(function(l){ return '<th style="padding:7px 10px;text-align:left;font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap;border-bottom:1px solid var(--border)">'+l+'</th>'; }).join('');
+  var visible = data.slice(0, 50);
+  var tbody = visible.map(function(row){
+    return '<tr>' + cols.map(function(c){ return '<td style="padding:6px 10px;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.04);white-space:nowrap">'+(row[c]!=null?row[c]:'—')+'</td>'; }).join('') + '</tr>';
   }).join('');
-  var extra = data.length > 8 ? '<tr><td colspan="'+cols.length+'" style="padding:5px 8px;color:var(--muted);font-size:11px;text-align:center">… y '+(data.length-8)+' registros más</td></tr>' : '';
-  prevEl.innerHTML = '<div style="overflow-x:auto;margin-top:4px"><table style="width:100%;border-collapse:collapse"><thead><tr>'+th+'</tr></thead><tbody>'+tbody+extra+'</tbody></table></div><div style="margin-top:6px;font-size:11px;color:var(--muted)">'+data.length+' registros totales</div>';
+  var extra = data.length > 50 ? '<tr><td colspan="'+cols.length+'" style="padding:8px 10px;font-size:11px;color:var(--muted);text-align:center">…y '+(data.length-50)+' registros más</td></tr>' : '';
+  prevEl.innerHTML = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr>'+th+'</tr></thead><tbody>'+tbody+extra+'</tbody></table></div>';
 }
 
 async function cdDescargar(tipo) {
   var data = CD_DATA[tipo];
   if (!data || data.length === 0) { alert('No hay registros disponibles para descargar'); return; }
-
   var mappedData, headers, filename;
   if (tipo === 'tareas') {
-    headers = ['ID','Vendedor','Tienda','Producto','Inv. Sistema','Inv. Real','Estado','Fecha Asignacion','Fecha Completada'];
-    mappedData = data.map(function(r){ return { 'ID':r.id, 'Vendedor':r.vendedor_nombre, 'Tienda':r.tienda, 'Producto':r.producto, 'Inv. Sistema':r.inventario_sistema, 'Inv. Real':r.inventario_real, 'Estado':r.estado, 'Fecha Asignacion':r.fecha_asignacion, 'Fecha Completada':r.fecha_completada }; });
+    headers = ['Vendedor','Tienda','Producto','Inv. Sistema','Estado','Fecha'];
+    mappedData = data.map(function(r){ return { 'Vendedor':r.vendedor_nombre, 'Tienda':r.tienda, 'Producto':r.producto, 'Inv. Sistema':r.inventario_sistema, 'Estado':r.estado, 'Fecha':r.fecha_asignacion }; });
     filename = 'tareas_' + new Date().toISOString().split('T')[0] + '.xlsx';
   } else if (tipo === 'inventario') {
     headers = ['Vendedor','Tienda','Producto','Cantidad','Mes Vencimiento','Precio Total'];
@@ -3808,15 +3905,14 @@ async function cdDescargar(tipo) {
     filename = 'inventario_' + new Date().toISOString().split('T')[0] + '.xlsx';
   } else {
     headers = ['Vendedor','Tienda','Tipo de Pedido','Material','Código de Barra','Producto','Cantidad'];
-    mappedData = data.map(function(r){ return { 'Vendedor':r.vendedor, 'Tienda':r.tienda, 'Tipo de Pedido':r.tipo_pedido, 'Material':r.codigo, 'Código de Barra':r.barcode, 'Producto':r.producto, 'Cantidad':r.cantidad }; });
+    mappedData = data.map(function(r){ return { 'Vendedor':r.vendedor, 'Tienda':r.tienda, 'Tipo de Pedido':r.tipo, 'Material':r.codigo, 'Código de Barra':r.barcode, 'Producto':r.producto, 'Cantidad':r.cantidad }; });
     filename = 'machetazo_' + new Date().toISOString().split('T')[0] + '.xlsx';
   }
-
   var ws = XLSX.utils.json_to_sheet(mappedData, { header: headers });
   var wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, tipo);
+  XLSX.utils.book_append_sheet(wb, ws, tipo.charAt(0).toUpperCase() + tipo.slice(1));
   XLSX.writeFile(wb, filename);
-  document.getElementById('cd-delete-' + tipo).style.display = 'block';
+  document.getElementById('cd-delete-' + tipo).style.display = 'inline-block';
 }
 
 async function cdEliminar(tipo) {
@@ -3824,10 +3920,12 @@ async function cdEliminar(tipo) {
   if (tipo === 'tareas') {
     await sbAdmin('DELETE', '/tareas?id=gte.0');
   } else if (tipo === 'inventario') {
-    await sbAdmin('DELETE', '/reportes?tipo_pedido=is.null');
-  } else if (tipo === 'machetazo') {
-    await sbAdmin('DELETE', '/reportes?tipo_pedido=not.is.null');
+    await sbAdmin('DELETE', '/reportes?mes_vencimiento=not.is.null');
+  } else {
+    await sbAdmin('DELETE', '/reportes?mes_vencimiento=is.null');
   }
+  CD_DATA[tipo] = null;
+  document.getElementById('cd-delete-' + tipo).style.display = 'none';
   alert('✅ Data eliminada');
   cdCargar(tipo);
 }
@@ -3858,78 +3956,127 @@ async function sbAdmin(method, ep, body) {
 // ── GESTIONAR TAREAS (vanilla) ──
 var GT_INV_DATA = [];
 var GT_CADENAS = {
-  xtra: function(d) { return /T\d+/i.test(d.tienda || '') || /^X/i.test(d.formato || ''); },
-  s99: function(d) { return /super\s*99|ricamar|sm\s*rey/i.test(d.tienda || '') || /^(S9|RE)/i.test(d.formato || ''); },
-  machetazo: function(d) { return /machetazo|goly/i.test(d.tienda || '') || /^(GM|GL|MA)/i.test(d.formato || ''); },
-  supercarnes: function(d) { return /super\s*carne|virzi/i.test(d.tienda || '') || /^(SC|VI)/i.test(d.formato || ''); }
+  xtra:       function(d) { return /T\d+/i.test(d.tienda || '') || /^X/i.test(d.formato || ''); },
+  s99:        function(d) { return /super\s*99|ricamar|sm\s*rey/i.test(d.tienda || '') || /^(S9|RE)/i.test(d.formato || ''); },
+  machetazo:  function(d) { return /machetazo|goly/i.test(d.tienda || '') || /^(GM|GL|MA)/i.test(d.formato || ''); },
+  supercarnes:function(d) { return /super\s*carne|virzi/i.test(d.tienda || '') || /^(SC|VI)/i.test(d.formato || ''); }
 };
+function gtEstadoMatch(d, estado) {
+  var inv = d.inventario || 0;
+  if (!estado) return true;
+  if (estado === 'agotado')     return inv === 0;
+  if (estado === 'critico')     return inv > 0 && inv <= 5;
+  if (estado === 'insuficiente')return inv > 5 && inv <= 15;
+  if (estado === 'optimo')      return inv > 15 && inv <= 50;
+  if (estado === 'sobrestock')  return inv > 50;
+  return true;
+}
 function gtCadenaChanged() {
-  var tSel = document.getElementById('gt-tienda');
-  tSel.innerHTML = '<option value="">— Seleccionar tienda —</option>';
+  var cadena = document.getElementById('gt-cadena').value;
+  var cont = document.getElementById('gt-tiendas-container');
+  var checks = document.getElementById('gt-tiendas-checks');
   document.getElementById('gt-productos-container').innerHTML = '';
   document.getElementById('gt-seleccion-container').style.display = 'none';
   document.getElementById('gt-msg').textContent = '';
-  var cadena = document.getElementById('gt-cadena').value;
-  if (!cadena) return;
+  if (!cadena) { cont.style.display = 'none'; return; }
   var filtro = GT_CADENAS[cadena];
   var tiendas = [...new Set(GT_INV_DATA.filter(filtro).map(function(d){ return d.tienda; }).filter(Boolean))].sort();
   if (tiendas.length === 0) {
-    document.getElementById('gt-productos-container').innerHTML = '<div style="color:var(--muted);padding:16px;font-size:13px">No hay tiendas para esta cadena. Actualiza el inventario primero.</div>';
+    cont.style.display = 'none';
+    document.getElementById('gt-msg').textContent = '⚠️ No hay tiendas para esta cadena. Ve a Actualizar Data primero.';
+    document.getElementById('gt-msg').style.color = '#FF8C00';
     return;
   }
-  tiendas.forEach(function(t){ tSel.innerHTML += '<option value="' + t + '">' + t + '</option>'; });
+  checks.innerHTML = tiendas.map(function(t) {
+    return '<label style="display:flex;align-items:center;gap:6px;font-size:12px;padding:5px 9px;background:var(--card);border:1px solid var(--border);border-radius:6px;cursor:pointer;white-space:nowrap">' +
+      '<input type="checkbox" class="gt-tienda-chk" value="' + t.replace(/"/g,'&quot;') + '" onchange="gtActualizarConteoTiendas()"> ' + t + '</label>';
+  }).join('');
+  cont.style.display = 'block';
+  gtActualizarConteoTiendas();
 }
-function gtTiendaChanged() {
+function gtSeleccionarTodas(sel) {
+  document.querySelectorAll('.gt-tienda-chk').forEach(function(c){ c.checked = sel; });
+  gtActualizarConteoTiendas();
+}
+function gtActualizarConteoTiendas() {
+  var n = document.querySelectorAll('.gt-tienda-chk:checked').length;
+  document.getElementById('gt-tiendas-count').textContent = '(' + n + ' seleccionada' + (n !== 1 ? 's' : '') + ')';
+}
+function gtBuscarProductos() {
   var cadena = document.getElementById('gt-cadena').value;
-  var tienda = document.getElementById('gt-tienda').value;
+  var estado = document.getElementById('gt-estado').value;
+  var tiendaSel = [...document.querySelectorAll('.gt-tienda-chk:checked')].map(function(c){ return c.value; });
   var cont = document.getElementById('gt-productos-container');
-  document.getElementById('gt-seleccion-container').style.display = 'none';
-  document.getElementById('gt-msg').textContent = '';
-  if (!tienda) { cont.innerHTML = ''; return; }
+  var msgEl = document.getElementById('gt-msg');
+  if (!cadena) { msgEl.textContent = '⚠️ Selecciona una cadena.'; msgEl.style.color = '#FF8C00'; return; }
+  if (tiendaSel.length === 0) { msgEl.textContent = '⚠️ Selecciona al menos una tienda.'; msgEl.style.color = '#FF8C00'; return; }
+  msgEl.textContent = '';
   var filtro = GT_CADENAS[cadena];
-  var prods = GT_INV_DATA.filter(function(d){ return filtro(d) && d.tienda === tienda && (d.inventario === 0 || d.inventario <= 5); });
+  var prods = GT_INV_DATA.filter(function(d){ return filtro(d) && tiendaSel.indexOf(d.tienda) !== -1 && gtEstadoMatch(d, estado); });
   if (prods.length === 0) {
-    cont.innerHTML = '<div style="color:var(--muted);padding:16px;font-size:13px">No hay productos con inventario critico (0 o menor a 5) en esta tienda.</div>';
+    cont.innerHTML = '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;color:var(--muted);font-size:13px">No hay productos con el filtro seleccionado.</div>';
+    document.getElementById('gt-seleccion-container').style.display = 'none';
     return;
   }
-  var html = '<div style="font-size:12px;color:var(--muted);margin-bottom:10px">Selecciona los productos para asignar tarea:</div><div style="display:flex;flex-direction:column;gap:6px">';
-  prods.forEach(function(p) {
+  var html = '<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px">' +
+    '<div style="font-size:12px;color:var(--muted);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">' +
+    '<span>' + prods.length + ' productos encontrados</span>' +
+    '<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px"><input type="checkbox" id="gt-chk-all" onchange="gtToggleTodos(this)"> Seleccionar todos</label></div>' +
+    '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">' +
+    '<thead><tr style="border-bottom:1px solid var(--border)">' +
+    '<th style="padding:8px 6px;text-align:left;color:var(--muted);font-weight:600;width:32px"></th>' +
+    '<th style="padding:8px 6px;text-align:left;color:var(--muted);font-weight:600">Tienda</th>' +
+    '<th style="padding:8px 6px;text-align:left;color:var(--muted);font-weight:600">Producto</th>' +
+    '<th style="padding:8px 6px;text-align:right;color:var(--muted);font-weight:600">Inv.</th>' +
+    '</tr></thead><tbody>';
+  prods.forEach(function(p, i) {
     var inv = p.inventario || 0;
-    var invColor = inv === 0 ? '#FF4444' : '#FF8C00';
-    html += '<label style="display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--border);border-radius:8px;cursor:pointer;background:var(--card2)">' +
-      '<input type="checkbox" class="gt-chk" data-prod="' + JSON.stringify(p).replace(/"/g,'&quot;') + '" style="width:16px;height:16px;cursor:pointer;flex-shrink:0" onchange="gtActualizarSeleccion()">' +
-      '<span style="flex:1;font-size:13px"><strong>' + (p.producto || p.sku || '—') + '</strong>' +
-      '<span style="margin-left:8px;font-size:11px;color:' + invColor + '">Inv: ' + inv + '</span></span></label>';
+    var invColor = inv === 0 ? '#FF4444' : (inv <= 5 ? '#FF8C00' : 'var(--muted)');
+    html += '<tr style="border-bottom:1px solid rgba(255,255,255,0.04)">' +
+      '<td style="padding:7px 6px"><input type="checkbox" class="gt-chk" data-prod="' + JSON.stringify(p).replace(/"/g,'&quot;') + '" onchange="gtActualizarSeleccion()"></td>' +
+      '<td style="padding:7px 6px;color:var(--muted);font-size:11px">' + (p.tienda || '—') + '</td>' +
+      '<td style="padding:7px 6px;max-width:260px;white-space:normal"><strong>' + (p.producto || p.sku || '—') + '</strong></td>' +
+      '<td style="padding:7px 6px;text-align:right;color:' + invColor + ';font-weight:700">' + inv + '</td></tr>';
   });
-  html += '</div>';
+  html += '</tbody></table></div></div>';
   cont.innerHTML = html;
+  document.getElementById('gt-seleccion-container').style.display = 'none';
+  document.getElementById('gt-seleccion-lista').innerHTML = '';
+  document.getElementById('gt-sel-count').textContent = '0';
+}
+function gtToggleTodos(chkAll) {
+  document.querySelectorAll('.gt-chk').forEach(function(c){ c.checked = chkAll.checked; });
+  gtActualizarSeleccion();
 }
 function gtActualizarSeleccion() {
   var checks = document.querySelectorAll('.gt-chk:checked');
   var lista = document.getElementById('gt-seleccion-lista');
   var cont = document.getElementById('gt-seleccion-container');
+  document.getElementById('gt-sel-count').textContent = checks.length;
   if (checks.length === 0) { cont.style.display = 'none'; lista.innerHTML = ''; return; }
   cont.style.display = 'block';
   lista.innerHTML = '';
   checks.forEach(function(chk) {
     var p = JSON.parse(chk.getAttribute('data-prod').replace(/&quot;/g, '"'));
+    var inv = p.inventario || 0;
     var item = document.createElement('div');
     item.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:rgba(204,0,0,0.08);border:1px solid rgba(204,0,0,0.2);border-radius:6px;font-size:12px';
-    item.innerHTML = '<span>' + (p.producto || p.sku || '—') + '</span><span style="color:var(--muted)">Inv: ' + (p.inventario||0) + '</span>';
+    item.innerHTML = '<span style="flex:1"><strong>' + (p.producto || p.sku || '—') + '</strong>' +
+      '<span style="color:var(--muted);margin-left:8px;font-size:11px">' + (p.tienda || '') + '</span></span>' +
+      '<span style="color:' + (inv === 0 ? '#FF4444' : '#FF8C00') + ';font-weight:700;margin-left:12px">Inv: ' + inv + '</span>';
     lista.appendChild(item);
   });
 }
 async function gtSubirTareas() {
-  var tienda = document.getElementById('gt-tienda').value;
   var checks = document.querySelectorAll('.gt-chk:checked');
   var msgEl = document.getElementById('gt-msg');
-  if (!tienda || checks.length === 0) return;
+  if (checks.length === 0) { msgEl.textContent = '⚠️ Selecciona al menos un producto.'; msgEl.style.color = '#FF8C00'; return; }
   var vendedor = (document.getElementById('gt-vendedor-sel').value || '').trim();
   if (!vendedor) { msgEl.textContent = '⚠️ Selecciona un vendedor.'; msgEl.style.color = '#FF8C00'; return; }
   var tasks = [];
   checks.forEach(function(chk) {
     var p = JSON.parse(chk.getAttribute('data-prod').replace(/&quot;/g, '"'));
-    tasks.push({ vendedor_nombre: vendedor.toUpperCase(), tienda: tienda, producto: p.producto || p.sku || '—', inventario_sistema: p.inventario || 0, estado: 'pendiente', fecha_asignacion: new Date().toISOString() });
+    tasks.push({ vendedor_nombre: vendedor.toUpperCase(), tienda: p.tienda || '—', producto: p.producto || p.sku || '—', inventario_sistema: p.inventario || 0, estado: 'pendiente', fecha_asignacion: new Date().toISOString() });
   });
   msgEl.textContent = 'Guardando ' + tasks.length + ' tarea(s)...';
   msgEl.style.color = 'var(--muted)';
@@ -3938,8 +4085,11 @@ async function gtSubirTareas() {
     msgEl.textContent = '✅ ' + tasks.length + ' tarea(s) asignada(s) a ' + vendedor;
     msgEl.style.color = 'var(--green)';
     document.querySelectorAll('.gt-chk').forEach(function(c){ c.checked = false; });
+    var allChk = document.getElementById('gt-chk-all');
+    if (allChk) allChk.checked = false;
     document.getElementById('gt-seleccion-container').style.display = 'none';
     document.getElementById('gt-seleccion-lista').innerHTML = '';
+    document.getElementById('gt-sel-count').textContent = '0';
     document.getElementById('gt-vendedor-sel').value = '';
   } catch(e) {
     msgEl.textContent = '❌ Error: ' + e.message;
@@ -3951,7 +4101,7 @@ async function gtInicializar() {
   msgEl.textContent = 'Cargando inventario...';
   msgEl.style.color = 'var(--muted)';
   document.getElementById('gt-cadena').value = '';
-  document.getElementById('gt-tienda').innerHTML = '<option value="">— Seleccionar tienda —</option>';
+  document.getElementById('gt-tiendas-container').style.display = 'none';
   document.getElementById('gt-productos-container').innerHTML = '';
   document.getElementById('gt-seleccion-container').style.display = 'none';
   var vendSel = document.getElementById('gt-vendedor-sel');
@@ -3959,7 +4109,7 @@ async function gtInicializar() {
   var res = await sbAdmin('GET', '/configuracion?clave=eq.inventario&select=valor');
   if (res && res.length > 0) {
     GT_INV_DATA = JSON.parse(res[0].valor || '[]');
-    msgEl.textContent = GT_INV_DATA.length + ' productos cargados. Selecciona una cadena.';
+    msgEl.textContent = GT_INV_DATA.length + ' productos cargados. Selecciona una cadena y tiendas.';
     msgEl.style.color = 'var(--muted)';
   } else {
     GT_INV_DATA = [];

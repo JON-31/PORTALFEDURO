@@ -2130,7 +2130,7 @@ function MachetazoApp(){
     setSaving(true);let ok=0;
     for(const p of mPedidos){
       const datos={
-        vendedor:`MACHETAZO: ${user.v}`,tienda:p.tStore,tipo_pedido:p.tipoPedido||'—',
+        vendedor:`MACHETAZO: ${user.v}`,tienda:p.tStore,tipo:p.tipoPedido||'—',
         codigo:p.pMat,barcode:p.pCod,producto:p.pDesc,cantidad:p.qtyUnidades
       };
       const r=await sb('POST','/reportes',datos);
