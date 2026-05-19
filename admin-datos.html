@@ -3742,6 +3742,25 @@ function adCadenaChanged() {
   }
   document.getElementById('ad-msg').textContent = '';
 }
+var MACHETAZO_LUT = {
+  'CALIDONIA':'CECILIA VALDES','COMPANIA GOLY,S.A. CALIDONIA':'CECILIA VALDES','GOLY CALIDONIA':'CECILIA VALDES',
+  'ARRAIJAN':'ALEXIS VAZQUEZ','COMPANIA GOLY S A ARRAIJAN':'ALEXIS VAZQUEZ','GOLY ARRAIJAN':'ALEXIS VAZQUEZ',
+  'COSTA SUR':'MANUEL VALDEZ','COMPANIA GOLY S A COSTA SUR':'MANUEL VALDEZ','GOLY COSTA SUR':'MANUEL VALDEZ',
+  'CORONADO':'EDUARDO LÓPEZ','COMPANIA GOLY, S.A. CORONADO':'EDUARDO LÓPEZ','GOLY CORONADO':'EDUARDO LÓPEZ',
+  'BRISAS':'ELEIDI FRANCO','BRISAS DEL GOLF':'ELEIDI FRANCO','COMPANIA GOLY,S.A. BRISAS DEL GOLF':'ELEIDI FRANCO',
+  'NUEVO TOCUMEN':'ADESSA COOK','COMPANIA GOLY,S.A. NUEVO TOCUMEN':'ADESSA COOK',
+  'EL DORADO':'IRVING TORRES','DORADO':'IRVING TORRES','COMPANIA GOLY,S.A. EL DORADO':'IRVING TORRES','GOLY DORADO':'IRVING TORRES',
+  'TOCUMEN':'BELTRAN FRANCO GONZALEZ','COMPANIA GOLY S A TOCUMEN':'BELTRAN FRANCO GONZALEZ',
+  'SAN MIGUELITO':'JAAZIEL GONZALEZ','S MIGUELITO':'JAAZIEL GONZALEZ','COMPANIA GOLY S A S MIGUELITO':'JAAZIEL GONZALEZ',
+  'OJO DE AGUA':'ERICK RUIZ','COMPANIA GOLY S A OJO DE AGUA':'ERICK RUIZ',
+  'PEREJIL':'SAMUEL BARRIA','GOLY PEREJIL':'SAMUEL BARRIA',
+};
+function buscarVendedorMachetazo(tienda) {
+  var t = (tienda || '').toUpperCase().trim();
+  if (MACHETAZO_LUT[t]) return MACHETAZO_LUT[t];
+  for (var k in MACHETAZO_LUT) { if (t.indexOf(k) >= 0 || k.indexOf(t) >= 0) return MACHETAZO_LUT[k]; }
+  return '';
+}
 async function adProcessFile(input) {
   var file = input.files[0];
   if (!file) return;
@@ -3753,7 +3772,7 @@ async function adProcessFile(input) {
     var data = await file.arrayBuffer();
     var wb = XLSX.read(data, {type: 'array'});
     var ws = wb.Sheets[wb.SheetNames[0]];
-    var rows = XLSX.utils.sheet_to_json(ws, {header: 1, defval: ''});
+    var rows = XLSX.utils.sheet_to_json(ws, {header: 1, defval: '', raw: false});
     if (rows.length < 2) { msgEl.textContent = '❌ El archivo esta vacio o sin datos'; msgEl.style.color = 'var(--red)'; return; }
     var normalize = function(h){ return String(h).trim().toUpperCase().replace(/[ÁÀÄÂ]/g,'A').replace(/[ÉÈËÊ]/g,'E').replace(/[ÍÌÏÎ]/g,'I').replace(/[ÓÒÖÔ]/g,'O').replace(/[ÚÙÜÛ]/g,'U').replace(/Ñ/g,'N'); };
     var headers = rows[0].map(normalize);
@@ -3779,7 +3798,7 @@ async function adProcessFile(input) {
         var row = rows[i];
         var tienda = String(row[cTienda]||'').trim();
         if (!tienda) continue;
-        AD_RECORDS.push({ cadena: 'xtra', formato: cFormato>=0?String(row[cFormato]||'').trim():'', tienda: tienda, marca: cMarca>=0?String(row[cMarca]||'').trim():'', barcode: cBarcode>=0?String(row[cBarcode]||'').trim():'', producto: String(row[cProducto]||'').trim(), inventario: cInv>=0?(parseFloat(String(row[cInv]).replace(',','.'))||0):0, venta_promedio: cVenta>=0?(parseFloat(String(row[cVenta]).replace(',','.'))||0):0, cobertura: cCob>=0?(parseFloat(String(row[cCob]).replace(',','.'))||0):0 });
+        AD_RECORDS.push({ cadena: 'xtra', vendedor: TIENDAS_VENDEDORES[tienda] || '', formato: cFormato>=0?String(row[cFormato]||'').trim():'', tienda: tienda, marca: cMarca>=0?String(row[cMarca]||'').trim():'', barcode: cBarcode>=0?String(row[cBarcode]||'').trim():'', producto: String(row[cProducto]||'').trim(), inventario: cInv>=0?(parseFloat(String(row[cInv]).replace(',','.'))||0):0, venta_promedio: cVenta>=0?(parseFloat(String(row[cVenta]).replace(',','.'))||0):0, cobertura: cCob>=0?(parseFloat(String(row[cCob]).replace(',','.'))||0):0 });
       }
     } else if (cadena === 'machetazo') {
       var cTienda   = fi(['TIENDA']);
@@ -3799,7 +3818,7 @@ async function adProcessFile(input) {
         var row = rows[i];
         var tienda = String(row[cTienda]||'').trim();
         if (!tienda) continue;
-        AD_RECORDS.push({ cadena: 'machetazo', tienda: tienda, marca: cMarca>=0?String(row[cMarca]||'').trim():'', barcode: cBarcode>=0?String(row[cBarcode]||'').trim():'', codigo: cMaterial>=0?String(row[cMaterial]||'').trim():'', producto: String(row[cDesc]||'').trim(), inventario: cInv>=0?(parseFloat(String(row[cInv]).replace(',','.'))||0):0, venta_promedio: cVenta>=0?(parseFloat(String(row[cVenta]).replace(',','.'))||0):0, cobertura: cCob>=0?(parseFloat(String(row[cCob]).replace(',','.'))||0):0 });
+        AD_RECORDS.push({ cadena: 'machetazo', vendedor: buscarVendedorMachetazo(tienda), tienda: tienda, marca: cMarca>=0?String(row[cMarca]||'').trim():'', barcode: cBarcode>=0?String(row[cBarcode]||'').trim():'', codigo: cMaterial>=0?String(row[cMaterial]||'').trim():'', producto: String(row[cDesc]||'').trim(), inventario: cInv>=0?(parseFloat(String(row[cInv]).replace(',','.'))||0):0, venta_promedio: cVenta>=0?(parseFloat(String(row[cVenta]).replace(',','.'))||0):0, cobertura: cCob>=0?(parseFloat(String(row[cCob]).replace(',','.'))||0):0 });
       }
     } else {
       // Sin validación — importar todas las filas con sus headers originales
@@ -3834,7 +3853,7 @@ async function adSubirLotes() {
     progBar.style.width = Math.round(processed / total * 100) + '%';
     saved = saved.concat(lote);
     try {
-      await sbAdmin('PATCH', '/configuracion?clave=eq.inventario', {valor: JSON.stringify(saved)});
+      await sbUpsert('configuracion', {clave: 'inventario', valor: JSON.stringify(saved)});
     } catch(e) {
       msgEl.textContent = '⚠️ Error en lote ' + processed + ': ' + e.message + '. Los lotes anteriores fueron guardados.';
       msgEl.style.color = '#FF8C00'; failed = true; break;

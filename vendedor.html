@@ -689,27 +689,32 @@ tbody tr:last-child td { border-bottom: none; }
   border-top: 1px solid var(--border);
   box-shadow: 0 -4px 16px rgba(0,0,0,0.08);
   z-index: 200;
-  padding: 0 8px;
+  padding: 0 4px;
   align-items: center;
-  justify-content: space-around;
+  justify-content: flex-start;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+.bottom-nav::-webkit-scrollbar { display: none; }
 .bn-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  padding: 8px 12px;
+  gap: 2px;
+  padding: 6px 8px;
   cursor: pointer;
   color: var(--muted);
-  border-radius: 12px;
+  border-radius: 10px;
   transition: all 0.2s;
-  flex: 1;
-  max-width: 72px;
+  flex-shrink: 0;
+  min-width: 50px;
 }
 .bn-item:hover { color: var(--text); background: #F5F7FA; }
 .bn-item.active { color: var(--red); }
-.bn-icon { font-size: 20px; line-height: 1; }
-.bn-label { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.bn-icon { font-size: 18px; line-height: 1; }
+.bn-label { font-size: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
 
 /* TOPBAR GREETING (mobile) */
 .topbar-greeting {
@@ -750,9 +755,11 @@ var _sess=JSON.parse(localStorage.getItem('mars_portal_session')||'{}');
   <nav class="bottom-nav" id="bottom-nav">
     <div class="bn-item active" id="bn-foro" onclick="showView('foro', this, 'bn')"><span class="bn-icon">&#128202;</span><span class="bn-label">Foro</span></div>
     <div class="bn-item" id="bn-inventario" onclick="showView('inventario', this, 'bn')"><span class="bn-icon">&#128230;</span><span class="bn-label">Inventario</span></div>
+    <div class="bn-item" id="bn-bodega" onclick="showView('bodega', this, 'bn')"><span class="bn-icon">&#127981;</span><span class="bn-label">Bodega</span></div>
+    <div class="bn-item" id="bn-tareas" onclick="showView('tareas', this, 'bn')"><span class="bn-icon">&#128203;</span><span class="bn-label">Tareas</span></div>
     <div class="bn-item" id="bn-ofertas" onclick="showView('ofertas', this, 'bn')"><span class="bn-icon">&#127873;</span><span class="bn-label">Ofertas</span></div>
     <div class="bn-item" id="bn-menu" onclick="toggleSidebar()"><span class="bn-icon">&#9776;</span><span class="bn-label">Menu</span></div>
-    <div class="bn-item" onclick="cerrarSesion()" style="color:var(--muted)"><span class="bn-icon">&#8592;</span><span class="bn-label">Salir</span></div>
+    <div class="bn-item" onclick="cerrarSesion()"><span class="bn-icon">&#8592;</span><span class="bn-label">Salir</span></div>
   </nav>
   <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
   <aside class="sidebar" id="sidebar">
@@ -1054,7 +1061,7 @@ function renderDashboard() {
   }
   var data = INV_DATA_V;
   var totalInv = data.reduce(function(a,d){ return a + (d.inventario||0); }, 0);
-  var totalVenta = data.reduce(function(a,d){ return a + (d.venta_prom_3m||0); }, 0);
+  var totalVenta = data.reduce(function(a,d){ return a + (d.venta_promedio||0); }, 0);
   var totalProds = data.length;
   var cobProm = totalProds > 0 ? Math.round(data.reduce(function(a,d){ return a + (d.cobertura||0); }, 0) / totalProds) : 0;
   var criticos = data.filter(function(d){ return d.cobertura > 60; }).length;
@@ -1069,7 +1076,7 @@ function renderDashboard() {
   data.forEach(function(d) {
     var t = d.tienda || '—';
     if (!stores[t]) stores[t] = {prods:0,inv:0,venta:0,cob:[]};
-    stores[t].prods++; stores[t].inv += (d.inventario||0); stores[t].venta += (d.venta_prom_3m||0); stores[t].cob.push(d.cobertura||0);
+    stores[t].prods++; stores[t].inv += (d.inventario||0); stores[t].venta += (d.venta_promedio||0); stores[t].cob.push(d.cobertura||0);
   });
   var rows = Object.entries(stores).sort(function(a,b){ return a[0].localeCompare(b[0]); }).map(function(entry) {
     var t = entry[0]; var s = entry[1];
@@ -1108,7 +1115,7 @@ function filtrarInventario() {
   document.getElementById('inv-table-body').innerHTML = data.map(function(d) {
     var badge = d.cobertura > 60 ? 'badge-danger' : d.cobertura > 30 ? 'badge-warn' : 'badge-ok';
     var estado = d.cobertura > 60 ? 'Critico' : d.cobertura > 30 ? 'Atencion' : 'Optimo';
-    return '<tr><td>' + (d.tienda||'—') + '</td><td><span class="badge badge-brand">' + (d.marca||'—') + '</span></td><td style="font-weight:600">' + (d.producto||'—') + '</td><td>' + (d.inventario||0).toLocaleString() + '</td><td>' + (d.venta_prom_3m||0).toLocaleString() + '</td><td>' + (d.cobertura||0) + ' dias</td><td><span class="badge ' + badge + '">' + estado + '</span></td></tr>';
+    return '<tr><td>' + (d.tienda||'—') + '</td><td><span class="badge badge-brand">' + (d.marca||'—') + '</span></td><td style="font-weight:600">' + (d.producto||'—') + '</td><td>' + (d.inventario||0).toLocaleString() + '</td><td>' + (d.venta_promedio||0).toLocaleString() + '</td><td>' + (d.cobertura||0) + ' dias</td><td><span class="badge ' + badge + '">' + estado + '</span></td></tr>';
   }).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Sin registros</td></tr>';
 }
 
@@ -1170,23 +1177,43 @@ function buscarCodigoBodega(descripcion) {
 function renderBodegaTabla(datos) {
   var container = document.getElementById('bodega-vendedor-grid');
   if (!datos || datos.length === 0) {
-    container.innerHTML = '<p style="color:var(--muted);padding:20px">No hay registros de bodega.</p>';
+    container.innerHTML = '<p style="color:var(--muted);padding:20px">No hay datos de inventario disponibles.</p>';
     return;
   }
-  var html = '<div style="overflow-x:auto"><table><thead><tr><th>Bodega</th><th>Casa</th><th>Codigo</th><th>Descripcion</th><th>Cantidad</th><th>Vence</th></tr></thead><tbody>';
-  html += datos.map(function(d) {
-    var qty = parseFloat(d.cantidad) || 0;
-    var qtyColor = qty <= 0 ? 'color:#E53935' : qty <= 10 ? 'color:#FF6F00' : 'color:#00C853';
-    var cod = d.codigo || buscarCodigoBodega(d.descripcion) || '—';
-    return '<tr>' +
-      '<td>' + (d.bodega||'—') + '</td>' +
-      '<td><span class="badge badge-brand">' + (d.casa||'—') + '</span></td>' +
-      '<td style="font-family:monospace;font-size:11px;color:var(--muted)">' + cod + '</td>' +
-      '<td style="font-weight:600">' + (d.descripcion||'—') + '</td>' +
-      '<td style="font-family:monospace;' + qtyColor + ';font-weight:700">' + qty.toLocaleString() + '</td>' +
-      '<td>' + (d.vence||'—') + '</td>' +
-      '</tr>';
-  }).join('');
+  var cadena = (datos[0] && datos[0].cadena) || 'xtra';
+  var html;
+  var iColor = function(inv) { return inv === 0 ? 'color:#E53935' : inv <= 5 ? 'color:#FF6F00' : 'color:var(--green)'; };
+  if (cadena === 'machetazo') {
+    html = '<div style="overflow-x:auto"><table><thead><tr><th>Tienda</th><th>Marca</th><th>C&oacute;digo de Barra</th><th>Material</th><th>Descripcion</th><th>Inventario</th><th>Venta Prom</th><th>Cobertura</th></tr></thead><tbody>';
+    html += datos.map(function(d) {
+      var inv = d.inventario || 0;
+      return '<tr>' +
+        '<td>' + (d.tienda||'—') + '</td>' +
+        '<td><span class="badge badge-brand">' + (d.marca||'—') + '</span></td>' +
+        '<td style="font-family:monospace;font-size:11px">' + (d.barcode||'—') + '</td>' +
+        '<td style="font-size:11px;color:var(--muted)">' + (d.codigo||'—') + '</td>' +
+        '<td style="font-weight:600">' + (d.producto||'—') + '</td>' +
+        '<td style="font-family:monospace;' + iColor(inv) + ';font-weight:700">' + inv.toLocaleString() + '</td>' +
+        '<td>' + (d.venta_promedio||0).toLocaleString() + '</td>' +
+        '<td>' + (d.cobertura||0) + ' dias</td>' +
+        '</tr>';
+    }).join('');
+  } else {
+    html = '<div style="overflow-x:auto"><table><thead><tr><th>Formato</th><th>Tienda</th><th>Marca</th><th>C&oacute;digo de Barra</th><th>Producto</th><th>Inventario</th><th>Venta Prom</th><th>Cobertura</th></tr></thead><tbody>';
+    html += datos.map(function(d) {
+      var inv = d.inventario || 0;
+      return '<tr>' +
+        '<td style="font-size:11px;color:var(--muted)">' + (d.formato||'—') + '</td>' +
+        '<td>' + (d.tienda||'—') + '</td>' +
+        '<td><span class="badge badge-brand">' + (d.marca||'—') + '</span></td>' +
+        '<td style="font-family:monospace;font-size:11px">' + (d.barcode||'—') + '</td>' +
+        '<td style="font-weight:600">' + (d.producto||'—') + '</td>' +
+        '<td style="font-family:monospace;' + iColor(inv) + ';font-weight:700">' + inv.toLocaleString() + '</td>' +
+        '<td>' + (d.venta_promedio||0).toLocaleString() + '</td>' +
+        '<td>' + (d.cobertura||0) + ' dias</td>' +
+        '</tr>';
+    }).join('');
+  }
   html += '</tbody></table></div>';
   html += '<div style="color:var(--muted);font-size:12px;margin-top:12px;text-align:right">' + datos.length + ' registros</div>';
   container.innerHTML = html;
@@ -1197,9 +1224,10 @@ function filtrarBodegaVendedor(term) {
   if (!term || !term.trim()) { renderBodegaTabla(_bodegaDataCache); return; }
   var t = term.trim().toUpperCase();
   var filtered = _bodegaDataCache.filter(function(d) {
-    var desc = (d.descripcion||'').toUpperCase();
-    var cod = (d.codigo || buscarCodigoBodega(d.descripcion) || '').toUpperCase();
-    return desc.indexOf(t) >= 0 || cod.indexOf(t) >= 0;
+    var desc = (d.producto || d.descripcion || '').toUpperCase();
+    var cod = (d.barcode || d.codigo || '').toUpperCase();
+    var marca = (d.marca || '').toUpperCase();
+    return desc.indexOf(t) >= 0 || cod.indexOf(t) >= 0 || marca.indexOf(t) >= 0;
   });
   renderBodegaTabla(filtered);
 }
@@ -1207,20 +1235,10 @@ function filtrarBodegaVendedor(term) {
 async function cargarBodegaVendedor() {
   var container = document.getElementById('bodega-vendedor-grid');
   if (!container) return;
-  container.innerHTML = '<p style="color:var(--muted);padding:20px">Cargando...</p>';
-  try {
-    var res = await sbGetV('/configuracion?clave=eq.inventario_bodega&select=valor');
-    if (!res || res.length === 0) {
-      container.innerHTML = '<p style="color:var(--muted);padding:20px">No hay inventario en bodega registrado.</p>';
-      return;
-    }
-    _bodegaDataCache = JSON.parse(res[0].valor || '[]');
-    var searchEl = document.getElementById('bodega-search');
-    if (searchEl) searchEl.value = '';
-    renderBodegaTabla(_bodegaDataCache);
-  } catch(e) {
-    container.innerHTML = '<p style="color:var(--muted)">Error cargando datos.</p>';
-  }
+  var searchEl = document.getElementById('bodega-search');
+  if (searchEl) searchEl.value = '';
+  _bodegaDataCache = INV_DATA_V.slice();
+  renderBodegaTabla(_bodegaDataCache);
 }
 
 // Restore session from Supabase Auth token
@@ -1246,7 +1264,8 @@ const SURL='https://npatcmgjqxpjxhbcqsqv.supabase.co';
 const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wYXRjbWdqcXhwanhoYmNxc3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyOTEzNDUsImV4cCI6MjA5Mjg2NzM0NX0.uDyUMvouWcPlbNOiPClNYezkKIE9ICAEpWZxklUdGZg';
 
 const sb=async(method,endpoint,data=null)=>{
-  const h={'Content-Type':'application/json','apikey':SKEY,'Authorization':'Bearer '+SKEY,'Prefer':'return=representation'};
+  const tok=window.SESSION_TOKEN||SKEY;
+  const h={'Content-Type':'application/json','apikey':SKEY,'Authorization':'Bearer '+tok,'Prefer':'return=representation'};
   const o={method,headers:h};
   if(data)o.body=JSON.stringify(data);
   try{const r=await fetch(SURL+'/rest/v1'+endpoint,o);const t=await r.text();return t?JSON.parse(t):[];}
