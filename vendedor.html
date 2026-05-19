@@ -906,7 +906,9 @@ async function sbGetV(ep) {
   var r = await fetch(SB_URL + '/rest/v1' + ep, {
     headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + ANON_KEY }
   });
-  var t = await r.text(); return t ? JSON.parse(t) : [];
+  var t = await r.text();
+  if (!r.ok) { console.error('[sbGetV]', ep, r.status, t); return []; }
+  return t ? JSON.parse(t) : [];
 }
 
 var VENDOR_ACTUAL = null;
@@ -2330,10 +2332,13 @@ function MachetazoApp(){
 
 // ── SUPABASE HELPERS FOR TAREAS ──
 async function sbGetVAuth(ep) {
+  var token = SESSION_TOKEN || ANON_KEY;
   var r = await fetch(SB_URL + '/rest/v1' + ep, {
-    headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + ANON_KEY }
+    headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + token }
   });
-  var t = await r.text(); return t ? JSON.parse(t) : [];
+  var t = await r.text();
+  if (!r.ok) { console.error('[sbGetVAuth]', ep, r.status, t); return []; }
+  return t ? JSON.parse(t) : [];
 }
 async function sbPatchV(ep, body) {
   var r = await fetch(SB_URL + '/rest/v1' + ep, {

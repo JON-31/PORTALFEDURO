@@ -1242,7 +1242,9 @@ async function sbGet(endpoint) {
   const r = await fetch(SB_URL + '/rest/v1' + endpoint, {
     headers: {'Authorization': 'Bearer ' + token, 'apikey': ANON_KEY}
   });
-  const t = await r.text(); return t ? JSON.parse(t) : [];
+  const t = await r.text();
+  if (!r.ok) { console.error('[sbGet]', endpoint, r.status, t); return []; }
+  return t ? JSON.parse(t) : [];
 }
 async function sbUpsert(table, data) {
   var token = MARS_TOKEN || ANON_KEY;
@@ -1880,24 +1882,6 @@ window.OFERTAS_PRODUCTOS = OFERTAS_PRODUCTOS;
 // ===== ADMIN DATA FUNCTIONS =====
 let ofertasList = [];
 
-function addDataRow(data) {
-  const body = document.getElementById('data-input-body');
-  const tr = document.createElement('tr');
-  const vend = data&&data.vendedor ? data.vendedor : (data&&data.tienda ? buscarVendedorPorTienda(data.tienda) : '');
-  const vendBadge = vend ? '<span style="font-size:10px;background:rgba(204,0,0,0.1);color:var(--red);padding:2px 6px;border-radius:4px;white-space:nowrap">' + vend + '</span>' : '<span style="font-size:10px;color:var(--muted)">Sin asignar</span>';
-  tr.innerHTML =
-    '<td><input type="text" placeholder="CJ/EX/PH" style="min-width:60px" value="' + (data&&data.formato?data.formato:'') + '"></td>' +
-    '<td><input type="text" placeholder="Tienda" style="min-width:120px" value="' + (data&&data.tienda?data.tienda:'') + '" oninput="actualizarVendedorFila(this)"></td>' +
-    '<td class="vend-cell" style="min-width:130px">' + vendBadge + '</td>' +
-    '<td><input type="text" placeholder="Marca" style="min-width:80px" value="' + (data&&data.marca?data.marca:'') + '"></td>' +
-    '<td><input type="text" placeholder="Codigo de barra" style="min-width:110px" value="' + (data&&data.ean?data.ean:'') + '"></td>' +
-    '<td><input type="text" placeholder="Producto" style="min-width:160px" value="' + (data&&data.producto?data.producto:'') + '"></td>' +
-    '<td><input type="number" placeholder="0" min="0" style="min-width:70px" value="' + (data&&data.inventario!=null?data.inventario:'') + '"></td>' +
-    '<td><input type="number" placeholder="0" min="0" style="min-width:70px" value="' + (data&&data.venta_prom_3m!=null?data.venta_prom_3m:'') + '"></td>' +
-    '<td><input type="number" placeholder="0" min="0" style="min-width:70px" value="' + (data&&data.cobertura!=null?data.cobertura:'') + '"></td>' +
-    '<td><button class="del-row-btn" onclick="this.closest(\'tr\').remove()">&#10005;</button></td>';
-  body.appendChild(tr);
-}
 
 var _vendTimer = null;
 function actualizarVendedorFila(input) {
@@ -1912,20 +1896,23 @@ function actualizarVendedorFila(input) {
   }, 350);
 }
 async function cargarDataActual() {
+  var tableEl = document.getElementById('data-input-body');
+  var msgEl   = document.getElementById('data-save-msg');
+  if (!tableEl || !msgEl) return;
   const res = await sbGet('/configuracion?clave=eq.inventario&select=valor');
   if (res && res.length > 0) {
     const datos = JSON.parse(res[0].valor || '[]');
-    var html = datos.map(function(d){ return buildRowHTML(d); }).join('');
-    document.getElementById('data-input-body').innerHTML = html;
-    document.getElementById('data-save-msg').textContent = '✅ Data actual cargada (' + datos.length + ' filas)';
-    document.getElementById('data-save-msg').style.color = '#00C853';
+    tableEl.innerHTML = datos.map(function(d){ return buildRowHTML(d); }).join('');
+    msgEl.textContent = '✅ Data actual cargada (' + datos.length + ' filas)';
+    msgEl.style.color = '#00C853';
   } else {
-    document.getElementById('data-save-msg').textContent = 'No hay data guardada aún.';
-    document.getElementById('data-save-msg').style.color = '#A08040';
+    msgEl.textContent = 'No hay data guardada aún.';
+    msgEl.style.color = '#A08040';
   }
 }
 
 async function guardarInventarioData() {
+  if (!document.getElementById('data-input-body')) return;
   const rows = document.querySelectorAll('#data-input-body tr');
   const datos = [];
   rows.forEach(tr => {
@@ -1942,7 +1929,7 @@ async function guardarInventarioData() {
         ean: (inputs[3]&&inputs[3].value||'').trim(),
         producto: (inputs[4]&&inputs[4].value||'').trim(),
         inventario: parseFloat((inputs[5]&&inputs[5].value)||0) || 0,
-        venta_prom_3m: parseFloat((inputs[6]&&inputs[6].value)||0) || 0,
+        venta_promedio: parseFloat((inputs[6]&&inputs[6].value)||0) || 0,
         cobertura: parseFloat((inputs[7]&&inputs[7].value)||0) || 0,
       });
     }
@@ -2213,7 +2200,7 @@ function renderInvFromSupabase(datos) {
       <td><span class="badge badge-brand">${d.marca||'—'}</span></td>
       <td style="font-weight:600">${d.producto}</td>
       <td>${(d.inventario||0).toLocaleString()}</td>
-      <td>${(d.venta_prom_3m||0).toLocaleString()}</td>
+      <td>${(d.venta_promedio||0).toLocaleString()}</td>
       <td>${d.cobertura||0} días</td>
       <td><span class="badge ${badge}">${estado}</span></td>
     </tr>`;
@@ -2389,14 +2376,16 @@ function buildRowHTML(data) {
     '<td><input type="text" placeholder="Codigo de barra" style="min-width:110px" value="' + esc(data.ean) + '"></td>' +
     '<td><input type="text" placeholder="Producto" style="min-width:160px" value="' + esc(data.producto) + '"></td>' +
     '<td><input type="number" placeholder="0" min="0" style="min-width:70px" value="' + esc(data.inventario) + '"></td>' +
-    '<td><input type="number" placeholder="0" min="0" style="min-width:70px" value="' + esc(data.venta_prom_3m) + '"></td>' +
+    '<td><input type="number" placeholder="0" min="0" style="min-width:70px" value="' + esc(data.venta_promedio) + '"></td>' +
     '<td><input type="number" placeholder="0" min="0" style="min-width:70px" value="' + esc(data.cobertura) + '"></td>' +
     '<td><button class="del-row-btn" onclick="this.closest(\'tr\').remove()">&#10005;</button></td>' +
     '</tr>';
 }
 
 function addDataRow(data) {
-  document.getElementById('data-input-body').insertAdjacentHTML('beforeend', buildRowHTML(data || {}));
+  var el = document.getElementById('data-input-body');
+  if (!el) return;
+  el.insertAdjacentHTML('beforeend', buildRowHTML(data || {}));
 }
 
 function parseNumExcel(s) {
@@ -2427,7 +2416,10 @@ function parseNumExcel(s) {
 }
 
 function parsePasteData() {
-  var raw = document.getElementById('data-paste-area').value.trim().replace(/\r/g, '');
+  var pasteEl = document.getElementById('data-paste-area');
+  var tableEl = document.getElementById('data-input-body');
+  if (!pasteEl || !tableEl) return;
+  var raw = pasteEl.value.trim().replace(/\r/g, '');
   if (!raw) return;
   var rows = raw.split('\n');
   var html = '';
@@ -2444,17 +2436,16 @@ function parsePasteData() {
       ean:           cols[3] || '',
       producto:      cols[5] || '',
       inventario:    parseNumExcel(cols[6]),
-      venta_prom_3m: parseNumExcel(cols[7]),
+      venta_promedio: parseNumExcel(cols[7]),
       cobertura:     parseNumExcel(cols[8]),
       vendedor:      buscarVendedorPorTienda(tienda),
     });
     added++;
   });
-  if (html) document.getElementById('data-input-body').insertAdjacentHTML('beforeend', html);
-  document.getElementById('data-paste-area').value = '';
+  if (html) tableEl.insertAdjacentHTML('beforeend', html);
+  pasteEl.value = '';
   var msg = document.getElementById('data-save-msg');
-  msg.textContent = '✅ ' + added + ' filas cargadas desde Excel. Revisa la tabla y guarda.';
-  msg.style.color = '#00C853';
+  if (msg) { msg.textContent = '✅ ' + added + ' filas cargadas desde Excel. Revisa la tabla y guarda.'; msg.style.color = '#00C853'; }
 }
 
 // ===== INVENTARIO EN BODEGA =====
