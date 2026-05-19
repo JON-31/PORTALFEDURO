@@ -4082,7 +4082,9 @@ async function sbAdmin(method, ep, body) {
   var opts = { method: method, headers: { 'Authorization': 'Bearer ' + token, 'apikey': ANON_KEY, 'Content-Type': 'application/json', 'Prefer': method==='POST'?'return=representation':'return=minimal' } };
   if (body) opts.body = JSON.stringify(body);
   var r = await fetch(SB_URL + '/rest/v1' + ep, opts);
-  var t = await r.text(); return t ? JSON.parse(t) : [];
+  var t = await r.text();
+  if (!r.ok) { console.error('[sbAdmin]', method, ep, r.status, t); return []; }
+  return t ? JSON.parse(t) : [];
 }
 
 // ── GESTIONAR TAREAS (vanilla) ──

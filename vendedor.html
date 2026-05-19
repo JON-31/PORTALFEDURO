@@ -1268,8 +1268,13 @@ const sb=async(method,endpoint,data=null)=>{
   const h={'Content-Type':'application/json','apikey':SKEY,'Authorization':'Bearer '+tok,'Prefer':'return=representation'};
   const o={method,headers:h};
   if(data)o.body=JSON.stringify(data);
-  try{const r=await fetch(SURL+'/rest/v1'+endpoint,o);const t=await r.text();return t?JSON.parse(t):[];}
-  catch(e){console.error(e);return null;}
+  try{
+    const r=await fetch(SURL+'/rest/v1'+endpoint,o);
+    const t=await r.text();
+    const parsed=t?JSON.parse(t):[];
+    if(!r.ok){console.error('[sb] Error',r.status,method,endpoint,t);return null;}
+    return parsed;
+  }catch(e){console.error('[sb] Exception',e);return null;}
 };
 
 const REY_TIENDAS=[
@@ -1934,11 +1939,11 @@ function IngresoApp(){
     for(const p of vPedidos){
       const datos={vendedor:p.vendedor,tienda:p.tienda,producto:p.producto,cantidad:p.cantidad,mes_vencimiento:p.mes_vencimiento,monto_estimado:p.monto_estimado};
       const r=await sb('POST','/reportes',datos);
-      if(r&&!r.error)ok++;
+      if(Array.isArray(r)&&r.length>0)ok++;
     }
     setSaving(false);
     if(ok===vPedidos.length){showM(''+ok+' reportes guardados');setVPedidos([]);cargar();}
-    else showM(''+ok+'/'+vPedidos.length+' guardados. Revisa conexión.',true);
+    else showM(''+ok+'/'+vPedidos.length+' guardados. Revisa conexión o políticas RLS.',true);
   };
 
   const vEliminar=(idx)=>setVPedidos(prev=>prev.filter((_,i)=>i!==idx));
@@ -2154,11 +2159,11 @@ function MachetazoApp(){
         codigo:p.pMat,barcode:p.pCod,producto:p.pDesc,cantidad:p.qtyUnidades
       };
       const r=await sb('POST','/reportes',datos);
-      if(r&&!r.error)ok++;
+      if(Array.isArray(r)&&r.length>0)ok++;
     }
     setSaving(false);
     if(ok===mPedidos.length){showM(''+ok+' reportes guardados');setMPedidos([]);}
-    else showM(''+ok+'/'+mPedidos.length+' guardados.');
+    else showM(''+ok+'/'+mPedidos.length+' guardados. Revisa conexión o políticas RLS.',true);
   };
 
   const mEliminar=(idx)=>setMPedidos(prev=>prev.filter((_,i)=>i!==idx));
