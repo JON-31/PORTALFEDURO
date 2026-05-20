@@ -1,0 +1,191 @@
+FEDURO | MARS PORTAL — REFERENCIA TIENDAS POR CADENA
+Generado: 2026-05-20
+============================================================
+Uso: el valor de la columna TIENDA en el Excel debe coincidir exactamente
+con el nombre listado aquí para que el sistema asigne el vendedor correctamente.
+============================================================
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CADENA: MACHETAZO / GOLY
+Fuente: MACHETAZO_TIENDAS (vendedor.html / admin-datos.html)
+Nota: El Excel puede traer el nombre corto (SAN MIGUELITO, ARRAIJAN, etc.)
+      — adProcessFile lo convierte automáticamente al formato GOLY.
+      El nombre almacenado en Supabase y en el código es el formato GOLY.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TIENDA (nombre en código/Supabase)    VENDEDOR
+GOLY CALIDONIA                        CECILIA VALDES
+GOLY ARRAIJAN                         ALEXIS VAZQUEZ
+GOLY COSTA SUR                        MANUEL VALDEZ
+GOLY CORONADO                         EDUARDO LÓPEZ
+GOLY BRISAS                           ELEIDI FRANCO
+GOLY NUEVO TOCUMEN                    ADESSA COOK
+GOLY EL DORADO                        IRVING TORRES
+GOLY TOCUMEN                          BELTRAN FRANCO GONZALEZ
+GOLY SAN MIGUELITO                    JAAZIEL GONZALEZ
+GOLY METRO MALL                       SAMUEL BARRIA
+GOLY OJO DE AGUA                      ERICK RUIZ
+CIA. GOLY, S.A. METROMALL             PEDRO RODRIGUEZ
+
+Mapeo Excel corto → GOLY (aplicado automáticamente por adProcessFile):
+  SAN MIGUELITO / S MIGUELITO  →  GOLY SAN MIGUELITO
+  ARRAIJAN                     →  GOLY ARRAIJAN
+  TOCUMEN                      →  GOLY TOCUMEN
+  NUEVO TOCUMEN                →  GOLY NUEVO TOCUMEN
+  CALIDONIA                    →  GOLY CALIDONIA
+  METRO MALL                   →  GOLY METRO MALL
+  OJO DE AGUA                  →  GOLY OJO DE AGUA
+  COSTA SUR                    →  GOLY COSTA SUR
+  BRISAS / BRISAS DEL GOLF     →  GOLY BRISAS
+  CORONADO                     →  GOLY CORONADO
+  EL DORADO / DORADO           →  GOLY EL DORADO
+  SANTIAGO                     →  GOLY SANTIAGO
+  PENONOME                     →  GOLY PENONOME
+  CHITRE                       →  GOLY CHITRE
+  SANTA ANA                    →  GOLY SANTA ANA
+  SUPERPOLLMART                →  GOLY SUPERPOLLMART
+  EXPRESS VESPAÑA              →  GOLY EXPRESS VESPAÑA
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CADENA: REY (Super Rey)
+Fuente: TIENDAS_REY (vendedor.html)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TIENDA                                VENDEDOR
+SM REY CHORRERA                       MARTIN CASTILLO
+SM REY CC COSTA VERDE                 MARTIN CASTILLO
+S M REY PASEO ALBROOK                 CECILIA VALDES
+SM REY CENTENIAL                      MELLINI SANTAMARIA
+SM REY PASEO ARRAIJAN                 ALEXIS VAZQUEZ
+SM REY SANTA MARIA                    GERTRUDIS PEREZ
+S M REY VERSALLES                     MANUEL VALDEZ
+S M REY CORONADO                      EDUARDO LÓPEZ
+SM REY PASEO DEL VALLE                EDUARDO LÓPEZ
+SM REY 12 OCTUBRE                     MADELEN ACOSTA
+SM REY BRISAS DEL GOLF                ELEIDI FRANCO
+SM REY BRISAS DEL NORTE               ELEIDI FRANCO
+SM REY BELLA VISTA                    GALVEN RIVAS
+INM. DON ANTONIO REY CASCO ANTIGUO   GALVEN RIVAS
+SM REY VISTA ALEGRE                   YESLIN PALERMO
+SM REY DORADO                         IRVING TORRES
+SM REY 4 ALTOS                        CARMEN FISHER
+SM REY SABANITAS                      CARMEN FISHER
+SM REY CALLE 50                       RUTH SANCHEZ
+SM REY VIA ESPANA                     RUTH SANCHEZ
+SM REY C COMERCIAL 2412               DEIBITH JOSUE PRADO
+SM REY VILLA LUCRE                    DEIBITH JOSUE PRADO
+SM REY MILLA 8                        ALEXIS SALAZAR
+SM REY CALLE 13                       JUSTO VICTOR MACHUCA
+SM REY CALLE 7A.                      JUSTO VICTOR MACHUCA
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CADENA: XTRA (Supermercados Xtra)
+Fuente: TIENDAS_VENDEDORES (admin-datos.html)
+Nota: El Excel de Xtra usa el formato "Nombre - TXXX"
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TIENDA                                VENDEDOR
+4 Altos - T036                        CARMEN FISHER
+Albrook - T017                        IRVING TORRES
+Anclas - T020                         EVELYN FERNANDEZ
+Arraijan - T001                       ALEXIS VAZQUEZ
+Brisas del Golf - T041                ELEIDI FRANCO
+Buena Vista - T207                    CARMEN FISHER
+Calidonia - T300                      GALVEN RIVAS
+Capira - T039                         EDUARDO LÓPEZ
+Cativá - T013                         JUSTO VICTOR MACHUCA
+Chanis - T040                         GERTRUDIS PEREZ
+Chepo - T200                          ADESSA COOK
+Chilibre - T203                       STEFANI BRAVO
+Chorrera - T002                       MARTIN CASTILLO
+Chorrera Market - T038                MARTIN CASTILLO
+Chorrillo - T022                      GALVEN RIVAS
+Condado del Rey - T010                MELLINI SANTAMARIA
+Coronado - T301                       EDUARDO LÓPEZ
+El Lago - T019                        STEFANI BRAVO
+El Trébol - T302                      BELTRAN FRANCO GONZALEZ
+La Gran Estación - T307               JAAZIEL GONZALEZ
+La Marquesa - T030                    AURELINO RIVAS
+La Siesta - T202                      BELTRAN FRANCO GONZALEZ
+Las Acacias - T004                    PEDRO RODRIGUEZ
+Llano Largo - T211                    EVELYN FERNANDEZ
+Los Pueblos - T005                    PEDRO RODRIGUEZ
+Mañanitas - T309                      BELTRAN FRANCO GONZALEZ
+Monte Rico - T006                     LUIS TUNON
+Pacora - T018                         ADESSA COOK
+Río Abajo - T303                      KATHYUSKA GUERRA
+Sabanitas - T012                      JUSTO VICTOR MACHUCA
+San Isidro - T034                     ALEXIS SALAZAR
+San Miguelito - T008                  DEIBITH JOSUE PRADO
+San Vicente - T208                    STEFANI BRAVO
+Transístmica - T023                   CECILIA VALDES
+Vacamonte - T210                      MAGDIEL MORAN
+Villa Lucre - T014                    DEIBITH JOSUE PRADO
+Villalobos - T031                     MANUEL VALDEZ
+Vía España - T401                     RUTH SANCHEZ
+Vía Israel - T035                     RUTH SANCHEZ
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CADENA: SUPER 99 / IMPORTADORA RICAMAR
+Fuente: TIENDAS_INGRESO (entradas IMPORTADORA RICAMAR)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TIENDA                                          VENDEDOR
+IMPORTADORA RICAMAR, S.A.(EL COCO CHORRERA)     MARTIN CASTILLO
+IMPORTADORA RICAMAR, S.A.(ALBROOK)              CECILIA VALDES
+IMPORTADORA RICAMAR, S.A.(SAN MIGUELITO)        MELLINI SANTAMARIA
+IMPORTADORA RICAMAR, S.A.(CONDADO)              MELLINI SANTAMARIA
+IMPORTADORA RICAMAR S A TOWN CENTER ARRAIJAN    ALEXIS VAZQUEZ
+IMPORTADORA RICAMAR, S.A.(TOCUMEN)              MANUEL VALDEZ
+IMPORTADORA RICAMAR, S.A.(PEDREGAL)             MANUEL VALDEZ
+IMPORTADORA RICAMAR S A NUEVO TOCUMEN           LUIS TUNON
+IMPORTADORA RICAMAR, S.A.(LA DONA)              LUIS TUNON
+IMPORTADORA RICAMAR, S.A.(CORONADO)             EDUARDO LÓPEZ
+IMPORTADORA RICAMAR, S.A.(C/C ON-D-GO)          EVELYN FERNANDEZ
+IMPORTADORA RICAMAR, S.A.(BRISAS ARRAIJAN)      AURELINO RIVAS
+IMPORTADORA RICAMAR, S.A.(EL TECAL)             AURELINO RIVAS
+IMPORTADORA RICAMAR, S.A.(VISTA HERMOSA)        MADELEN ACOSTA
+IMPORTADORA RICAMAR, S.A.(VIA PORRAS)           MADELEN ACOSTA
+IMPORTADORA RICAMAR, S.A.(SAN FCO)              MADELEN ACOSTA
+IMPORTADORA RICAMAR, S.A.(BRISAS)               ELEIDI FRANCO
+IMPORTADORA RICAMAR, S.A.(LA CABIMA)            STEFANI BRAVO
+IMPORTADORA RICAMAR, S.A.(PORTOBELO)            KATHYUSKA GUERRA
+IMPORTADORA RICAMAR, S.A.(BALBOA)               KATHYUSKA GUERRA
+IMPORTADORA RICAMAR S.A.(MEGA DEPOT P CAROLINA) KATHYUSKA GUERRA
+IMPORTADORA RICAMAR, S.A.(CENCAL)               GALVEN RIVAS
+IMPORTADORA RICAMAR, S.A.(SAN BERNARDINO)       YESLIN PALERMO
+IMPORTADORA RICAMAR, S.A.(CHORRERA)             YESLIN PALERMO
+IMPORTADORA RICAMAR S A MONTE MADERO            ADESSA COOK
+IMPORTADORA RICAMAR, S.A.(LOS PUEBLOS)          PEDRO RODRIGUEZ
+IMPORTADORA RICAMAR, S.A.(T.MUERTO)             IRVING TORRES
+IMPORTADORA RICAMAR, S.A.(DORADO)               IRVING TORRES
+IMPORTADORA RICAMAR,S.A.(LAS MANANITAS)         BELTRAN FRANCO GONZALEZ
+IMPORTADORA RICAMAR, S.A.(PTO.ESCONDIDO)        CARMEN FISHER
+IMPORTADORA RICAMAR,S.A.(TRANSISTMICA)          RUTH SANCHEZ
+IMPORTADORA RICAMAR, S.A.(PAITILLA)             RUTH SANCHEZ
+IMPORTADORA RICAMAR, S.A.(LOS ANDES)            JAAZIEL GONZALEZ
+IMPORTADORA RICAMAR,S.A.(VILLA LUCRE)           DEIBITH JOSUE PRADO
+IMPORTADORA RICAMAR, S.A.(LOS ANDES SUC.2)      ALEXIS SALAZAR
+IMPORTADORA RICAMAR, S.A.(BETHANIA)             ALEXIS SALAZAR
+IMPORTADORA RICAMAR,S.A.-MEGA DEPOT LOS ANDES MALL ALEXIS SALAZAR
+IMPORTADORA RICAMAR,S.A.(SABANITAS)             JUSTO VICTOR MACHUCA
+IMPORTADORA RICAMAR, S.A.(COLMAR)               JUSTO VICTOR MACHUCA
+IMPORTADORA RICAMAR, S.A.(COLON 2000)           JUSTO VICTOR MACHUCA
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CADENA: RIBA SMITH
+Fuente: TIENDAS_INGRESO (entradas RIBA SMITH)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TIENDA                                VENDEDOR
+RIBA SMITH ALBROOK                    CECILIA VALDES
+S M RIBA SMITH C C ALTAPLAZA MALL     MELLINI SANTAMARIA
+S M RIBA SMITH COSTA VERDE            ALEXIS VAZQUEZ
+S M RIBA SMITH COSTA DEL ESTE         GERTRUDIS PEREZ
+SUPERMERCADO RIBA SMITH LA PITA       GERTRUDIS PEREZ
+S M RIBA SMITH (DEPOSITO)             GERTRUDIS PEREZ
+S/M RIBA SMITH QUINTAS DE VERSALLES II MANUEL VALDEZ
+S/M RIBA SMITH SELECTO CORONADO 2     EDUARDO LÓPEZ
+RIBA SMITH MULTIPLAZA PACIFIC         MADELEN ACOSTA
+S/M RIBA SMITH-BRISAS DEL GOLF        ELEIDI FRANCO
+MERCADITO RIBA SMITH LA SIESTA        BELTRAN FRANCO GONZALEZ
+SUPERMERCADO RIBA SMITH TRST          ALEXIS SALAZAR
+
+============================================================
+FIN DEL REPORTE
+============================================================
