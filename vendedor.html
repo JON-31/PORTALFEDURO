@@ -1023,9 +1023,9 @@ function showView(name, el, fromBn) {
   if (name === 'inventario') renderInventario();
   if (name === 'ofertas') renderOfertas();
   if (name === 'bodega') cargarBodegaVendedor();
-  if (name === 'ingreso') { var ri=document.getElementById('react-ingreso'); if(ri&&!ri.dataset.rendered){ReactDOM.render(React.createElement(IngresoApp),ri);ri.dataset.rendered='1';} }
+  if (name === 'ingreso') { var ri=document.getElementById('react-ingreso'); if(ri&&!ri.dataset.rendered){ReactDOM.createRoot(ri).render(React.createElement(IngresoApp));ri.dataset.rendered='1';} }
   if (name === 'tareas') { renderTareas(); }
-  if (name === 'machetazo-react') { var rm=document.getElementById('react-machetazo'); if(rm&&!rm.dataset.rendered){ReactDOM.render(React.createElement(MachetazoApp),rm);rm.dataset.rendered='1';} }
+  if (name === 'machetazo-react') { var rm=document.getElementById('react-machetazo'); if(rm&&!rm.dataset.rendered){ReactDOM.createRoot(rm).render(React.createElement(MachetazoApp));rm.dataset.rendered='1';} }
 }
 
 function getCadena(tienda) {

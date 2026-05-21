@@ -3418,9 +3418,9 @@ function ReyApp(){
 }
 
 /* ════ Mount all React apps ════ */
-ReactDOM.render(<IngresoApp/>, document.getElementById('react-ingreso'));
-ReactDOM.render(<MachetazoApp/>, document.getElementById('react-machetazo'));
-ReactDOM.render(<ReyApp/>, document.getElementById('react-rey'));
+ReactDOM.createRoot(document.getElementById('react-ingreso')).render(<IngresoApp/>);
+ReactDOM.createRoot(document.getElementById('react-machetazo')).render(<MachetazoApp/>);
+ReactDOM.createRoot(document.getElementById('react-rey')).render(<ReyApp/>);
 
 
 // ── GESTIONAR TAREAS ──

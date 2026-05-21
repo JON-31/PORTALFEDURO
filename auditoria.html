@@ -123,6 +123,33 @@ function cerrarSesion() {
   localStorage.removeItem('mars_portal_session');
   window.location.href = 'index.html';
 }
+// TODO: Módulo de Auditoría — funcionalidades pendientes:
+//
+// 1. LECTURA DE TAREAS
+//    - Consultar tabla "tareas" via sbAdmin() (ya disponible en shared.js)
+//    - Filtrar por vendedor_nombre, tienda, estado, rango de fechas
+//
+// 2. COMPARATIVA INVENTARIO
+//    - Mostrar inventario_sistema vs inventario_real por tarea completada
+//    - Calcular diferencia y % de variación
+//    - Resaltar discrepancias mayores al umbral configurable
+//
+// 3. HISTORIAL DE CAMBIOS
+//    - Listar tareas completadas ordenadas por fecha_completada DESC
+//    - Agrupar por vendedor y por tienda
+//
+// 4. EXPORTACIÓN
+//    - Botón "Exportar a Excel" usando SheetJS (ya en CDN en otros archivos)
+//    - Exportar resultado filtrado como .xlsx
+//
+// 5. NAVEGACIÓN ADICIONAL
+//    - Agregar nav-items al sidebar cuando se implementen los módulos
+//    - showView() ya está listo para manejar múltiples vistas
+//
+// 6. LIMPIEZA PENDIENTE
+//    - cerrarSesion() usa localStorage.removeItem directamente;
+//      reemplazar por clearSession() de shared.js cuando se refactorice
+//
 // Init
 (function() {
   var s = JSON.parse(localStorage.getItem('mars_portal_session') || 'null');
