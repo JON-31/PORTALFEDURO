@@ -746,7 +746,7 @@ tbody tr:last-child td { border-bottom: none; }
 <body>
 
 <script>
-(function(){var s=JSON.parse(localStorage.getItem('mars_portal_session')||'null');if(!s||s.type!=='vendedor'||Date.now()>s.expires_at){window.location.href='index.html';}})();
+(function(){var s=JSON.parse(localStorage.getItem('mars_portal_session')||'null');if(!s||s.rol!=='vendedor'||Date.now()>s.expires_at){window.location.href='index.html';}})();
 var _sess=JSON.parse(localStorage.getItem('mars_portal_session')||'{}');
 </script>
 
@@ -921,7 +921,7 @@ function doLogin() { window.location.href = 'index.html'; }
 // Load session on page start
 document.addEventListener('DOMContentLoaded', function() {
   var s = JSON.parse(localStorage.getItem('mars_portal_session') || '{}');
-  if (s && s.type === 'vendedor' && s.access_token) {
+  if (s && s.rol === 'vendedor' && s.access_token) {
     SESSION_TOKEN = s.access_token;
     iniciarSesionVendedor(s.nombre || 'VENDEDOR');
   }
@@ -1274,21 +1274,6 @@ async function cargarBodegaVendedor() {
   renderBodegaTabla(_bodegaDataCache);
 }
 
-// Restore session from Supabase Auth token
-(function() {
-  try {
-    var sess = localStorage.getItem('mars_session');
-    if (sess) {
-      var parsed = JSON.parse(sess);
-      if (parsed && parsed.access_token && parsed.expires_at && Date.now() < parsed.expires_at) {
-        SESSION_TOKEN = parsed.access_token;
-        setTimeout(function() { iniciarSesionVendedor(parsed.nombre); }, 100);
-        return;
-      }
-    }
-    localStorage.removeItem('mars_session');
-  } catch(e) {}
-})();
 </script>
 <script type="text/babel">
 const {useState,useEffect,useMemo,useCallback}=React;

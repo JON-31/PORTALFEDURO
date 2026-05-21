@@ -625,7 +625,7 @@ tbody tr:last-child td { border-bottom: none; }
 <body>
 
 <script>
-(function(){var s=JSON.parse(localStorage.getItem('mars_portal_session')||'null');if(!s||s.type!=='administrador'){window.location.href='index.html';}})();
+(function(){var s=JSON.parse(localStorage.getItem('mars_portal_session')||'null');if(!s||s.rol!=='admin-visual'){window.location.href='index.html';}})();
 </script>
 
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
@@ -1946,24 +1946,6 @@ async function cerrarSesionAdmin() {
   window.location.href = 'index.html';
 }
 
-(function() {
-  try {
-    var sess = localStorage.getItem('mars_admin_session');
-    if (sess) {
-      var p = JSON.parse(sess);
-      if (p && p.access_token && p.expires_at && Date.now() < p.expires_at) {
-        MARS_TOKEN = p.access_token;
-        document.getElementById('admin-login-screen').style.display = 'none';
-        var su = document.getElementById('admin-sidebar-user');
-        if (su) su.textContent = p.username.toUpperCase();
-        setTimeout(init, 100);
-        return;
-      }
-    }
-    localStorage.removeItem('mars_admin_session');
-  } catch(e) {}
-})();
-
 // ===== INICIALIZACIÓN =====
 function init() {
   document.getElementById('footer-date').textContent = new Date().toLocaleDateString('es-PA', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -2196,6 +2178,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var fd = document.getElementById('footer-date');
   if (fd) fd.textContent = new Date().toLocaleDateString('es-PA',{day:'2-digit',month:'short',year:'numeric'});
   cargarBodegaVendedor();
+  setTimeout(init, 100);
 });
 
 
@@ -3463,8 +3446,8 @@ ReactDOM.render(<ReyApp/>, document.getElementById('react-rey'));
 // ── SUPABASE HELPER FOR ADMIN ──
 async function sbAdmin(method, ep, body) {
   var s = JSON.parse(localStorage.getItem('mars_portal_session')||'{}');
-  var token = s.access_token || ANON_KEY;
-  var opts = { method: method, headers: { 'Authorization': 'Bearer ' + ANON_KEY, 'apikey': ANON_KEY, 'Content-Type': 'application/json', 'Prefer': method==='POST'?'return=representation':'return=minimal' } };
+  var token = (s.access_token && s.expires_at && s.expires_at > Date.now()) ? s.access_token : ANON_KEY;
+  var opts = { method: method, headers: { 'Authorization': 'Bearer ' + token, 'apikey': ANON_KEY, 'Content-Type': 'application/json', 'Prefer': method==='POST'?'return=representation':'return=minimal' } };
   if (body) opts.body = JSON.stringify(body);
   var r = await fetch(SB_URL + '/rest/v1' + ep, opts);
   var t = await r.text(); return t ? JSON.parse(t) : [];

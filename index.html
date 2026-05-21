@@ -100,13 +100,13 @@ body { font-family:'DM Sans',sans-serif; background:var(--black); color:var(--te
 var SB_URL = 'https://npatcmgjqxpjxhbcqsqv.supabase.co';
 var ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wYXRjbWdqcXhwanhoYmNxc3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyOTEzNDUsImV4cCI6MjA5Mjg2NzM0NX0.uDyUMvouWcPlbNOiPClNYezkKIE9ICAEpWZxklUdGZg';
 
-var PORTALS = { vendedor:'vendedor.html', admin:'admin-datos.html', administrador:'admin-visual.html', auditoria:'auditoria.html' };
+var PORTALS = { vendedor:'vendedor.html', admin:'admin-datos.html', 'admin-visual':'admin-visual.html', auditoria:'auditoria.html' };
 
 // Auto-redirect if already logged in
 (function() {
   var s = JSON.parse(localStorage.getItem('mars_portal_session') || 'null');
-  if (s && s.type && s.expires_at > Date.now()) {
-    window.location.href = PORTALS[s.type] || 'index.html';
+  if (s && s.rol && s.expires_at > Date.now()) {
+    window.location.href = PORTALS[s.rol] || 'index.html';
   }
 })();
 
@@ -121,38 +121,39 @@ async function doLogin() {
     errEl.style.display = 'block'; return;
   }
 
-  // Admin users (hardcoded, no Supabase)
-  if (username === 'admin' && password === 'Feduromars2026') {
-    saveSession('admin', 'ADMIN', null, null, null);
-    window.location.href = PORTALS['admin']; return;
-  }
-  if (username === 'administrador' && password === 'Feduromars2026') {
-    saveSession('administrador', 'ADMINISTRADOR', null, null, null);
-    window.location.href = PORTALS['administrador']; return;
-  }
-  if (username === 'auditoria' && password === 'Yvarona2026') {
-    saveSession('auditoria', 'AUDITORIA', null, null, null);
-    window.location.href = PORTALS['auditoria']; return;
-  }
-
-  // Vendors: Supabase auth
   btn.textContent = 'Verificando...'; btn.disabled = true;
   try {
-    var authRes = await fetch(SB_URL + '/auth/v1/token?grant_type=password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY },
-      body: JSON.stringify({ email: username + '@marsxtra.pa', password: password })
-    });
-    var authData = await authRes.json();
-    if (!authData.access_token) {
+    var res = await fetch(
+      SB_URL + '/rest/v1/usuarios?username=eq.' + encodeURIComponent(username)
+             + '&password=eq.' + encodeURIComponent(password)
+             + '&select=username,nombre,rol&limit=1',
+      { headers: { 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + ANON_KEY } }
+    );
+    var data = await res.json();
+    if (!data || !data.length) {
       errEl.textContent = '⛔ Usuario o contraseña incorrectos';
       errEl.style.display = 'block';
-    } else {
-      var meta = authData.user && authData.user.user_metadata;
-      var nombre = (meta && meta.nombre ? meta.nombre : username).toUpperCase();
-      saveSession('vendedor', nombre, authData.access_token, authData.refresh_token, authData.expires_in);
-      window.location.href = PORTALS['vendedor'];
+      btn.textContent = 'Entrar'; btn.disabled = false; return;
     }
+    var user = data[0];
+    var destino = PORTALS[user.rol];
+    if (!destino) {
+      errEl.textContent = '⛔ Rol no reconocido';
+      errEl.style.display = 'block';
+      btn.textContent = 'Entrar'; btn.disabled = false; return;
+    }
+    if (user.rol === 'vendedor') {
+      var authRes = await fetch(SB_URL + '/auth/v1/token?grant_type=password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY },
+        body: JSON.stringify({ email: username + '@marsxtra.pa', password: password })
+      });
+      var authData = await authRes.json();
+      saveSession(user.rol, user.nombre, username, authData.access_token || null, authData.refresh_token || null, authData.expires_in || null);
+    } else {
+      saveSession(user.rol, user.nombre, username, null, null, null);
+    }
+    window.location.href = destino;
   } catch(e) {
     errEl.textContent = '⛔ Error de conexión. Intenta de nuevo.';
     errEl.style.display = 'block';
@@ -161,12 +162,14 @@ async function doLogin() {
   btn.textContent = 'Entrar'; btn.disabled = false;
 }
 
-function saveSession(type, nombre, access_token, refresh_token, expires_in) {
+function saveSession(rol, nombre, username, access_token, refresh_token, expires_in) {
   localStorage.setItem('mars_portal_session', JSON.stringify({
-    type: type,
+    rol: rol,
     nombre: nombre,
+    username: username,
     access_token: access_token || null,
     refresh_token: refresh_token || null,
+    ts: Date.now(),
     expires_at: access_token
       ? Date.now() + ((expires_in || 3600) * 1000)
       : Date.now() + (24 * 60 * 60 * 1000)
