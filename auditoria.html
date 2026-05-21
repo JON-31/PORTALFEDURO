@@ -58,13 +58,14 @@ body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text)
   .content { padding:16px; }
 }
 </style>
+<script src="shared.js"></script>
 </head>
 <body>
 <script>
 // Session check
 (function() {
   var s = JSON.parse(localStorage.getItem('mars_portal_session') || 'null');
-  if (!s || s.type !== 'auditoria') { window.location.href = 'index.html'; }
+  if (!s || s.rol !== 'auditoria') { window.location.href = 'index.html'; }
 })();
 </script>
 

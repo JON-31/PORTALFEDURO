@@ -64,6 +64,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--black); color:var(--te
   line-height: 1.1;
 }
 </style>
+<script src="shared.js"></script>
 </head>
 <body>
 <div id="login-screen">
@@ -97,9 +98,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--black); color:var(--te
     <div class="bn-item" id="bn-menu" onclick="toggleSidebar()"><span class="bn-icon">&#9776;</span><span class="bn-label">Menu</span></div>
   </nav>
 <script>
-var SB_URL = 'https://npatcmgjqxpjxhbcqsqv.supabase.co';
-var ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wYXRjbWdqcXhwanhoYmNxc3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyOTEzNDUsImV4cCI6MjA5Mjg2NzM0NX0.uDyUMvouWcPlbNOiPClNYezkKIE9ICAEpWZxklUdGZg';
-
 var PORTALS = { vendedor:'vendedor.html', admin:'admin-datos.html', 'admin-visual':'admin-visual.html', auditoria:'auditoria.html' };
 
 // Auto-redirect if already logged in
@@ -162,19 +160,6 @@ async function doLogin() {
   btn.textContent = 'Entrar'; btn.disabled = false;
 }
 
-function saveSession(rol, nombre, username, access_token, refresh_token, expires_in) {
-  localStorage.setItem('mars_portal_session', JSON.stringify({
-    rol: rol,
-    nombre: nombre,
-    username: username,
-    access_token: access_token || null,
-    refresh_token: refresh_token || null,
-    ts: Date.now(),
-    expires_at: access_token
-      ? Date.now() + ((expires_in || 3600) * 1000)
-      : Date.now() + (24 * 60 * 60 * 1000)
-  }));
-}
 
 // Enter key on username → focus password
 document.getElementById('login-username').addEventListener('keydown', function(e) {
