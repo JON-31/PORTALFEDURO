@@ -79,3 +79,54 @@ INSERT INTO usuarios (username, password, nombre, rol) VALUES
   ('administrador', 'Feduromars2026', 'ADMINISTRADOR','admin-visual'),
   ('auditoria',     'Yvarona2026',    'AUDITORIA',    'auditoria')
 ON CONFLICT (username) DO NOTHING;
+
+-- ============================================================
+-- FASE 4 — POLÍTICAS RLS + ÍNDICE
+-- Ejecutar en Supabase > SQL Editor
+-- ============================================================
+
+-- ── 1. SELECT en usuarios (login) ────────────────────────────
+DROP POLICY IF EXISTS "anon_select_usuarios" ON usuarios;
+CREATE POLICY "anon_select_usuarios" ON usuarios
+  FOR SELECT TO anon USING (true);
+
+
+-- ── 2. Activar RLS en tareas ─────────────────────────────────
+ALTER TABLE tareas ENABLE ROW LEVEL SECURITY;
+
+
+-- ── 3. SELECT en tareas para anon y authenticated ────────────
+DROP POLICY IF EXISTS "select_tareas" ON tareas;
+CREATE POLICY "select_tareas" ON tareas
+  FOR SELECT TO anon, authenticated USING (true);
+
+
+-- ── 4. INSERT y UPDATE en tareas (admin vía anon key) ────────
+DROP POLICY IF EXISTS "admin_insert_tareas" ON tareas;
+CREATE POLICY "admin_insert_tareas" ON tareas
+  FOR INSERT TO anon WITH CHECK (true);
+
+DROP POLICY IF EXISTS "admin_update_tareas" ON tareas;
+CREATE POLICY "admin_update_tareas" ON tareas
+  FOR UPDATE TO anon USING (true) WITH CHECK (true);
+
+
+-- ── 5. SELECT en configuracion para anon ─────────────────────
+DROP POLICY IF EXISTS "anon_select_configuracion" ON configuracion;
+CREATE POLICY "anon_select_configuracion" ON configuracion
+  FOR SELECT TO anon USING (true);
+
+
+-- ── 6. INSERT y UPDATE en configuracion (admin vía anon key) ─
+DROP POLICY IF EXISTS "admin_insert_configuracion" ON configuracion;
+CREATE POLICY "admin_insert_configuracion" ON configuracion
+  FOR INSERT TO anon WITH CHECK (true);
+
+DROP POLICY IF EXISTS "admin_update_configuracion" ON configuracion;
+CREATE POLICY "admin_update_configuracion" ON configuracion
+  FOR UPDATE TO anon USING (true) WITH CHECK (true);
+
+
+-- ── 7. Índice en tareas por fecha_asignacion ─────────────────
+CREATE INDEX IF NOT EXISTS idx_tareas_fecha
+  ON tareas(fecha_asignacion DESC);
