@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FEDURO|MARS � Portal de Vendedores</title>
+<title>FEDURO|MARS — Portal de Vendedores</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="shared.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -770,14 +770,14 @@ var _sess=JSON.parse(localStorage.getItem('mars_portal_session')||'{}');
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section-label">Principal</div>
-      <div class="nav-item active" onclick="showView('foro', this)"><span class="nav-icon">??</span> Foro</div>
-      <div class="nav-item" onclick="showView('inventario', this)"><span class="nav-icon">??</span> Inventario por Tiendas</div>
-      <div class="nav-item" onclick="showView('bodega', this)"><span class="nav-icon">??</span> Inventario en Bodega</div>
-      <div class="nav-item" onclick="showView('ofertas', this)"><span class="nav-icon">??</span> Ofertas</div>
+      <div class="nav-item active" onclick="showView('foro', this)"><span class="nav-icon">📊</span> Foro</div>
+      <div class="nav-item" onclick="showView('inventario', this)"><span class="nav-icon">📦</span> Inventario por Tiendas</div>
+      <div class="nav-item" onclick="showView('bodega', this)"><span class="nav-icon">🏭</span> Inventario en Bodega</div>
+      <div class="nav-item" onclick="showView('ofertas', this)"><span class="nav-icon">🎁</span> Ofertas</div>
       <div class="nav-section-label">Ingresos</div>
-      <div class="nav-item" onclick="showView('ingreso', this)"><span class="nav-icon">??</span> Inventario</div>
-      <div class="nav-item" id="nav-machetazo" style="display:none" onclick="showView('machetazo-react', this)"><span class="nav-icon">??</span> Machetazo</div>
-      <div class="nav-item" onclick="showView('tareas', this)"><span class="nav-icon">??</span> Tareas</div>
+      <div class="nav-item" onclick="showView('ingreso', this)"><span class="nav-icon">📝</span> Inventario</div>
+      <div class="nav-item" id="nav-machetazo" style="display:none" onclick="showView('machetazo-react', this)"><span class="nav-icon">🛒</span> Machetazo</div>
+      <div class="nav-item" onclick="showView('tareas', this)"><span class="nav-icon">📋</span> Tareas</div>
     </nav>
     <div class="sidebar-footer">
       <div style="color:var(--yellow);font-weight:700;font-size:13px;margin-bottom:6px" id="sidebar-vendor-name"></div>
@@ -788,7 +788,7 @@ var _sess=JSON.parse(localStorage.getItem('mars_portal_session')||'{}');
   <div class="main">
     <div class="topbar">
       <div style="display:flex;align-items:center;gap:10px">
-        <button class="hamburger" onclick="toggleSidebar()" aria-label="Men�">&#9776;</button>
+        <button class="hamburger" onclick="toggleSidebar()" aria-label="Menú">&#9776;</button>
         <div class="topbar-title" id="topbar-title">Foro</div>
         <div class="topbar-greeting" id="topbar-greeting">
           <span class="topbar-greeting-sub">Sales Dashboard</span>
@@ -810,8 +810,8 @@ var _sess=JSON.parse(localStorage.getItem('mars_portal_session')||'{}');
         </div>
         <div id="dash-vendedor-profile"></div>
         <div id="dash-tareas-counter" style="display:none;background:#fff;border:1px solid #E4E9F0;border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;gap:20px;align-items:center">
-          <span style="font-size:13px;font-weight:600;color:#1A2340">?? Tareas pendientes: <strong id="counter-pendientes" style="color:#CC0000">0</strong></span>
-          <span style="font-size:13px;font-weight:600;color:#1A2340">? Tareas completadas: <strong id="counter-completadas" style="color:#00C48C">0</strong></span>
+          <span style="font-size:13px;font-weight:600;color:#1A2340">📋 Tareas pendientes: <strong id="counter-pendientes" style="color:#CC0000">0</strong></span>
+          <span style="font-size:13px;font-weight:600;color:#1A2340">✅ Tareas completadas: <strong id="counter-completadas" style="color:#00C48C">0</strong></span>
         </div>
         <div class="section-header">
           <div class="section-title">REPORTE POR TIENDA</div>
@@ -871,9 +871,9 @@ var _sess=JSON.parse(localStorage.getItem('mars_portal_session')||'{}');
       <!-- INGRESO -->
       <!-- INVENTARIO EN BODEGA (solo lectura para vendedores) -->
       <div class="view" id="view-bodega">
-        <div class="section-header"><div class="section-title">?? Inventario en Bodega</div></div>
+        <div class="section-header"><div class="section-title">🏭 Inventario en Bodega</div></div>
         <div style="margin-bottom:14px">
-          <input type="text" id="bodega-search" placeholder="&#128269; Buscar por producto o c�digo de barra..."
+          <input type="text" id="bodega-search" placeholder="&#128269; Buscar por producto o código de barra..."
             oninput="filtrarBodegaVendedor(this.value)"
             style="width:100%;max-width:420px;padding:10px 14px;border-radius:8px;border:1.5px solid var(--border);background:#F5F7FA;font-size:13px;outline:none;">
         </div>
@@ -950,9 +950,9 @@ async function iniciarSesionVendedor(nombreCompleto) {
   if (dashN) dashN.textContent = 'HI ' + firstName;
   var dashA = document.getElementById('dash-avatar');
   if (dashA) dashA.textContent = firstName.charAt(0).toUpperCase();
-  var MACHETAZO_USERS = MACHETAZO_TIENDAS.map(function(t){ return t.v; });
+  var MACHETAZO_USERS = ['CECILIA VALDES','ALEXIS VAZQUEZ','MANUEL VALDEZ','EDUARDO LÓPEZ','ELEIDI FRANCO','ADESSA COOK','ERICK RUIZ','PEDRO RODRIGUEZ','IRVING TORRES','BELTRAN FRANCO GONZALEZ','JAAZIEL GONZALEZ','SAMUEL BARRIA'];
   var navMachetazo = document.getElementById('nav-machetazo');
-  if (navMachetazo) { var vNorm = VENDOR_ACTUAL.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); var mMatch = MACHETAZO_USERS.some(function(u){ return u.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'') === vNorm; }); navMachetazo.style.display = mMatch ? '' : 'none'; }
+  if (navMachetazo) navMachetazo.style.display = MACHETAZO_USERS.indexOf(VENDOR_ACTUAL) !== -1 ? '' : 'none';
   renderDashboard();
   cargarTareasCount();
   renderOfertas();
@@ -974,7 +974,7 @@ async function cerrarSesion() {
   window.location.href = 'index.html';
 }
 
-/* -- FASE 5: inactividad 1 hora -- */
+/* ── FASE 5: inactividad 1 hora ── */
 var _inactivityTimer = null;
 var INACTIVITY_MS = 60 * 60 * 1000;
 function resetInactivityTimer() {
@@ -982,7 +982,7 @@ function resetInactivityTimer() {
   _inactivityTimer = setTimeout(function() {
     var msg = document.createElement('div');
     msg.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center';
-    msg.innerHTML = '<div style="background:#fff;border-radius:16px;padding:2rem 2.5rem;text-align:center;max-width:320px"><p style="font-size:1rem;font-weight:700;color:#1A2340;margin:0 0 1rem">Tu sesi�n expir� por inactividad.</p><button onclick="location.reload()" style="background:#CC0000;color:#fff;border:none;padding:.75rem 2rem;border-radius:8px;font-weight:700;cursor:pointer;font-size:.95rem">Cerrar sesi�n</button></div>';
+    msg.innerHTML = '<div style="background:#fff;border-radius:16px;padding:2rem 2.5rem;text-align:center;max-width:320px"><p style="font-size:1rem;font-weight:700;color:#1A2340;margin:0 0 1rem">Tu sesión expiró por inactividad.</p><button onclick="location.reload()" style="background:#CC0000;color:#fff;border:none;padding:.75rem 2rem;border-radius:8px;font-weight:700;cursor:pointer;font-size:.95rem">Cerrar sesión</button></div>';
     document.body.appendChild(msg);
     cerrarSesion();
   }, INACTIVITY_MS);
@@ -1050,7 +1050,7 @@ function renderDashboard() {
     var criticosP = INV_DATA_V.filter(function(d){ return d.cobertura > 60; }).length;
     profileEl.innerHTML =
       '<div class="vendedor-profile">' +
-      '<div class="vendedor-name">' + (VENDOR_ACTUAL || '�') + '</div>' +
+      '<div class="vendedor-name">' + (VENDOR_ACTUAL || '—') + '</div>' +
       '<div class="vendedor-role">Vendedor</div>' +
       '<div class="vendedor-stats">' +
       '<div class="vstat"><div class="vstat-value">' + numTiendas + '</div><div class="vstat-label">Tiendas</div></div>' +
@@ -1065,12 +1065,12 @@ function renderDashboard() {
   // Group INV_DATA_V by tienda name for fast lookup
   var dataByTienda = {};
   INV_DATA_V.forEach(function(d) {
-    var t = d.tienda || '�';
+    var t = d.tienda || '—';
     if (!dataByTienda[t]) dataByTienda[t] = [];
     dataByTienda[t].push(d);
   });
 
-  // Build stores from the master tienda list � always show all assigned tiendas
+  // Build stores from the master tienda list — always show all assigned tiendas
   var stores = {};
   var masterNames = {};
   misTiendas.forEach(function(t) {
@@ -1107,13 +1107,13 @@ function renderDashboard() {
       : cp > 30 ? '<span class="badge badge-warn">Atencion</span>'
       : '<span class="badge badge-ok">Optimo</span>';
     var crit = s.cob.filter(function(c){ return c < 30; }).length;
-    var critCell = hasData && crit > 0 ? '<span style="color:var(--red-light);font-weight:700">' + crit + '</span>' : '<span style="color:var(--muted)">�</span>';
+    var critCell = hasData && crit > 0 ? '<span style="color:var(--red-light);font-weight:700">' + crit + '</span>' : '<span style="color:var(--muted)">—</span>';
     return '<tr>' +
       '<td style="font-weight:600">' + t + '</td>' +
-      '<td>' + (hasData ? s.prods : '�') + '</td>' +
-      '<td>' + (hasData ? s.inv.toLocaleString() : '�') + '</td>' +
-      '<td>' + (hasData ? s.venta.toLocaleString() : '�') + '</td>' +
-      '<td>' + (hasData ? cp + ' dias' : '�') + '</td>' +
+      '<td>' + (hasData ? s.prods : '—') + '</td>' +
+      '<td>' + (hasData ? s.inv.toLocaleString() : '—') + '</td>' +
+      '<td>' + (hasData ? s.venta.toLocaleString() : '—') + '</td>' +
+      '<td>' + (hasData ? cp + ' dias' : '—') + '</td>' +
       '<td>' + badgeHtml + '</td>' +
       '<td>' + critCell + '</td>' +
       '</tr>';
@@ -1147,7 +1147,7 @@ function filtrarInventario() {
   document.getElementById('inv-table-body').innerHTML = data.map(function(d) {
     var badge = d.cobertura > 60 ? 'badge-danger' : d.cobertura > 30 ? 'badge-warn' : 'badge-ok';
     var estado = d.cobertura > 60 ? 'Critico' : d.cobertura > 30 ? 'Atencion' : 'Optimo';
-    return '<tr><td>' + (d.tienda||'�') + '</td><td><span class="badge badge-brand">' + (d.marca||'�') + '</span></td><td style="font-weight:600">' + (d.producto||'�') + '</td><td>' + (d.inventario||0).toLocaleString() + '</td><td>' + (d.venta_promedio||0).toLocaleString() + '</td><td>' + (d.cobertura||0) + ' dias</td><td><span class="badge ' + badge + '">' + estado + '</span></td></tr>';
+    return '<tr><td>' + (d.tienda||'—') + '</td><td><span class="badge badge-brand">' + (d.marca||'—') + '</span></td><td style="font-weight:600">' + (d.producto||'—') + '</td><td>' + (d.inventario||0).toLocaleString() + '</td><td>' + (d.venta_promedio||0).toLocaleString() + '</td><td>' + (d.cobertura||0) + ' dias</td><td><span class="badge ' + badge + '">' + estado + '</span></td></tr>';
   }).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Sin registros</td></tr>';
 }
 
@@ -1158,7 +1158,7 @@ function formatOfertaPeriodo(fechaInicio, fechaFin) {
     return p.length === 3 ? {y:+p[0], m:+p[1]-1, d:+p[2]} : null;
   }
   var ini = parseFecha(fechaInicio), fin = parseFecha(fechaFin);
-  if (!ini || !fin) return (fechaInicio || '') + ' ? ' + (fechaFin || '');
+  if (!ini || !fin) return (fechaInicio || '') + ' → ' + (fechaFin || '');
   if (ini.m === fin.m && ini.y === fin.y) {
     return ini.d + ' al ' + fin.d + ' de ' + MESES[fin.m];
   }
@@ -1217,11 +1217,11 @@ function renderBodegaTabla(datos) {
     '</tr></thead><tbody>';
   html += datos.map(function(d) {
     return '<tr>' +
-      '<td style="font-family:monospace;font-size:11px">' + (d.codigoBarras||'�') + '</td>' +
-      '<td style="font-weight:600">' + (d.descripcion||'�') + '</td>' +
-      '<td style="font-size:11px;color:var(--muted);text-align:center">' + (d.unidFact||'�') + '</td>' +
-      '<td style="text-align:right">' + (d.b8 !== '' && d.b8 != null ? d.b8 : '�') + '</td>' +
-      '<td style="text-align:right;font-weight:600">' + (d.m8 !== '' && d.m8 != null ? Number(d.m8).toLocaleString() : '�') + '</td>' +
+      '<td style="font-family:monospace;font-size:11px">' + (d.codigoBarras||'—') + '</td>' +
+      '<td style="font-weight:600">' + (d.descripcion||'—') + '</td>' +
+      '<td style="font-size:11px;color:var(--muted);text-align:center">' + (d.unidFact||'—') + '</td>' +
+      '<td style="text-align:right">' + (d.b8 !== '' && d.b8 != null ? d.b8 : '—') + '</td>' +
+      '<td style="text-align:right;font-weight:600">' + (d.m8 !== '' && d.m8 != null ? Number(d.m8).toLocaleString() : '—') + '</td>' +
       '</tr>';
   }).join('');
   html += '</tbody></table></div>';
@@ -1288,27 +1288,27 @@ const MACHETAZO_TIENDAS=[
   {n:'GOLY CALIDONIA',v:'CECILIA VALDES',col:7,colLetter:'G',store:'CALIDONIA'},
   {n:'GOLY ARRAIJAN',v:'ALEXIS VAZQUEZ',col:10,colLetter:'J',store:'ARRAIJAN'},
   {n:'GOLY COSTA SUR',v:'MANUEL VALDEZ',col:17,colLetter:'Q',store:'COSTA SUR'},
-  {n:'GOLY CORONADO',v:'EDUARDO L�PEZ',col:15,colLetter:'O',store:'CORONADO'},
+  {n:'GOLY CORONADO',v:'EDUARDO LÓPEZ',col:15,colLetter:'O',store:'CORONADO'},
   {n:'GOLY BRISAS',v:'ELEIDI FRANCO',col:18,colLetter:'R',store:'BRISAS'},
   {n:'GOLY NUEVO TOCUMEN',v:'ADESSA COOK',col:19,colLetter:'S',store:'NUEVO TOCUMEN'},
   {n:'GOLY EL DORADO',v:'IRVING TORRES',col:22,colLetter:'V',store:'DORADO'},
   {n:'GOLY TOCUMEN',v:'BELTRAN FRANCO GONZALEZ',col:9,colLetter:'I',store:'TOCUMEN'},
   {n:'GOLY SAN MIGUELITO',v:'JAAZIEL GONZALEZ',col:8,colLetter:'H',store:'SAN MIGUELITO'},
   {n:'GOLY METRO MALL',v:'SAMUEL BARRIA',col:14,colLetter:'N',store:'METRO MALL'},
-  {n:'GOLY OJO DE AGUA',v:'ERICK RUIZ',col:21,colLetter:'U',store:'VIA ESPA�A'},
+  {n:'GOLY OJO DE AGUA',v:'ERICK RUIZ',col:21,colLetter:'U',store:'VIA ESPAÑA'},
   {n:'CIA. GOLY, S.A. METROMALL',v:'PEDRO RODRIGUEZ',col:23,colLetter:'W',store:'METROMALL'},
 ];
 
 const MACHETAZO_PRODUCTOS=[
-  {row:12,material:'10851349',codigo:'750617451441',descripcion:'PEDIGREE RAZAS PEQUE�AS ETG 10/1KG',t:'CJ',u:10,p:39.50},
+  {row:12,material:'10851349',codigo:'750617451441',descripcion:'PEDIGREE RAZAS PEQUEÑAS ETG 10/1KG',t:'CJ',u:10,p:39.50},
   {row:13,material:'10851347',codigo:'750617451440',descripcion:'PEDIGREE PUPPY NUTRIDEFENSE ETG 10/1KG',t:'CJ',u:10,p:39.50},
   {row:14,material:'10897017',codigo:'750617451439',descripcion:'PEDIGREE ADULTO ETG 10/1KG',t:'CJ',u:10,p:39.50},
   {row:15,material:'10254381',codigo:'2310005104',descripcion:'PEDIGREE ADULTO 10BL/2KG.',t:'CJ',u:10,p:74.30},
   {row:16,material:'10002142',codigo:'2310004104',descripcion:'PEDIGREE CACHORRO 10BL/2KG.',t:'CJ',u:10,p:74.30},
-  {row:17,material:'10022665',codigo:'70646001371',descripcion:'PEDIGREE RAZAS PEQUE�AS 10BL/2KG.',t:'CJ',u:10,p:74.30},
+  {row:17,material:'10022665',codigo:'70646001371',descripcion:'PEDIGREE RAZAS PEQUEÑAS 10BL/2KG.',t:'CJ',u:10,p:74.30},
   {row:18,material:'10007176',codigo:'2310005103',descripcion:'PEDIGREE ADULTO 4/4KG.',t:'CJ',u:4,p:74.30},
   {row:19,material:'10007174',codigo:'2310004103',descripcion:'PEDIGREE CACHORRO 4/4KG.',t:'CJ',u:4,p:74.30},
-  {row:20,material:'10022840',codigo:'70646023881',descripcion:'PEDIGREE RAZAS PEQUE�AS 4/4KG.',t:'CJ',u:4,p:74.30},
+  {row:20,material:'10022840',codigo:'70646023881',descripcion:'PEDIGREE RAZAS PEQUEÑAS 4/4KG.',t:'CJ',u:4,p:74.30},
   {row:21,material:'10304181',codigo:'70646024486',descripcion:'PEDIGREE CACHORRO 7KG. SC/1',t:'CJ',u:1,p:74.30},
   {row:22,material:'10767457',codigo:'750617451073',descripcion:'PEDIGREE POUCH CORDERO ADULTO 100GRS.',t:'CJ',u:24,p:39.50},
   {row:23,material:'10552611',codigo:'70646024923',descripcion:'PEDIGREE POUCH POLLO ADULTO 100GRS.',t:'CJ',u:24,p:39.50},
@@ -1511,7 +1511,7 @@ const CAT=[
   {b:'7506174516161',c:'W3-516161',n:"PANCITA SALUDABLE POLLO Y CAMOTE 24/100GR",m:'PETCARE',t:'CJ',u:24,p:39.50},
   {b:'7506174516147',c:'W3-516147',n:"PANCITA SALUDABLE SALMON Y ARROZ INTEGRAL 24/100GR",m:'PETCARE',t:'CJ',u:24,p:39.50},
   {b:'7506174516154',c:'W3-516154',n:"PANCITA SALUDABLE PAVO Y ZANAHORIA 24/100GR",m:'PETCARE',t:'CJ',u:24,p:39.50},
-  {b:'7506174514419',c:'W3-514419',n:"PEDIGREE RAZAS PEQUE�AS ETG 10/1KG",m:'PETCARE',t:'CJ',u:10,p:39.50},
+  {b:'7506174514419',c:'W3-514419',n:"PEDIGREE RAZAS PEQUEÑAS ETG 10/1KG",m:'PETCARE',t:'CJ',u:10,p:39.50},
   {b:'7506174514402',c:'W3-514402',n:"PEDIGREE PUPPY NUTRIDEFENSE ETG 10/1KG",m:'PETCARE',t:'CJ',u:10,p:39.50},
   {b:'7506174514396',c:'W3-514396',n:"PEDIGREE ADULTO ETG 10/1KG",m:'PETCARE',t:'CJ',u:10,p:39.50},
   {b:'023100051048',c:'W3-051048',n:"PEDIGREE ADULTO 10BL/2KG",m:'PETCARE',t:'CJ',u:10,p:74.30},
@@ -1533,7 +1533,7 @@ const CAT=[
   {b:'70646000065',c:'W3-000065',n:"WHISKAS POUCH POLLO CJ24/85GR",m:'PETCARE',t:'CJ',u:24,p:39.50},
   {b:'70646000068',c:'W3-000068',n:"WHISKAS POUCH RES CJ24/85GR",m:'PETCARE',t:'CJ',u:24,p:39.50},
   {b:'745202641733',c:'W3-641733',n:"4PACK PEDIGREE CACHORRO CAJA6/4POUCH",m:'PETCARE',t:'CJ',u:6,p:39.50},
-  {b:'745202641731',c:'W3-641731',n:"4PACK PEDIGREE RAZAS PEQUE�AS CAJA6/4POUCH",m:'PETCARE',t:'CJ',u:6,p:39.50},
+  {b:'745202641731',c:'W3-641731',n:"4PACK PEDIGREE RAZAS PEQUEÑAS CAJA6/4POUCH",m:'PETCARE',t:'CJ',u:6,p:39.50},
   {b:'745202641732',c:'W3-641732',n:"4PACK PEDIGREE ADULTO CAJA6/4POUCH",m:'PETCARE',t:'CJ',u:6,p:39.50},
   {b:'745202641729',c:'W3-641729',n:"4PACK WHISKAS GATO CAJA6/4POUCH",m:'PETCARE',t:'CJ',u:6,p:39.50},
   {b:'745202641730',c:'W3-641730',n:"4PACK WHISKAS GATITO CAJA6/4POUCH",m:'PETCARE',t:'CJ',u:6,p:39.50},
@@ -1543,7 +1543,7 @@ window.CAT_DATA = CAT;
 const VENDS=[
   {id:1,n:'MARTIN CASTILLO'},{id:2,n:'CECILIA VALDES'},{id:3,n:'MELLINI SANTAMARIA'},
   {id:4,n:'ALEXIS VAZQUEZ'},{id:5,n:'MAGDIEL MORAN'},{id:6,n:'GERTRUDIS PEREZ'},
-  {id:7,n:'MANUEL VALDEZ'},{id:8,n:'LUIS TUNON'},{id:9,n:'EDUARDO L�PEZ'},
+  {id:7,n:'MANUEL VALDEZ'},{id:8,n:'LUIS TUNON'},{id:9,n:'EDUARDO LÓPEZ'},
   {id:10,n:'EVELYN FERNANDEZ'},{id:11,n:'AURELINO RIVAS'},{id:12,n:'MADELEN ACOSTA'},
   {id:13,n:'ELEIDI FRANCO'},{id:14,n:'STEFANI BRAVO'},{id:15,n:'KATHYUSKA GUERRA'},
   {id:16,n:'GALVEN RIVAS'},{id:17,n:'YESLIN PALERMO'},{id:18,n:'ADESSA COOK'},
@@ -1562,8 +1562,8 @@ const TIENDAS_REY=[
   {id:14,n:'SM REY PASEO ARRAIJAN',v:'ALEXIS VAZQUEZ'},
   {id:20,n:'SM REY SANTA MARIA',v:'GERTRUDIS PEREZ'},
   {id:29,n:'S M REY VERSALLES',v:'MANUEL VALDEZ'},
-  {id:35,n:'S M REY CORONADO',v:'EDUARDO L�PEZ'},
-  {id:42,n:'SM REY PASEO DEL VALLE',v:'EDUARDO L�PEZ'},
+  {id:35,n:'S M REY CORONADO',v:'EDUARDO LÓPEZ'},
+  {id:42,n:'SM REY PASEO DEL VALLE',v:'EDUARDO LÓPEZ'},
   {id:58,n:'SM REY 12 OCTUBRE',v:'MADELEN ACOSTA'},
   {id:61,n:'SM REY BRISAS DEL GOLF',v:'ELEIDI FRANCO'},
   {id:65,n:'SM REY BRISAS DEL NORTE',v:'ELEIDI FRANCO'},
@@ -1626,15 +1626,15 @@ const TIENDAS_INGRESO=[
   {id:41,n:'IMPORTADORA RICAMAR, S.A.(LA DONA)',v:'LUIS TUNON'},
   {id:42,n:'IMPORTADORA RICAMAR S A NUEVO TOCUMEN',v:'LUIS TUNON'},
   {id:43,n:'TAMEK S A EL FUERTE LA ONDA 24 DE DICIEMBRE',v:'LUIS TUNON'},
-  {id:44,n:'S M REY CORONADO',v:'EDUARDO L�PEZ'},
-  {id:45,n:'S/M RIBA SMITH SELECTO CORONADO 2',v:'EDUARDO L�PEZ'},
-  {id:46,n:'GOLY CORONADO',v:'EDUARDO L�PEZ'},
-  {id:47,n:'IMPORTADORA RICAMAR, S.A.(CORONADO)',v:'EDUARDO L�PEZ'},
-  {id:48,n:'FARMACIA ARROCHA SA CORONADO',v:'EDUARDO L�PEZ'},
-  {id:49,n:'COCHEZ CORONADO',v:'EDUARDO L�PEZ'},
-  {id:50,n:'SUPERMERCADOS XTRA S.A.(T301 CORONADO MAXI FERIA)',v:'EDUARDO L�PEZ'},
-  {id:51,n:'SM REY PASEO DEL VALLE',v:'EDUARDO L�PEZ'},
-  {id:52,n:'SUPERMERCADOS XTRA S.A.(T039 MARKET CAPIRA)',v:'EDUARDO L�PEZ'},
+  {id:44,n:'S M REY CORONADO',v:'EDUARDO LÓPEZ'},
+  {id:45,n:'S/M RIBA SMITH SELECTO CORONADO 2',v:'EDUARDO LÓPEZ'},
+  {id:46,n:'GOLY CORONADO',v:'EDUARDO LÓPEZ'},
+  {id:47,n:'IMPORTADORA RICAMAR, S.A.(CORONADO)',v:'EDUARDO LÓPEZ'},
+  {id:48,n:'FARMACIA ARROCHA SA CORONADO',v:'EDUARDO LÓPEZ'},
+  {id:49,n:'COCHEZ CORONADO',v:'EDUARDO LÓPEZ'},
+  {id:50,n:'SUPERMERCADOS XTRA S.A.(T301 CORONADO MAXI FERIA)',v:'EDUARDO LÓPEZ'},
+  {id:51,n:'SM REY PASEO DEL VALLE',v:'EDUARDO LÓPEZ'},
+  {id:52,n:'SUPERMERCADOS XTRA S.A.(T039 MARKET CAPIRA)',v:'EDUARDO LÓPEZ'},
   {id:53,n:'IMPORTADORA RICAMAR, S.A.(C/C ON-D-GO)',v:'EVELYN FERNANDEZ'},
   {id:54,n:'SUPERMERCADOS XTRA S.A(T211 MF-XTRA LLANO LARGO)',v:'EVELYN FERNANDEZ'},
   {id:55,n:'IMPORTADORA VIRZI,SA(S/C 11) CHORRERA',v:'EVELYN FERNANDEZ'},
@@ -1754,7 +1754,7 @@ window.CAT_DATA = CAT;
 window.TIENDAS_INGRESO_DATA = TIENDAS_INGRESO;
 
 
-/* -- helpers -- */
+/* ── helpers ── */
 const Logo=()=>(
   <svg width="100" height="34" viewBox="0 0 280 100" xmlns="http://www.w3.org/2000/svg">
     <rect width="280" height="100" fill="#CC0000" rx="4"/>
@@ -1780,7 +1780,7 @@ const TIPO_PEDIDO_COLORS={
 };
 
 const TipoPedidoBadge=({tipo})=>{
-  if(!tipo||tipo==='�')return <span style={{color:'#555'}}>�</span>;
+  if(!tipo||tipo==='—')return <span style={{color:'#555'}}>—</span>;
   const c=TIPO_PEDIDO_COLORS[tipo]||{bg:'rgba(100,116,139,.25)',border:'#64748b',text:'#cbd5e1'};
   return(
     <span style={{background:c.bg,border:`1px solid ${c.border}`,color:c.text,fontSize:'.68rem',fontWeight:'700',padding:'2px 7px',borderRadius:'4px',whiteSpace:'nowrap'}}>
@@ -1791,7 +1791,7 @@ const TipoPedidoBadge=({tipo})=>{
 
 const TipoPedidoSelector=({value,onChange})=>(
   <div style={{marginBottom:'1rem'}}>
-    <label style={{color:'#F0F0F0',fontWeight:'700',fontSize:'.9rem',display:'block',marginBottom:'.5rem'}}>??? Tipo de Pedido</label>
+    <label style={{color:'#F0F0F0',fontWeight:'700',fontSize:'.9rem',display:'block',marginBottom:'.5rem'}}>🏷️ Tipo de Pedido</label>
     <div style={{display:'flex',flexWrap:'wrap',gap:'.45rem'}}>
       {TIPOS_PEDIDO.map(tipo=>{
         const sel=value===tipo;
@@ -1800,12 +1800,12 @@ const TipoPedidoSelector=({value,onChange})=>(
           <button key={tipo} type="button" onClick={()=>onChange(sel?'':tipo)}
             style={{padding:'.45rem .85rem',borderRadius:'2rem',border:sel?`2px solid ${c.border}`:'1px solid #2A2A2A',
               background:sel?c.bg:'rgba(30,30,30,.8)',color:sel?c.text:'#888',cursor:'pointer',fontSize:'.78rem',fontWeight:sel?'700':'400',transition:'all .15s'}}>
-            {sel?'? ':''}{tipo}
+            {sel?'✓ ':''}{tipo}
           </button>
         );
       })}
     </div>
-    {value&&<p style={{color:'#7dd3fc',fontSize:'.75rem',margin:'.4rem 0 0'}}>? Seleccionado: <strong>{value}</strong></p>}
+    {value&&<p style={{color:'#7dd3fc',fontSize:'.75rem',margin:'.4rem 0 0'}}>✓ Seleccionado: <strong>{value}</strong></p>}
   </div>
 );
 
@@ -1814,7 +1814,7 @@ const descargarMachetazoExcel=(pedidos)=>{
   try{
     const rows1=[['#','Material','Codigo','Descripcion','Tipo de Pedido','Tienda','Columna','Cajas/Ex','Unidades','Monto ($)']];
     pedidos.forEach((p,i)=>{
-      rows1.push([i+1,p.pMat,p.pCod,p.pDesc,p.tipoPedido||'�',p.tStore,p.tColL,p.qtyCajas,p.qtyUnidades,p.monto]);
+      rows1.push([i+1,p.pMat,p.pCod,p.pDesc,p.tipoPedido||'—',p.tStore,p.tColL,p.qtyCajas,p.qtyUnidades,p.monto]);
     });
     rows1.push([]);
     const totalUnidades=pedidos.reduce((a,p)=>a+p.qtyUnidades,0);
@@ -1832,7 +1832,7 @@ function ItemEditable({item,idx,onEliminar,onEditar,accentColor,borderColor,bgCo
   const [nuevaCant,setNuevaCant]=useState(String(item.cantidad||item.qtyCajas||''));
   const guardarEdicion=()=>{
     const val=parseFloat(nuevaCant);
-    if(!val||val<=0){alert('Cantidad inv�lida');return;}
+    if(!val||val<=0){alert('Cantidad inválida');return;}
     onEditar(idx,val);setEditando(false);
   };
   return(
@@ -1842,9 +1842,9 @@ function ItemEditable({item,idx,onEliminar,onEditar,accentColor,borderColor,bgCo
         <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:'4px',flexShrink:0,marginLeft:'.75rem'}}>
           <div style={{display:'flex',gap:'4px'}}>
             <button onClick={()=>{setEditando(!editando);setNuevaCant(String(item.cantidad||item.qtyCajas||''));}}
-              style={{background:'rgba(251,191,36,.2)',border:'1px solid #fbbf24',color:'#fcd34d',borderRadius:'.35rem',padding:'3px 8px',cursor:'pointer',fontSize:'.72rem',fontWeight:'700'}}>??</button>
+              style={{background:'rgba(251,191,36,.2)',border:'1px solid #fbbf24',color:'#fcd34d',borderRadius:'.35rem',padding:'3px 8px',cursor:'pointer',fontSize:'.72rem',fontWeight:'700'}}>✏️</button>
             <button onClick={()=>onEliminar(idx)}
-              style={{background:'rgba(220,38,38,.3)',border:'1px solid #dc2626',color:'#fca5a5',borderRadius:'.35rem',padding:'3px 8px',cursor:'pointer',fontSize:'.72rem',fontWeight:'700'}}>?</button>
+              style={{background:'rgba(220,38,38,.3)',border:'1px solid #dc2626',color:'#fca5a5',borderRadius:'.35rem',padding:'3px 8px',cursor:'pointer',fontSize:'.72rem',fontWeight:'700'}}>✕</button>
           </div>
         </div>
       </div>
@@ -1854,14 +1854,14 @@ function ItemEditable({item,idx,onEliminar,onEditar,accentColor,borderColor,bgCo
           <input type="number" min="1" value={nuevaCant} onChange={e=>setNuevaCant(e.target.value)}
             style={{flex:1,background:'#1A1A1A',color:'white',border:'1px solid #fbbf24',borderRadius:'.35rem',padding:'.4rem .6rem',outline:'none',fontSize:'.85rem'}}/>
           <button onClick={guardarEdicion} style={{background:'#16a34a',color:'white',border:'none',borderRadius:'.35rem',padding:'.4rem .75rem',cursor:'pointer',fontSize:'.78rem',fontWeight:'700'}}>OK</button>
-          <button onClick={()=>setEditando(false)} style={{background:'#333',color:'white',border:'none',borderRadius:'.35rem',padding:'.4rem .6rem',cursor:'pointer',fontSize:'.78rem'}}>?</button>
+          <button onClick={()=>setEditando(false)} style={{background:'#333',color:'white',border:'none',borderRadius:'.35rem',padding:'.4rem .6rem',cursor:'pointer',fontSize:'.78rem'}}>✕</button>
         </div>
       )}
     </div>
   );
 }
 
-/* ---- IngresoApp ---- */
+/* ════ IngresoApp ════ */
 function IngresoApp(){
   const [user,setUser]=useState(window.VENDOR_ACTUAL?{v:window.VENDOR_ACTUAL}:null);
   const [reps,setReps]=useState([]);
@@ -1935,7 +1935,7 @@ function IngresoApp(){
     }
     setSaving(false);
     if(ok===vPedidos.length){showM(''+ok+' reportes guardados');setVPedidos([]);cargar();}
-    else showM(''+ok+'/'+vPedidos.length+' guardados. Revisa conexi�n o pol�ticas RLS.',true);
+    else showM(''+ok+'/'+vPedidos.length+' guardados. Revisa conexión o políticas RLS.',true);
   };
 
   const vEliminar=(idx)=>setVPedidos(prev=>prev.filter((_,i)=>i!==idx));
@@ -1964,21 +1964,21 @@ function IngresoApp(){
         </div>
 
         {!showForm&&<button onClick={()=>setShowForm(true)} style={btn('#CC0000',{width:'100%',padding:'1rem',fontSize:'1rem',marginBottom:'1.5rem',borderRadius:'.75rem'})}>
-          + Agregar Producto con Pr�ximo Vencimiento
+          + Agregar Producto con Próximo Vencimiento
         </button>}
 
         {showForm&&<div style={{background:'#FFFFFF',border:'1px solid #E4E9F0',borderRadius:'.75rem',padding:'1.5rem',marginBottom:'1.5rem',boxShadow:'0 2px 8px rgba(0,0,0,.06)'}}>
           <h2 style={{color:'#1A2340',fontWeight:'700',marginTop:0}}>Agregar a la Lista</h2>
           <div style={{marginBottom:'1rem'}}>
-            <label style={{color:'#1A2340',fontWeight:'700',fontSize:'.9rem',display:'block',marginBottom:'.5rem'}}>?? Tienda</label>
+            <label style={{color:'#1A2340',fontWeight:'700',fontSize:'.9rem',display:'block',marginBottom:'.5rem'}}>📍 Tienda</label>
             <select value={tId} onChange={e=>setTId(e.target.value)} style={{width:'100%',background:'#F5F7FA',color:'#1A2340',border:'1px solid #E4E9F0',borderRadius:'.5rem',padding:'.75rem',boxSizing:'border-box'}}>
               <option value="">-- Selecciona tu tienda --</option>
               {tiendasV.map(t=><option key={t.id} value={t.id}>{t.n}</option>)}
             </select>
           </div>
           <div style={{marginBottom:'1rem',position:'relative'}}>
-            <label style={{color:'#1A2340',fontWeight:'700',fontSize:'.9rem',display:'block',marginBottom:'.5rem'}}>?? Buscar Producto</label>
-            <input type="text" placeholder="C�digo de barra, c�digo FEDURO o nombre..." value={codIn}
+            <label style={{color:'#1A2340',fontWeight:'700',fontSize:'.9rem',display:'block',marginBottom:'.5rem'}}>🔍 Buscar Producto</label>
+            <input type="text" placeholder="Código de barra, código FEDURO o nombre..." value={codIn}
               onChange={e=>{setCodIn(e.target.value);setShowSug(true);if(prod)setProd(null);}}
               onFocus={()=>codIn&&setShowSug(true)}
               style={{width:'100%',background:'#F5F7FA',color:'#1A2340',border:'1px solid #E4E9F0',borderRadius:'.5rem',padding:'.75rem',boxSizing:'border-box',outline:'none'}}/>
@@ -1989,7 +1989,7 @@ function IngresoApp(){
                     style={{display:'block',width:'100%',textAlign:'left',padding:'.75rem 1rem',border:'none',borderBottom:'1px solid #E4E9F0',background:'transparent',cursor:'pointer',color:'#1A2340'}}>
                     <div style={{color:'#CC0000',fontFamily:'monospace',fontSize:'.75rem'}}>{p.b}</div>
                     <div style={{fontWeight:'600',fontSize:'.85rem',marginTop:'2px'}}>{p.n}</div>
-                    <div style={{color:'#16a34a',fontSize:'.75rem'}}>{p.m} � {p.t} � {p.u} un � ${p.p}</div>
+                    <div style={{color:'#16a34a',fontSize:'.75rem'}}>{p.m} · {p.t} · {p.u} un · ${p.p}</div>
                   </button>
                 ))}
               </div>
@@ -1997,21 +1997,21 @@ function IngresoApp(){
             {prod&&(
               <div style={{marginTop:'.5rem',background:'rgba(34,197,94,.08)',border:'1px solid #22c55e',borderRadius:'.5rem',padding:'.75rem',display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
                 <div>
-                  <div style={{color:'#CC0000',fontFamily:'monospace',fontSize:'.75rem'}}>{prod.b} � {prod.c}</div>
+                  <div style={{color:'#CC0000',fontFamily:'monospace',fontSize:'.75rem'}}>{prod.b} · {prod.c}</div>
                   <div style={{color:'#1A2340',fontWeight:'700',fontSize:'.9rem',marginTop:'2px'}}>{prod.n}</div>
-                  <div style={{color:'#16a34a',fontSize:'.75rem'}}>{prod.m} � {prod.t} de {prod.u} un � ${prod.p} ? <strong>${precioUnitario}/un</strong></div>
+                  <div style={{color:'#16a34a',fontSize:'.75rem'}}>{prod.m} · {prod.t} de {prod.u} un · ${prod.p} → <strong>${precioUnitario}/un</strong></div>
                 </div>
-                <button onClick={()=>{setProd(null);setCodIn('');}} style={{background:'none',border:'none',color:'#DC2626',cursor:'pointer',fontSize:'1.2rem'}}>?</button>
+                <button onClick={()=>{setProd(null);setCodIn('');}} style={{background:'none',border:'none',color:'#DC2626',cursor:'pointer',fontSize:'1.2rem'}}>✕</button>
               </div>
             )}
           </div>
           <div style={{marginBottom:'1rem'}}>
-            <label style={{color:'#1A2340',fontWeight:'700',fontSize:'.9rem',display:'block',marginBottom:'.5rem'}}>?? Cantidad (unidades individuales)</label>
+            <label style={{color:'#1A2340',fontWeight:'700',fontSize:'.9rem',display:'block',marginBottom:'.5rem'}}>📦 Cantidad (unidades individuales)</label>
             <input type="number" min="1" placeholder="Ej: 10" value={cant} onChange={e=>setCant(e.target.value)}
               style={{width:'100%',background:'#F5F7FA',color:'#1A2340',border:'1px solid #E4E9F0',borderRadius:'.5rem',padding:'.75rem',boxSizing:'border-box',outline:'none'}}/>
           </div>
           <div style={{marginBottom:'1rem'}}>
-            <label style={{color:'#1A2340',fontWeight:'700',fontSize:'.9rem',display:'block',marginBottom:'.5rem'}}>?? Mes de Vencimiento</label>
+            <label style={{color:'#1A2340',fontWeight:'700',fontSize:'.9rem',display:'block',marginBottom:'.5rem'}}>📅 Mes de Vencimiento</label>
             <select value={mesVenc} onChange={e=>setMesVenc(e.target.value)}
               style={{width:'100%',background:'#F5F7FA',color:mesVenc?'#1A2340':'#8A94A6',border:'1px solid #E4E9F0',borderRadius:'.5rem',padding:'.75rem',boxSizing:'border-box'}}>
               <option value="">-- Selecciona el mes --</option>
@@ -2022,19 +2022,19 @@ function IngresoApp(){
           </div>
           {prod&&cant&&parseFloat(cant)>0&&(
             <div style={{marginBottom:'1rem',background:'rgba(16,185,129,.08)',border:'1px solid #10b981',borderRadius:'.5rem',padding:'1rem'}}>
-              <p style={{color:'#0d9488',fontSize:'.8rem',margin:'0 0 4px',fontWeight:'600'}}>?? MONTO ESTIMADO</p>
+              <p style={{color:'#0d9488',fontSize:'.8rem',margin:'0 0 4px',fontWeight:'600'}}>💰 MONTO ESTIMADO</p>
               <p style={{color:'#1A2340',fontSize:'1.4rem',fontWeight:'700',margin:0}}>${montoActual}</p>
-              <p style={{color:'#0d9488',fontSize:'.7rem',margin:'4px 0 0'}}>{cant} un. � ${precioUnitario}/un = ${montoActual}</p>
+              <p style={{color:'#0d9488',fontSize:'.7rem',margin:'4px 0 0'}}>{cant} un. × ${precioUnitario}/un = ${montoActual}</p>
             </div>
           )}
           <div style={{display:'flex',gap:'.75rem'}}>
-            <button onClick={vAgregar} style={btn('#16a34a',{flex:1})}>? Agregar a Lista</button>
+            <button onClick={vAgregar} style={btn('#16a34a',{flex:1})}>✓ Agregar a Lista</button>
             <button onClick={()=>{setCant('');setCodIn('');setProd(null);setShowSug(false);setMesVenc('');setShowForm(false);}} style={btn('#6B7280',{flex:1})}>Cerrar</button>
           </div>
         </div>}
 
         {vPedidos.length>0&&<div style={{background:'#FFFFFF',border:'1px solid #E4E9F0',borderRadius:'.75rem',padding:'1.25rem',marginBottom:'1.5rem',boxShadow:'0 2px 8px rgba(0,0,0,.06)'}}>
-          <h2 style={{color:'#1A2340',fontWeight:'700',margin:'0 0 1rem',fontSize:'1rem'}}>?? Lista Pendiente ({vPedidos.length})</h2>
+          <h2 style={{color:'#1A2340',fontWeight:'700',margin:'0 0 1rem',fontSize:'1rem'}}>📋 Lista Pendiente ({vPedidos.length})</h2>
           {vPedidos.map((p,idx)=>(
             <ItemEditable key={idx} item={p} idx={idx} onEliminar={vEliminar} onEditar={vEditar}
               accentColor='#CC0000' borderColor='#E4E9F0' bgColor='rgba(204,0,0,.06)' labelCant='Unidades'
@@ -2043,8 +2043,8 @@ function IngresoApp(){
                   <p style={{color:'#1A2340',fontWeight:'700',margin:'0 0 2px',fontSize:'.85rem',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{item.producto}</p>
                   <p style={{color:'#6B7280',fontSize:'.75rem',margin:'0 0 2px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{item.tienda}</p>
                   <p style={{color:'#8A94A6',fontSize:'.72rem',margin:0}}>
-                    {item.cantidad} un. � {item.tipo}
-                    {item.mes_vencimiento&&<span style={{color:'#b45309',marginLeft:'6px'}}>?? {item.mes_vencimiento}</span>}
+                    {item.cantidad} un. · {item.tipo}
+                    {item.mes_vencimiento&&<span style={{color:'#b45309',marginLeft:'6px'}}>📅 {item.mes_vencimiento}</span>}
                     <span style={{color:'#16a34a',marginLeft:'8px',fontWeight:'700'}}>${item.monto_estimado?.toFixed(2)}</span>
                   </p>
                 </div>
@@ -2055,15 +2055,15 @@ function IngresoApp(){
             <p style={{color:'#1A2340',margin:'0 0 1rem',fontSize:'.85rem'}}>Total: <strong style={{color:'#b45309',fontSize:'1.1rem'}}>${vTotalMonto.toFixed(2)}</strong></p>
             <button onClick={vGuardarTodo} disabled={saving}
               style={btn(saving?'#9CA3AF':'#16a34a',{width:'100%',fontSize:'.95rem',padding:'.75rem',borderRadius:'.75rem'})}>
-              {saving?'Guardando...':'?? Guardar Todo en Supabase'}
+              {saving?'Guardando...':'☁️ Guardar Todo en Supabase'}
             </button>
           </div>
         </div>}
 
         {misR.length>0&&<div style={{background:'#FFFFFF',border:'1px solid #E4E9F0',borderRadius:'.75rem',padding:'1.25rem',boxShadow:'0 2px 8px rgba(0,0,0,.06)'}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'1rem'}}>
-            <h2 style={{color:'#1A2340',fontWeight:'700',margin:0,fontSize:'1rem'}}>?? Reportes Guardados ({misR.length})</h2>
-            <button onClick={cargar} style={{background:'none',border:'none',color:'#CC0000',cursor:'pointer',fontSize:'.8rem'}}>??</button>
+            <h2 style={{color:'#1A2340',fontWeight:'700',margin:0,fontSize:'1rem'}}>☁️ Reportes Guardados ({misR.length})</h2>
+            <button onClick={cargar} style={{background:'none',border:'none',color:'#CC0000',cursor:'pointer',fontSize:'.8rem'}}>🔄</button>
           </div>
           {load?<p style={{color:'#8A94A6',textAlign:'center',padding:'1.5rem'}}>Cargando...</p>
           :<div style={{display:'flex',flexDirection:'column',gap:'.5rem'}}>
@@ -2072,7 +2072,7 @@ function IngresoApp(){
                 <p style={{color:'#1A2340',fontWeight:'700',margin:'0 0 2px',fontSize:'.85rem',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.producto}</p>
                 <p style={{color:'#6B7280',fontSize:'.75rem',margin:'0 0 2px'}}>{r.tienda}</p>
                 <p style={{color:'#8A94A6',fontSize:'.72rem',margin:0}}>{r.cantidad} un. <span style={{color:'#16a34a',fontWeight:'700',marginLeft:'6px'}}>${(parseFloat(r.monto_estimado)||0).toFixed(2)}</span>
-                  {r.mes_vencimiento&&<span style={{color:'#b45309',marginLeft:'6px'}}>?? {r.mes_vencimiento}</span>}
+                  {r.mes_vencimiento&&<span style={{color:'#b45309',marginLeft:'6px'}}>📅 {r.mes_vencimiento}</span>}
                 </p>
               </div>
             ))}
@@ -2083,7 +2083,7 @@ function IngresoApp(){
   );
 }
 
-/* ---- MachetazoApp ---- */
+/* ════ MachetazoApp ════ */
 function MachetazoApp(){
   const [user,setUser]=useState(window.VENDOR_ACTUAL?{v:window.VENDOR_ACTUAL}:null);
   const [srchA,setSrchA]=useState('');
@@ -2147,7 +2147,7 @@ function MachetazoApp(){
     setSaving(true);let ok=0;
     for(const p of mPedidos){
       const datos={
-        vendedor:`MACHETAZO: ${user.v}`,tienda:p.tStore,tipo:p.tipoPedido||'�',
+        vendedor:`MACHETAZO: ${user.v}`,tienda:p.tStore,tipo:p.tipoPedido||'—',
         codigo:p.pMat,barcode:p.pCod,producto:p.pDesc,cantidad:p.qtyUnidades
       };
       const r=await sb('POST','/reportes',datos);
@@ -2155,7 +2155,7 @@ function MachetazoApp(){
     }
     setSaving(false);
     if(ok===mPedidos.length){showM(''+ok+' reportes guardados');setMPedidos([]);}
-    else showM(''+ok+'/'+mPedidos.length+' guardados. Revisa conexi�n o pol�ticas RLS.',true);
+    else showM(''+ok+'/'+mPedidos.length+' guardados. Revisa conexión o políticas RLS.',true);
   };
 
   const mEliminar=(idx)=>setMPedidos(prev=>prev.filter((_,i)=>i!==idx));
@@ -2163,7 +2163,7 @@ function MachetazoApp(){
   if(!user)return null;
   if(misTiendas.length===0)return(
     <div style={{padding:'2.5rem',textAlign:'center'}}>
-      <p style={{fontSize:'2rem',margin:'0 0 .5rem'}}>??</p>
+      <p style={{fontSize:'2rem',margin:'0 0 .5rem'}}>🏪</p>
       <p style={{color:'#1A2340',fontWeight:'700',fontSize:'1rem',margin:'0 0 .5rem'}}>Sin tiendas Machetazo asignadas</p>
       <p style={{color:'#8A94A6',fontSize:'.85rem',margin:0}}>No tienes tiendas Machetazo en tu ruta actual.</p>
     </div>
@@ -2192,7 +2192,7 @@ function MachetazoApp(){
         {mShowForm&&<div style={{background:'#FFFFFF',border:'1px solid #E4E9F0',borderRadius:'.75rem',padding:'1.5rem',marginBottom:'1.5rem',boxShadow:'0 2px 8px rgba(0,0,0,.06)'}}>
           <h2 style={{color:'#1A2340',fontWeight:'700',marginTop:0}}>Agregar Producto</h2>
           <div style={{marginBottom:'1rem'}}>
-            <label style={{color:'#1A2340',fontWeight:'700',fontSize:'.9rem',display:'block',marginBottom:'.5rem'}}>?? Tienda</label>
+            <label style={{color:'#1A2340',fontWeight:'700',fontSize:'.9rem',display:'block',marginBottom:'.5rem'}}>📍 Tienda</label>
             <select value={mTiendaSel} onChange={e=>setMTiendaSel(e.target.value)}
               style={{width:'100%',background:'#F5F7FA',color:'#1A2340',border:'1px solid #E4E9F0',borderRadius:'.5rem',padding:'.75rem',boxSizing:'border-box'}}>
               <option value="">-- Selecciona la tienda --</option>
@@ -2201,8 +2201,8 @@ function MachetazoApp(){
           </div>
           <TipoPedidoSelector value={mTipoPedido} onChange={setMTipoPedido}/>
           <div style={{marginBottom:'1rem',position:'relative'}}>
-            <label style={{color:'#1A2340',fontWeight:'700',fontSize:'.9rem',display:'block',marginBottom:'.5rem'}}>?? Buscar Producto</label>
-            <input type="text" placeholder="Material, c�digo o descripci�n..." value={mCodIn}
+            <label style={{color:'#1A2340',fontWeight:'700',fontSize:'.9rem',display:'block',marginBottom:'.5rem'}}>🔍 Buscar Producto</label>
+            <input type="text" placeholder="Material, código o descripción..." value={mCodIn}
               onChange={e=>{setMCodIn(e.target.value);setMShowSug(true);if(mProdSel)setMProdSel(null);}}
               onFocus={()=>mCodIn&&setMShowSug(true)}
               style={{width:'100%',background:'#F5F7FA',color:'#1A2340',border:'1px solid #E4E9F0',borderRadius:'.5rem',padding:'.75rem',boxSizing:'border-box',outline:'none'}}/>
@@ -2213,7 +2213,7 @@ function MachetazoApp(){
                     style={{display:'block',width:'100%',textAlign:'left',padding:'.75rem 1rem',border:'none',borderBottom:'1px solid #E4E9F0',background:'transparent',cursor:'pointer',color:'#1A2340'}}>
                     <div style={{display:'flex',justifyContent:'space-between'}}>
                       <div style={{color:'#0ea5e9',fontFamily:'monospace',fontSize:'.75rem'}}>{p.material}</div>
-                      <div style={{color:'#16a34a',fontSize:'.75rem',fontWeight:'700'}}>{p.t} �{p.u} � ${p.p}</div>
+                      <div style={{color:'#16a34a',fontSize:'.75rem',fontWeight:'700'}}>{p.t} ×{p.u} · ${p.p}</div>
                     </div>
                     <div style={{fontWeight:'600',fontSize:'.85rem',marginTop:'2px'}}>{p.descripcion}</div>
                   </button>
@@ -2223,36 +2223,36 @@ function MachetazoApp(){
             {mProdSel&&(
               <div style={{marginTop:'.5rem',background:'rgba(34,197,94,.08)',border:'1px solid #22c55e',borderRadius:'.5rem',padding:'.75rem',display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
                 <div>
-                  <div style={{color:'#0ea5e9',fontFamily:'monospace',fontSize:'.75rem'}}>{mProdSel.material} � {mProdSel.codigo}</div>
+                  <div style={{color:'#0ea5e9',fontFamily:'monospace',fontSize:'.75rem'}}>{mProdSel.material} · {mProdSel.codigo}</div>
                   <div style={{color:'#1A2340',fontWeight:'700',fontSize:'.9rem',marginTop:'2px'}}>{mProdSel.descripcion}</div>
-                  <div style={{color:'#16a34a',fontSize:'.75rem',marginTop:'2px'}}>{mProdSel.t} � {mProdSel.u} un/caja � ${mProdSel.p}/caja</div>
+                  <div style={{color:'#16a34a',fontSize:'.75rem',marginTop:'2px'}}>{mProdSel.t} · {mProdSel.u} un/caja · ${mProdSel.p}/caja</div>
                 </div>
-                <button onClick={()=>{setMProdSel(null);setMCodIn('');}} style={{background:'none',border:'none',color:'#DC2626',cursor:'pointer',fontSize:'1.2rem'}}>?</button>
+                <button onClick={()=>{setMProdSel(null);setMCodIn('');}} style={{background:'none',border:'none',color:'#DC2626',cursor:'pointer',fontSize:'1.2rem'}}>✕</button>
               </div>
             )}
           </div>
           <div style={{marginBottom:'1rem'}}>
-            <label style={{color:'#1A2340',fontWeight:'700',fontSize:'.9rem',display:'block',marginBottom:'.5rem'}}>?? Cantidad ({mProdSel?mProdSel.t+'s':'Cajas/Exhibidores'})</label>
+            <label style={{color:'#1A2340',fontWeight:'700',fontSize:'.9rem',display:'block',marginBottom:'.5rem'}}>📦 Cantidad ({mProdSel?mProdSel.t+'s':'Cajas/Exhibidores'})</label>
             <input type="number" min="1" placeholder="Ej: 2" value={mCant} onChange={e=>setMCant(e.target.value)}
               style={{width:'100%',background:'#F5F7FA',color:'#1A2340',border:'1px solid #E4E9F0',borderRadius:'.5rem',padding:'.75rem',boxSizing:'border-box',outline:'none'}}/>
             {mProdSel&&mCant&&parseFloat(mCant)>0&&(
-              <p style={{color:'#0ea5e9',fontSize:'.78rem',margin:'.4rem 0 0'}}>? {mCantActual} {mProdSel.t} � {mProdSel.u} un = <strong style={{color:'#16a34a'}}>{mUnidadesActual} unidades</strong></p>
+              <p style={{color:'#0ea5e9',fontSize:'.78rem',margin:'.4rem 0 0'}}>→ {mCantActual} {mProdSel.t} × {mProdSel.u} un = <strong style={{color:'#16a34a'}}>{mUnidadesActual} unidades</strong></p>
             )}
           </div>
           {mProdSel&&mCant&&parseFloat(mCant)>0&&(
             <div style={{marginBottom:'1rem',background:'rgba(16,185,129,.08)',border:'1px solid #10b981',borderRadius:'.5rem',padding:'1rem'}}>
-              <p style={{color:'#0d9488',fontSize:'.8rem',margin:'0 0 4px',fontWeight:'600'}}>?? MONTO ESTIMADO</p>
+              <p style={{color:'#0d9488',fontSize:'.8rem',margin:'0 0 4px',fontWeight:'600'}}>💰 MONTO ESTIMADO</p>
               <p style={{color:'#1A2340',fontSize:'1.4rem',fontWeight:'700',margin:0}}>${mMontoActual}</p>
             </div>
           )}
           <div style={{display:'flex',gap:'.75rem'}}>
-            <button onClick={mAgregar} style={btn('#16a34a',{flex:1})}>? Agregar</button>
+            <button onClick={mAgregar} style={btn('#16a34a',{flex:1})}>✓ Agregar</button>
             <button onClick={()=>{setMCant('');setMCodIn('');setMProdSel(null);setMShowSug(false);setMTipoPedido('');setMShowForm(false);}} style={btn('#6B7280',{flex:1})}>Cerrar</button>
           </div>
         </div>}
 
         {mPedidos.length>0&&<div style={{background:'#FFFFFF',border:'1px solid #E4E9F0',borderRadius:'.75rem',padding:'1.25rem',marginBottom:'1.5rem',boxShadow:'0 2px 8px rgba(0,0,0,.06)'}}>
-          <h2 style={{color:'#1A2340',fontWeight:'700',margin:'0 0 1rem',fontSize:'1rem'}}>?? Lista ({mPedidos.length})</h2>
+          <h2 style={{color:'#1A2340',fontWeight:'700',margin:'0 0 1rem',fontSize:'1rem'}}>📋 Lista ({mPedidos.length})</h2>
           {mPedidos.map((p,idx)=>(
             <ItemEditable key={idx} item={p} idx={idx} onEliminar={mEliminar} onEditar={mEditar}
               accentColor='#0ea5e9' borderColor='#E4E9F0' bgColor='rgba(14,165,233,.06)' labelCant={`Cajas/${p.pTipo}`}
@@ -2262,7 +2262,7 @@ function MachetazoApp(){
                   <p style={{color:'#0ea5e9',fontFamily:'monospace',fontSize:'.7rem',margin:'0 0 2px'}}>{item.pMat}</p>
                   <p style={{color:'#6B7280',fontSize:'.75rem',margin:'0 0 2px'}}>{item.tN}</p>
                   <p style={{color:'#8A94A6',fontSize:'.72rem',margin:'0 0 3px'}}>
-                    {item.qtyCajas} {item.pTipo} ? <strong>{item.qtyUnidades} un.</strong>
+                    {item.qtyCajas} {item.pTipo} → <strong>{item.qtyUnidades} un.</strong>
                     <span style={{color:'#b45309',marginLeft:'8px',fontWeight:'700'}}>${item.monto}</span>
                   </p>
                   {item.tipoPedido&&<TipoPedidoBadge tipo={item.tipoPedido}/>}
@@ -2274,9 +2274,9 @@ function MachetazoApp(){
             <p style={{color:'#1A2340',fontSize:'.8rem',margin:'0 0 4px'}}>Total unidades: <strong style={{color:'#0ea5e9'}}>{mTotalUnidades}</strong></p>
             <p style={{color:'#1A2340',fontSize:'.8rem',margin:'0 0 1rem'}}>Monto total: <strong style={{color:'#b45309',fontSize:'1.1rem'}}>${mTotalMonto.toFixed(2)}</strong></p>
             <div style={{display:'flex',gap:'.75rem'}}>
-              <button onClick={()=>descargarMachetazoExcel(mPedidos)} style={btn('#0369a1',{flex:1,fontSize:'.9rem'})}>?? Excel</button>
+              <button onClick={()=>descargarMachetazoExcel(mPedidos)} style={btn('#0369a1',{flex:1,fontSize:'.9rem'})}>📥 Excel</button>
               <button onClick={mGuardarTodo} disabled={saving} style={btn(saving?'#9CA3AF':'#16a34a',{flex:1,fontSize:'.9rem'})}>
-                {saving?'Guardando...':'?? Guardar'}
+                {saving?'Guardando...':'☁️ Guardar'}
               </button>
             </div>
           </div>
@@ -2286,10 +2286,10 @@ function MachetazoApp(){
   );
 }
 
-/* ---- ReyApp ---- */
-/* Mount � lazy (see showView) */
+/* ════ ReyApp ════ */
+/* Mount — lazy (see showView) */
 
-// -- SUPABASE HELPERS FOR TAREAS --
+// ── SUPABASE HELPERS FOR TAREAS ──
 async function sbGetVAuth(ep) {
   var token = SESSION_TOKEN || ANON_KEY;
   var r = await fetch(SB_URL + '/rest/v1' + ep, {
@@ -2308,7 +2308,7 @@ async function sbPatchV(ep, body) {
   return r.ok;
 }
 
-// -- TAREAS --
+// ── TAREAS ──
 var TAREAS_DATA = [];
 
 async function cargarTareasCount() {
@@ -2342,21 +2342,21 @@ async function renderTareas() {
 
     // Pending tasks
     if (pendientes.length === 0) {
-      pCont.innerHTML = '<div style="text-align:center;padding:40px;color:var(--green);font-weight:600">? No tienes tareas pendientes</div>';
+      pCont.innerHTML = '<div style="text-align:center;padding:40px;color:var(--green);font-weight:600">✅ No tienes tareas pendientes</div>';
     } else {
-      var html = '<div class="section-header" style="margin-bottom:12px"><div class="section-title" style="color:var(--red)">? PENDIENTES (' + pendientes.length + ')</div></div>';
+      var html = '<div class="section-header" style="margin-bottom:12px"><div class="section-title" style="color:var(--red)">⏳ PENDIENTES (' + pendientes.length + ')</div></div>';
       html += '<div style="display:flex;flex-direction:column;gap:12px">';
       pendientes.forEach(function(t) {
         html += '<div class="card" style="border-left:4px solid var(--red)">' +
           '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">' +
-          '<div><div style="font-weight:700;font-size:14px">' + (t.tienda||'�') + '</div>' +
-          '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + (t.producto||'�') + '</div></div>' +
+          '<div><div style="font-weight:700;font-size:14px">' + (t.tienda||'—') + '</div>' +
+          '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + (t.producto||'—') + '</div></div>' +
           '<div style="text-align:right;font-size:12px;color:var(--muted)">' + new Date(t.fecha_asignacion).toLocaleDateString('es-PA') + '</div>' +
           '</div>' +
           '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">' +
           '<span style="font-size:12px;color:var(--muted)">Inv. sistema: <strong>' + (t.inventario_sistema||0) + ' uds</strong></span>' +
           '<input type="number" id="inv-real-' + t.id + '" placeholder="Cantidad real contada" min="0" style="flex:1;min-width:160px;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;outline:none" onkeydown="if(event.key===\'Enter\')completarTarea(' + t.id + ')">' +
-          '<button onclick="completarTarea(' + t.id + ')" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">? Completar</button>' +
+          '<button onclick="completarTarea(' + t.id + ')" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">✅ Completar</button>' +
           '</div>' +
           '</div>';
       });
@@ -2366,15 +2366,15 @@ async function renderTareas() {
 
     // Completed tasks
     if (completadas.length > 0) {
-      var html2 = '<div class="section-header" style="margin-bottom:12px"><div class="section-title">? COMPLETADAS (' + completadas.length + ')</div></div>';
+      var html2 = '<div class="section-header" style="margin-bottom:12px"><div class="section-title">✅ COMPLETADAS (' + completadas.length + ')</div></div>';
       html2 += '<div style="display:flex;flex-direction:column;gap:8px">';
       completadas.forEach(function(t) {
         html2 += '<div class="card" style="opacity:0.75;border-left:4px solid var(--green)">' +
           '<div style="display:flex;justify-content:space-between;align-items:center">' +
-          '<div><span style="font-weight:700;font-size:13px">' + (t.tienda||'�') + '</span>' +
-          '<span style="color:var(--muted);font-size:12px;margin-left:8px">' + (t.producto||'�') + '</span></div>' +
+          '<div><span style="font-weight:700;font-size:13px">' + (t.tienda||'—') + '</span>' +
+          '<span style="color:var(--muted);font-size:12px;margin-left:8px">' + (t.producto||'—') + '</span></div>' +
           '<div style="text-align:right;font-size:12px">' +
-          '<span style="color:var(--muted)">Sistema: ' + (t.inventario_sistema||0) + ' uds</span> � ' +
+          '<span style="color:var(--muted)">Sistema: ' + (t.inventario_sistema||0) + ' uds</span> · ' +
           '<span style="color:var(--green);font-weight:700">Real: ' + (t.inventario_real||0) + ' uds</span>' +
           '</div></div></div>';
       });
@@ -2392,7 +2392,7 @@ async function completarTarea(id) {
   var input = document.getElementById('inv-real-' + id);
   if (!input || input.value === '') { alert('Ingresa la cantidad real contada'); return; }
   var inventarioReal = parseFloat(input.value);
-  if (isNaN(inventarioReal) || inventarioReal < 0) { alert('Cantidad inv�lida'); return; }
+  if (isNaN(inventarioReal) || inventarioReal < 0) { alert('Cantidad inválida'); return; }
   input.disabled = true;
   var ok = await sbPatchV('/tareas?id=eq.' + id, {
     inventario_real: inventarioReal,
@@ -2410,4 +2410,3 @@ async function completarTarea(id) {
 </script>
 </body>
 </html>
-
