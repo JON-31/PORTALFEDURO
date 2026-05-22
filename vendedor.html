@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -950,9 +950,9 @@ async function iniciarSesionVendedor(nombreCompleto) {
   if (dashN) dashN.textContent = 'HI ' + firstName;
   var dashA = document.getElementById('dash-avatar');
   if (dashA) dashA.textContent = firstName.charAt(0).toUpperCase();
-  var MACHETAZO_USERS = ['CECILIA VALDES','ALEXIS VAZQUEZ','MANUEL VALDEZ','EDUARDO LÓPEZ','ELEIDI FRANCO','ADESSA COOK','ERICK RUIZ','PEDRO RODRIGUEZ','IRVING TORRES','BELTRAN FRANCO GONZALEZ','JAAZIEL GONZALEZ','SAMUEL BARRIA'];
+  var MACHETAZO_USERS = MACHETAZO_TIENDAS.map(function(t){ return t.v.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); });
   var navMachetazo = document.getElementById('nav-machetazo');
-  if (navMachetazo) navMachetazo.style.display = MACHETAZO_USERS.indexOf(VENDOR_ACTUAL) !== -1 ? '' : 'none';
+  var vNorm = VENDOR_ACTUAL.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); if (navMachetazo) navMachetazo.style.display = MACHETAZO_USERS.indexOf(vNorm) !== -1 ? '' : 'none';
   renderDashboard();
   cargarTareasCount();
   renderOfertas();
