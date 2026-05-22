@@ -196,10 +196,9 @@ Todas las estructuras y funciones de esta sección están **duplicadas** entre `
 | `renderInventario()` | 1126 | Muestra tabla de inventario filtrada por tienda y marca | `INV_DATA_V`, `filtrarInventario()` | `showView('inventario')` |
 | `filtrarInventario()` | 1134 | Aplica filtros de tienda, marca y búsqueda de texto al inventario del vendedor | `INV_DATA_V` | Inputs de filtro en la vista Inventario |
 | `renderOfertas()` | 1168 | Lee `configuracion[ofertas]` de Supabase y renderiza las ofertas vigentes | `sbGetV()` | `iniciarSesionVendedor()`, `showView('ofertas')` |
-| `cargarBodegaVendedor()` | 1267 | Lee `configuracion[inventario_bodega]`, filtra por tiendas del vendedor y renderiza | `sbGetV()`, `buscarCodigoBodega()` | `showView('bodega')` |
-| `buscarCodigoBodega(descripcion)` | 1194 | Busca el código de barras de un producto en el inventario del vendedor por descripción | `INV_DATA_V` | `renderBodegaTabla()` |
-| `renderBodegaTabla(datos)` | 1209 | Renderiza la tabla de inventario en bodega | `buscarCodigoBodega()` | `cargarBodegaVendedor()` |
-| `filtrarBodegaVendedor(term)` | 1254 | Filtra la tabla de bodega por término de búsqueda | DOM | Input de búsqueda en Bodega |
+| `cargarBodegaVendedor()` | 1267 | Fetch `configuracion[inventario_bodega]` desde Supabase (sin filtro de vendedor — muestra TODO el inventario), parsea el JSON y llama `renderBodegaTabla()` | `sbGetV()` | `showView('bodega')` |
+| `renderBodegaTabla(datos)` | 1209 | Renderiza tabla de bodega con columnas: Código de Barra, Producto, UND/FACT, B8, M8 (campos `codigoBarras`, `descripcion`, `unidFact`, `b8`, `m8`) | DOM | `cargarBodegaVendedor()`, `filtrarBodegaVendedor()` |
+| `filtrarBodegaVendedor(term)` | 1254 | Filtra `_bodegaDataCache` por `descripcion` o `codigoBarras` y re-renderiza | `_bodegaDataCache`, `renderBodegaTabla()` | Input de búsqueda en Bodega |
 | `renderTareas()` | 2350 | Lee tareas propias del vendedor de Supabase con `select=*` + `ilike.` (case-insensitive), separa en pendientes/completadas y renderiza ambas listas. **Bug fix**: `view-tareas` estaba anidado dentro de `view-machetazo-react` en el HTML — el div machetazo no estaba cerrado antes de abrir el div tareas, causando que la vista quedara oculta por el padre inactivo. | `sbGetVAuth()`, `VENDOR_ACTUAL`, `completarTarea()` | `showView('tareas')`, `completarTarea()` |
 | `formatOfertaPeriodo(fechaInicio, fechaFin)` | 1154 | Formatea el período de vigencia de una oferta para mostrarlo en la UI | — | `renderOfertas()` |
 

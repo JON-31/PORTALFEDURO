@@ -1212,40 +1212,18 @@ function renderBodegaTabla(datos) {
     container.innerHTML = '<p style="color:var(--muted);padding:20px">No hay datos de inventario disponibles.</p>';
     return;
   }
-  var cadena = (datos[0] && datos[0].cadena) || 'xtra';
-  var html;
-  var iColor = function(inv) { return inv === 0 ? 'color:#E53935' : inv <= 5 ? 'color:#FF6F00' : 'color:var(--green)'; };
-  if (cadena === 'machetazo') {
-    html = '<div style="overflow-x:auto"><table><thead><tr><th>Tienda</th><th>Marca</th><th>C&oacute;digo de Barra</th><th>Material</th><th>Descripcion</th><th>Inventario</th><th>Venta Prom</th><th>Cobertura</th></tr></thead><tbody>';
-    html += datos.map(function(d) {
-      var inv = d.inventario || 0;
-      return '<tr>' +
-        '<td>' + (d.tienda||'—') + '</td>' +
-        '<td><span class="badge badge-brand">' + (d.marca||'—') + '</span></td>' +
-        '<td style="font-family:monospace;font-size:11px">' + (d.barcode||'—') + '</td>' +
-        '<td style="font-size:11px;color:var(--muted)">' + (d.codigo||'—') + '</td>' +
-        '<td style="font-weight:600">' + (d.producto||'—') + '</td>' +
-        '<td style="font-family:monospace;' + iColor(inv) + ';font-weight:700">' + inv.toLocaleString() + '</td>' +
-        '<td>' + (d.venta_promedio||0).toLocaleString() + '</td>' +
-        '<td>' + (d.cobertura||0) + ' dias</td>' +
-        '</tr>';
-    }).join('');
-  } else {
-    html = '<div style="overflow-x:auto"><table><thead><tr><th>Formato</th><th>Tienda</th><th>Marca</th><th>C&oacute;digo de Barra</th><th>Producto</th><th>Inventario</th><th>Venta Prom</th><th>Cobertura</th></tr></thead><tbody>';
-    html += datos.map(function(d) {
-      var inv = d.inventario || 0;
-      return '<tr>' +
-        '<td style="font-size:11px;color:var(--muted)">' + (d.formato||'—') + '</td>' +
-        '<td>' + (d.tienda||'—') + '</td>' +
-        '<td><span class="badge badge-brand">' + (d.marca||'—') + '</span></td>' +
-        '<td style="font-family:monospace;font-size:11px">' + (d.barcode||'—') + '</td>' +
-        '<td style="font-weight:600">' + (d.producto||'—') + '</td>' +
-        '<td style="font-family:monospace;' + iColor(inv) + ';font-weight:700">' + inv.toLocaleString() + '</td>' +
-        '<td>' + (d.venta_promedio||0).toLocaleString() + '</td>' +
-        '<td>' + (d.cobertura||0) + ' dias</td>' +
-        '</tr>';
-    }).join('');
-  }
+  var html = '<div style="overflow-x:auto"><table><thead><tr>' +
+    '<th>C&oacute;digo de Barra</th><th>Producto</th><th>UND/FACT</th><th>B8</th><th>M8</th>' +
+    '</tr></thead><tbody>';
+  html += datos.map(function(d) {
+    return '<tr>' +
+      '<td style="font-family:monospace;font-size:11px">' + (d.codigoBarras||'—') + '</td>' +
+      '<td style="font-weight:600">' + (d.descripcion||'—') + '</td>' +
+      '<td style="font-size:11px;color:var(--muted);text-align:center">' + (d.unidFact||'—') + '</td>' +
+      '<td style="text-align:right">' + (d.b8 !== '' && d.b8 != null ? d.b8 : '—') + '</td>' +
+      '<td style="text-align:right;font-weight:600">' + (d.m8 !== '' && d.m8 != null ? Number(d.m8).toLocaleString() : '—') + '</td>' +
+      '</tr>';
+  }).join('');
   html += '</tbody></table></div>';
   html += '<div style="color:var(--muted);font-size:12px;margin-top:12px;text-align:right">' + datos.length + ' registros</div>';
   container.innerHTML = html;
@@ -1256,10 +1234,9 @@ function filtrarBodegaVendedor(term) {
   if (!term || !term.trim()) { renderBodegaTabla(_bodegaDataCache); return; }
   var t = term.trim().toUpperCase();
   var filtered = _bodegaDataCache.filter(function(d) {
-    var desc = (d.producto || d.descripcion || '').toUpperCase();
-    var cod = (d.barcode || d.codigo || '').toUpperCase();
-    var marca = (d.marca || '').toUpperCase();
-    return desc.indexOf(t) >= 0 || cod.indexOf(t) >= 0 || marca.indexOf(t) >= 0;
+    var desc = (d.descripcion || '').toUpperCase();
+    var cod = (d.codigoBarras || '').toUpperCase();
+    return desc.indexOf(t) >= 0 || cod.indexOf(t) >= 0;
   });
   renderBodegaTabla(filtered);
 }
@@ -1269,7 +1246,9 @@ async function cargarBodegaVendedor() {
   if (!container) return;
   var searchEl = document.getElementById('bodega-search');
   if (searchEl) searchEl.value = '';
-  _bodegaDataCache = INV_DATA_V.slice();
+  container.innerHTML = '<p style="color:var(--muted);padding:20px">Cargando...</p>';
+  var res = await sbGetV('/configuracion?clave=eq.inventario_bodega&select=valor');
+  _bodegaDataCache = (res && res.length > 0) ? JSON.parse(res[0].valor || '[]') : [];
   renderBodegaTabla(_bodegaDataCache);
 }
 
