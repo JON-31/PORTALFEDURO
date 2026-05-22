@@ -1168,27 +1168,17 @@ function filtrarInventario() {
     var inv   = d.inventario || 0;
     var venta = d.venta_promedio || d.venta_prom_3m || 0;
     var badge, estado;
-    if (inv === 0 && venta === 0) {
-      badge  = '';
-      estado = 'Sin data';
-    } else if (inv === 0) {
-      badge  = 'badge-danger';
-      estado = 'Critico';
-    } else if (venta === 0) {
-      badge  = '';
-      estado = 'Sin data';
+    if (!inv && !venta) {
+      badge = ''; estado = 'Sin data';
+    } else if (!inv) {
+      badge = 'badge-danger'; estado = 'Critico';
+    } else if (!venta) {
+      badge = ''; estado = 'Sin data';
     } else {
-      var coberturaDias = (inv * 90) / venta;
-      if (coberturaDias <= 7) {
-        badge  = 'badge-warn';
-        estado = 'Atencion';
-      } else if (coberturaDias <= 21) {
-        badge  = 'badge-ok';
-        estado = 'Optimo';
-      } else {
-        badge  = 'badge-info';
-        estado = 'SobreStock';
-      }
+      var cob = d.cobertura || 0;
+      if      (cob <= 7)  { badge = 'badge-warn'; estado = 'Atencion'; }
+      else if (cob <= 21) { badge = 'badge-ok';   estado = 'Optimo';   }
+      else                { badge = 'badge-info';  estado = 'SobreStock'; }
     }
     return '<tr><td>' + (d.tienda||'—') + '</td><td><span class="badge badge-brand">' + (d.marca||'—') + '</span></td><td style="font-weight:600">' + (d.producto||'—') + '</td><td>' + (d.inventario||0).toLocaleString() + '</td><td>' + (d.venta_promedio||0).toLocaleString() + '</td><td>' + (d.cobertura||0) + ' dias</td><td><span class="badge ' + badge + '">' + estado + '</span></td></tr>';
   }).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Sin registros</td></tr>';
