@@ -937,6 +937,11 @@ async function iniciarSesionVendedor(nombreCompleto) {
       var all = JSON.parse(res[0].valor || '[]');
       var vUpper = VENDOR_ACTUAL.toUpperCase();
       INV_DATA_V = all.filter(function(d){ return d.vendedor && d.vendedor.toUpperCase() === vUpper; });
+      var _normMap = {};
+      (window.TIENDAS_INGRESO_DATA || []).forEach(function(t){ if (t.store) _normMap[t.n] = t.store; });
+      INV_DATA_V = INV_DATA_V.map(function(d){
+        return (d.tienda && _normMap[d.tienda]) ? Object.assign({}, d, {tienda: _normMap[d.tienda]}) : d;
+      });
     } else { INV_DATA_V = []; }
   } catch(e) { INV_DATA_V = []; }
   // session managed by index.html
@@ -1078,9 +1083,10 @@ function renderDashboard() {
   var stores = {};
   var masterNames = {};
   misTiendas.forEach(function(t) {
-    masterNames[t.n] = true;
-    var recs = dataByTienda[t.n] || [];
-    stores[t.n] = {
+    var displayName = t.store || t.n;
+    masterNames[displayName] = true;
+    var recs = dataByTienda[displayName] || [];
+    stores[displayName] = {
       prods: recs.length,
       inv: recs.reduce(function(a,d){ return a+(d.inventario||0); }, 0),
       venta: recs.reduce(function(a,d){ return a+(d.venta_promedio||d.venta_prom_3m||0); }, 0),
