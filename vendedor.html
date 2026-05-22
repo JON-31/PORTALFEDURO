@@ -346,6 +346,7 @@ tbody tr:last-child td { border-bottom: none; }
 .badge-warn { background: rgba(255,107,0,0.15); color: #FF6B00; }
 .badge-danger { background: rgba(204,0,0,0.15); color: #FF4444; }
 .badge-zero { background: rgba(136,136,136,0.15); color: #888; }
+.badge-info { background: rgba(33,150,243,0.15); color: #2196F3; }
 .badge-brand { background: rgba(204,0,0,0.15); color: var(--red-light); font-size: 10px; }
 
 /* VENDEDOR PROFILE */
@@ -1079,7 +1080,7 @@ function renderDashboard() {
     stores[t.n] = {
       prods: recs.length,
       inv: recs.reduce(function(a,d){ return a+(d.inventario||0); }, 0),
-      venta: recs.reduce(function(a,d){ return a+(d.venta_promedio||0); }, 0),
+      venta: recs.reduce(function(a,d){ return a+(d.venta_promedio||d.venta_prom_3m||0); }, 0),
       cob: recs.map(function(d){ return d.cobertura||0; })
     };
   });
@@ -1091,7 +1092,7 @@ function renderDashboard() {
       stores[tn] = {
         prods: recs.length,
         inv: recs.reduce(function(a,d){ return a+(d.inventario||0); }, 0),
-        venta: recs.reduce(function(a,d){ return a+(d.venta_promedio||0); }, 0),
+        venta: recs.reduce(function(a,d){ return a+(d.venta_promedio||d.venta_prom_3m||0); }, 0),
         cob: recs.map(function(d){ return d.cobertura||0; })
       };
     }
@@ -1101,11 +1102,18 @@ function renderDashboard() {
     var t = entry[0]; var s = entry[1];
     var hasData = s.prods > 0;
     var cp = hasData && s.cob.length > 0 ? Math.round(s.cob.reduce(function(a,c){ return a+c; }, 0) / s.cob.length) : 0;
-    var badgeHtml = !hasData
-      ? '<span style="color:var(--muted);font-size:11px">Sin data</span>'
-      : cp > 60 ? '<span class="badge badge-danger">Critico</span>'
-      : cp > 30 ? '<span class="badge badge-warn">Atencion</span>'
-      : '<span class="badge badge-ok">Optimo</span>';
+    var badgeHtml;
+    if (!hasData || s.venta === 0) {
+      badgeHtml = '<span style="color:var(--muted);font-size:11px">Sin data</span>';
+    } else if (s.inv === 0) {
+      badgeHtml = '<span class="badge badge-danger">Critico</span>';
+    } else if (s.inv < s.venta) {
+      badgeHtml = '<span class="badge badge-warn">Atencion</span>';
+    } else if (s.inv <= s.venta * 30) {
+      badgeHtml = '<span class="badge badge-ok">Optimo</span>';
+    } else {
+      badgeHtml = '<span class="badge badge-info">SobreStock</span>';
+    }
     var crit = s.cob.filter(function(c){ return c < 30; }).length;
     var critCell = hasData && crit > 0 ? '<span style="color:var(--red-light);font-weight:700">' + crit + '</span>' : '<span style="color:var(--muted)">—</span>';
     return '<tr>' +
