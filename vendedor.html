@@ -1157,8 +1157,7 @@ function filtrarInventario() {
       else if (_inv === 0)            _est = 'critico';
       else if (_ven === 0)            _est = 'sindata';
       else if (_inv < _ven)           _est = 'atencion';
-      else if (_inv <= _ven * 30)     _est = 'optimo';
-      else                            _est = 'sobrestock';
+      else { var _cob = (_inv * 30) / _ven; _est = _cob <= 45 ? 'optimo' : 'sobrestock'; }
       if (fE !== _est) return false;
     }
     return true;
