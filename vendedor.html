@@ -2334,8 +2334,8 @@ var TAREAS_DATA = [];
 
 async function cargarTareasCount() {
   try {
-    var vUpper = (VENDOR_ACTUAL || '').toUpperCase();
-    var data = await sbGetVAuth('/tareas?vendedor_nombre=eq.' + encodeURIComponent(vUpper) + '&select=id,estado');
+    var vUpper = (VENDOR_ACTUAL || '').trim().toUpperCase();
+    var data = await sbGetVAuth('/tareas?vendedor_nombre=ilike.' + encodeURIComponent(vUpper) + '&select=id,estado');
     var pendientes = data.filter(function(t){ return t.estado === 'pendiente'; }).length;
     var completadas = data.filter(function(t){ return t.estado === 'completada'; }).length;
     var counterDiv = document.getElementById('dash-tareas-counter');
@@ -2354,8 +2354,8 @@ async function renderTareas() {
   if (!pCont) return;
   pCont.innerHTML = '<div style="color:var(--muted);padding:20px">Cargando tareas...</div>';
   try {
-    var vUpper = (VENDOR_ACTUAL || '').toUpperCase();
-    var data = await sbGetVAuth('/tareas?vendedor_nombre=eq.' + encodeURIComponent(vUpper) + '&select=*&order=fecha_asignacion.desc');
+    var vUpper = (VENDOR_ACTUAL || '').trim().toUpperCase();
+    var data = await sbGetVAuth('/tareas?vendedor_nombre=ilike.' + encodeURIComponent(vUpper) + '&select=*&order=fecha_asignacion.desc');
     TAREAS_DATA = data;
     var pendientes = data.filter(function(t){ return t.estado === 'pendiente'; });
     var completadas = data.filter(function(t){ return t.estado === 'completada'; });

@@ -70,7 +70,7 @@ Archivos legacy (no documentados): `MARS_FUSIONADO.html`, `HTML1_vendedores.html
 |---------|-------|----------|-----------|---------|
 | `sbGetV(ep)` | 904 | GET a Supabase con ANON_KEY (sin JWT de vendedor) | `SB_URL`, `ANON_KEY` | `iniciarSesionVendedor()`, `renderOfertas()`, `cargarBodegaVendedor()` |
 | `sbGetVAuth(ep)` | 2314 | GET a Supabase con JWT del vendedor (`SESSION_TOKEN`) — requerido para leer tareas propias | `SB_URL`, `SESSION_TOKEN` | `cargarTareasCount()`, `renderTareas()` |
-| `cargarTareasCount()` | 2335 | Cuenta tareas pendientes y completadas del vendedor, actualiza el badge del dashboard | `sbGetVAuth()`, `usuarios.nombre` como filtro | `iniciarSesionVendedor()`, `completarTarea()` |
+| `cargarTareasCount()` | 2335 | Cuenta tareas pendientes y completadas del vendedor, actualiza el badge del dashboard. Usa `ilike.` (case-insensitive) + `.trim().toUpperCase()` para resistir diferencias de case en `usuarios.nombre` vs `tareas.vendedor_nombre` | `sbGetVAuth()`, `VENDOR_ACTUAL` | `iniciarSesionVendedor()`, `completarTarea()` |
 
 ### `admin-datos.html`
 
@@ -200,7 +200,7 @@ Todas las estructuras y funciones de esta sección están **duplicadas** entre `
 | `buscarCodigoBodega(descripcion)` | 1194 | Busca el código de barras de un producto en el inventario del vendedor por descripción | `INV_DATA_V` | `renderBodegaTabla()` |
 | `renderBodegaTabla(datos)` | 1209 | Renderiza la tabla de inventario en bodega | `buscarCodigoBodega()` | `cargarBodegaVendedor()` |
 | `filtrarBodegaVendedor(term)` | 1254 | Filtra la tabla de bodega por término de búsqueda | DOM | Input de búsqueda en Bodega |
-| `renderTareas()` | 2350 | Lee tareas propias del vendedor de Supabase, las separa en pendientes/completadas y renderiza ambas listas | `sbGetVAuth()`, `completarTarea()` | `showView('tareas')`, `completarTarea()` |
+| `renderTareas()` | 2350 | Lee tareas propias del vendedor de Supabase usando `ilike.` + `.trim().toUpperCase()` (case-insensitive), las separa en pendientes/completadas y renderiza ambas listas | `sbGetVAuth()`, `VENDOR_ACTUAL`, `completarTarea()` | `showView('tareas')`, `completarTarea()` |
 | `formatOfertaPeriodo(fechaInicio, fechaFin)` | 1154 | Formatea el período de vigencia de una oferta para mostrarlo en la UI | — | `renderOfertas()` |
 
 ---
