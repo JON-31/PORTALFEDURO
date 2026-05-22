@@ -1892,7 +1892,7 @@ function IngresoApp(){
 
   useEffect(()=>{if(user)cargar();},[user]);
 
-  const tiendasV=useMemo(()=>user?.v?TIENDAS_INGRESO.filter(t=>t.v===user.v):[],[user]);
+  const tiendasV=useMemo(()=>user?.v?TIENDAS_INGRESO.filter(t=>t.v.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')===user.v.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')):[],[user]);
   const vFilt=useMemo(()=>VENDS.filter(v=>v.n.toUpperCase().includes(srchV.toUpperCase())),[srchV]);
   const sugs=useMemo(()=>{
     if(!codIn.trim()||prod)return[];
