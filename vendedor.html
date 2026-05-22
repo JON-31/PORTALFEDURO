@@ -748,8 +748,8 @@ tbody tr:last-child td { border-bottom: none; }
 <body>
 
 <script>
-(function(){var s=JSON.parse(localStorage.getItem('mars_portal_session')||'null');if(!s||s.rol!=='vendedor'||Date.now()>s.expires_at){window.location.href='index.html';}})();
-var _sess=JSON.parse(localStorage.getItem('mars_portal_session')||'{}');
+(function(){var s=JSON.parse(sessionStorage.getItem('mars_portal_session')||'null');if(!s||s.rol!=='vendedor'||Date.now()>s.expires_at){window.location.href='index.html';}})();
+var _sess=JSON.parse(sessionStorage.getItem('mars_portal_session')||'{}');
 </script>
 
 <div id="app-container" style="display:none">
@@ -922,7 +922,7 @@ function doLogin() { window.location.href = 'index.html'; }
 
 // Load session on page start
 document.addEventListener('DOMContentLoaded', function() {
-  var s = JSON.parse(localStorage.getItem('mars_portal_session') || '{}');
+  var s = JSON.parse(sessionStorage.getItem('mars_portal_session') || '{}');
   if (s && s.rol === 'vendedor' && s.access_token) {
     SESSION_TOKEN = s.access_token;
     iniciarSesionVendedor(s.nombre || 'VENDEDOR');
@@ -972,7 +972,7 @@ async function cerrarSesion() {
   }
   SESSION_TOKEN = null;
   VENDOR_ACTUAL = null; INV_DATA_V = [];
-  localStorage.removeItem('mars_portal_session');
+  sessionStorage.removeItem('mars_portal_session');
   clearInactivityTimer();
   window.location.href = 'index.html';
 }

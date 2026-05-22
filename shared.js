@@ -6,11 +6,11 @@ var SKEY = ANON_KEY;  // alias para secciones type="text/babel"
 
 // ── SESIÓN ──
 function getSession() {
-  return JSON.parse(localStorage.getItem('mars_portal_session') || 'null');
+  return JSON.parse(sessionStorage.getItem('mars_portal_session') || 'null');
 }
 
 function saveSession(rol, nombre, username, access_token, refresh_token, expires_in) {
-  localStorage.setItem('mars_portal_session', JSON.stringify({
+  sessionStorage.setItem('mars_portal_session', JSON.stringify({
     rol: rol,
     nombre: nombre,
     username: username,
@@ -24,7 +24,7 @@ function saveSession(rol, nombre, username, access_token, refresh_token, expires
 }
 
 function clearSession() {
-  localStorage.removeItem('mars_portal_session');
+  sessionStorage.removeItem('mars_portal_session');
 }
 
 // ── SUPABASE HELPERS (admin) ──

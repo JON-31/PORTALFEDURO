@@ -626,7 +626,7 @@ tbody tr:last-child td { border-bottom: none; }
 <body>
 
 <script>
-(function(){var s=JSON.parse(localStorage.getItem('mars_portal_session')||'null');if(!s||s.rol!=='admin-visual'){window.location.href='index.html';}})();
+(function(){var s=JSON.parse(sessionStorage.getItem('mars_portal_session')||'null');if(!s||s.rol!=='admin-visual'){window.location.href='index.html';}})();
 </script>
 
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
@@ -1924,7 +1924,7 @@ async function _doLoginAdmin_disabled() {
 }
 
 async function cerrarSesionAdmin() {
-  localStorage.removeItem('mars_portal_session');
+  sessionStorage.removeItem('mars_portal_session');
   window.location.href = 'index.html';
 }
 
@@ -2153,7 +2153,7 @@ async function cargarBodegaData() {
 
 // Auto-load bodega on page start
 document.addEventListener('DOMContentLoaded', function() {
-  var s = JSON.parse(localStorage.getItem('mars_portal_session') || '{}');
+  var s = JSON.parse(sessionStorage.getItem('mars_portal_session') || '{}');
   var nombre = s.nombre || 'ADMINISTRADOR';
   var el = document.getElementById('admin-sidebar-user');
   if (el) el.textContent = nombre;
@@ -3578,7 +3578,7 @@ function avRenderBodega(data) {
 
 // ── INIT ──
 document.addEventListener('DOMContentLoaded', function() {
-  var s = JSON.parse(localStorage.getItem('mars_portal_session')||'{}');
+  var s = JSON.parse(sessionStorage.getItem('mars_portal_session')||'{}');
   var nombre = s.nombre || 'ADMIN';
   var el = document.getElementById('admin-sidebar-user');
   if (el) el.textContent = nombre;

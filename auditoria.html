@@ -64,7 +64,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text)
 <script>
 // Session check
 (function() {
-  var s = JSON.parse(localStorage.getItem('mars_portal_session') || 'null');
+  var s = JSON.parse(sessionStorage.getItem('mars_portal_session') || 'null');
   if (!s || s.rol !== 'auditoria') { window.location.href = 'index.html'; }
 })();
 </script>
@@ -120,7 +120,7 @@ function showView(name, el) {
   closeSidebar();
 }
 function cerrarSesion() {
-  localStorage.removeItem('mars_portal_session');
+  sessionStorage.removeItem('mars_portal_session');
   window.location.href = 'index.html';
 }
 // TODO: Módulo de Auditoría — funcionalidades pendientes:
@@ -152,7 +152,7 @@ function cerrarSesion() {
 //
 // Init
 (function() {
-  var s = JSON.parse(localStorage.getItem('mars_portal_session') || 'null');
+  var s = JSON.parse(sessionStorage.getItem('mars_portal_session') || 'null');
   var nombre = s ? (s.nombre || 'AUDITORIA') : '';
   document.getElementById('sidebar-user').textContent = nombre;
   document.getElementById('topbar-user').textContent = nombre;

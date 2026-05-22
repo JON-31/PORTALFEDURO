@@ -102,7 +102,7 @@ var PORTALS = { vendedor:'vendedor.html', admin:'admin-datos.html', 'admin-visua
 
 // Auto-redirect if already logged in
 (function() {
-  var s = JSON.parse(localStorage.getItem('mars_portal_session') || 'null');
+  var s = JSON.parse(sessionStorage.getItem('mars_portal_session') || 'null');
   if (s && s.rol && s.expires_at > Date.now()) {
     window.location.href = PORTALS[s.rol] || 'index.html';
   }
