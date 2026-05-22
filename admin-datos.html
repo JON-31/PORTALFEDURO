@@ -3629,13 +3629,16 @@ async function adProcessFile(input) {
       if (cProducto < 0) missing.push('PRODUCTO');
       if (cInv < 0) missing.push('INVENTARIO');
       if (missing.length) { msgEl.textContent = '❌ Columnas no encontradas: ' + missing.join(', ') + '. Headers: ' + headers.join(' | '); msgEl.style.color = 'var(--red)'; return; }
+      // Lookup normalizado: case-insensitive + sin tildes. Fallback a buscarVendedorPorTienda() para formatos inesperados.
+      var tvNorm = {};
+      Object.keys(TIENDAS_VENDEDORES).forEach(function(k) { tvNorm[normStr(k)] = TIENDAS_VENDEDORES[k]; });
       for (var i = 1; i < rows.length; i++) {
         var row = rows[i];
         var tienda = String(row[cTienda]||'').trim();
         if (!tienda) continue;
         AD_RECORDS.push({
           cadena: 'xtra',
-          vendedor: TIENDAS_VENDEDORES[tienda] || '',
+          vendedor: tvNorm[normStr(tienda)] || buscarVendedorPorTienda(tienda) || '',
           formato: cFormato>=0?String(row[cFormato]||'').trim():'',
           tienda: tienda,
           marca: cMarca>=0?String(row[cMarca]||'').trim():'',
