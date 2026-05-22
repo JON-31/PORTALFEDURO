@@ -2102,7 +2102,7 @@ function MachetazoApp(){
   const showM=(m)=>{setMsg(m);setTimeout(()=>setMsg(''),3000);};
   const btn=(bg,extra={})=>({background:bg,color:'white',border:'none',borderRadius:'.5rem',padding:'.75rem 1rem',fontWeight:'700',cursor:'pointer',...extra});
 
-  const misTiendas=user?MACHETAZO_TIENDAS.filter(t=>t.v===user.v):[];
+  const misTiendas=user?MACHETAZO_TIENDAS.filter(t=>t.v.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')===user.v.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')):[];
   const mSugs=useMemo(()=>{
     if(!mCodIn.trim()||mProdSel)return[];
     const q=mCodIn.toUpperCase();
