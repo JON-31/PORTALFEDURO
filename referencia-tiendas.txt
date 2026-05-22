@@ -1,15 +1,18 @@
 FEDURO | MARS PORTAL — REFERENCIA TIENDAS POR CADENA
-Generado: 2026-05-20
+Generado: 2026-05-22 (actualizado sesión 22-may)
 ============================================================
 IMPORTANTE (actualizado 2026-05-22):
-Para la cadena XTRA, los nombres de tienda en el Excel pueden venir
-en MAYÚSCULAS y sin tildes (formato SAP). El sistema normaliza
-automáticamente usando buscarVendedorPorTienda() como fallback.
-No es necesario que el Excel tenga el formato exacto listado aquí.
-El código hace: normStr(tienda_excel) → lookup normalizado → fallback fuzzy por T-code.
+Para la cadena XTRA, d.tienda en Supabase usa formato "Xtra Nombre - TXXX".
+El campo `store` en TIENDAS_INGRESO debe coincidir EXACTAMENTE con ese valor.
+Al cargar INV_DATA_V, vendedor.html normaliza d.tienda via _normMap (t.n → t.store).
+
+SESIONES: Migrado de localStorage a sessionStorage (sesión 2026-05-22).
+Clave: mars_portal_session. Archivos: shared.js, index.html, vendedor.html,
+admin-datos.html, admin-visual.html, auditoria.html.
+PENDIENTE: mars_admin_session legacy en admin-datos y admin-visual.
 
 REGLA DE NORMALIZACIÓN DE NOMBRES DE VENDEDOR (actualizado 2026-05-22):
-VENDOR_ACTUAL viene del localStorage en formato mixto ("Nombre Apellido")
+VENDOR_ACTUAL viene del sessionStorage en formato mixto ("Nombre Apellido")
 pero los arrays estáticos (TIENDAS_INGRESO, MACHETAZO_TIENDAS, TIENDAS_REY)
 almacenan vendedores en MAYÚSCULAS. Cualquier comparación de nombres de
 vendedor contra arrays estáticos DEBE normalizar AMBOS lados con:
@@ -93,49 +96,65 @@ SM REY CALLE 7A.                      JUSTO VICTOR MACHUCA
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CADENA: XTRA (Supermercados Xtra)
-Fuente: TIENDAS_VENDEDORES (admin-datos.html)
-Nota: El Excel de Xtra usa el formato "Nombre - TXXX"
+Fuente: TIENDAS_INGRESO campo store (vendedor.html) — corregido 2026-05-22
+Nota: d.tienda en Supabase = campo store exacto. Formato: "Xtra Nombre - TXXX"
+      id:124 eliminado (duplicado T012 Carmen Fisher).
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-TIENDA                                VENDEDOR
-4 Altos - T036                        CARMEN FISHER
-Albrook - T017                        IRVING TORRES
-Anclas - T020                         EVELYN FERNANDEZ
-Arraijan - T001                       ALEXIS VAZQUEZ
-Brisas del Golf - T041                ELEIDI FRANCO
-Buena Vista - T207                    CARMEN FISHER
-Calidonia - T300                      GALVEN RIVAS
-Capira - T039                         EDUARDO LÓPEZ
-Cativá - T013                         JUSTO VICTOR MACHUCA
-Chanis - T040                         GERTRUDIS PEREZ
-Chepo - T200                          ADESSA COOK
-Chilibre - T203                       STEFANI BRAVO
-Chorrera - T002                       MARTIN CASTILLO
-Chorrera Market - T038                MARTIN CASTILLO
-Chorrillo - T022                      GALVEN RIVAS
-Condado del Rey - T010                MELLINI SANTAMARIA
-Coronado - T301                       EDUARDO LÓPEZ
-El Lago - T019                        STEFANI BRAVO
-El Trébol - T302                      BELTRAN FRANCO GONZALEZ
-La Gran Estación - T307               JAAZIEL GONZALEZ
-La Marquesa - T030                    AURELINO RIVAS
-La Siesta - T202                      BELTRAN FRANCO GONZALEZ
-Las Acacias - T004                    PEDRO RODRIGUEZ
-Llano Largo - T211                    EVELYN FERNANDEZ
-Los Pueblos - T005                    PEDRO RODRIGUEZ
-Mañanitas - T309                      BELTRAN FRANCO GONZALEZ
-Monte Rico - T006                     LUIS TUNON
-Pacora - T018                         ADESSA COOK
-Río Abajo - T303                      KATHYUSKA GUERRA
-Sabanitas - T012                      JUSTO VICTOR MACHUCA
-San Isidro - T034                     ALEXIS SALAZAR
-San Miguelito - T008                  DEIBITH JOSUE PRADO
-San Vicente - T208                    STEFANI BRAVO
-Transístmica - T023                   CECILIA VALDES
-Vacamonte - T210                      MAGDIEL MORAN
-Villa Lucre - T014                    DEIBITH JOSUE PRADO
-Villalobos - T031                     MANUEL VALDEZ
-Vía España - T401                     RUTH SANCHEZ
-Vía Israel - T035                     RUTH SANCHEZ
+id    TIENDA (store = d.tienda en Supabase)        VENDEDOR
+id:2  Xtra Chorrera Market - T038                  MARTIN CASTILLO
+id:3  Xtra Chorrera - T002                         MARTIN CASTILLO
+id:4  Xtra Chorrera Centro - T206                  MARTIN CASTILLO
+id:7  Xtra Transístmica - T023                     CECILIA VALDES
+id:13 Xtra Condado del Rey - T010                  MELLINI SANTAMARIA
+id:17 Xtra Arraijan - T001                         ALEXIS VAZQUEZ
+id:25 Xtra Vacamonte - T210                        MAGDIEL MORAN
+id:26 Xtra Chanis - T040                           GERTRUDIS PEREZ
+id:35 Xtra Villalobos - T031                       MANUEL VALDEZ
+id:40 Xtra Monte Rico - T006                       LUIS TUNON
+id:50 Xtra Coronado - T301                         EDUARDO LÓPEZ
+id:52 Xtra Capira - T039                           EDUARDO LÓPEZ
+id:54 Xtra Llano Largo - T211                      EVELYN FERNANDEZ
+id:56 Xtra Anclas - T020                           EVELYN FERNANDEZ
+id:58 Xtra La Marquesa - T030                      AURELINO RIVAS
+id:74 Xtra Brisas del Golf - T041                  ELEIDI FRANCO
+id:77 Xtra El Lago - T019                          STEFANI BRAVO
+id:78 Xtra Chilibre - T203                         STEFANI BRAVO
+id:79 Xtra San Vicente - T208                      STEFANI BRAVO
+id:86 Xtra Río Abajo - T303                        KATHYUSKA GUERRA
+id:87 Xtra Chorrillo - T022                        GALVEN RIVAS
+id:91 Xtra Calidonia - T300                        GALVEN RIVAS
+id:100 Xtra Pacora - T018                          ADESSA COOK
+id:103 Xtra Chepo - T200                           ADESSA COOK
+id:105 Xtra Los Pueblos - T005                     PEDRO RODRIGUEZ
+id:108 Xtra Las Acacias - T004                     PEDRO RODRIGUEZ
+id:110 Xtra Albrook - T017                         IRVING TORRES
+id:117 Xtra La Siesta - T202                       BELTRAN FRANCO GONZALEZ
+id:119 Xtra Mañanitas - T309                       BELTRAN FRANCO GONZALEZ
+id:123 Xtra El Trébol - T302                       BELTRAN FRANCO GONZALEZ
+id:126 Xtra Buena Vista - T207                     CARMEN FISHER
+id:133 Xtra 4 Altos - T036                         CARMEN FISHER
+id:135 Xtra Vía Israel - T035                      RUTH SANCHEZ
+id:140 Xtra La Gran Estación - T307                JAAZIEL GONZALEZ
+id:145 Xtra San Miguelito - T008                   DEIBITH JOSUE PRADO
+id:148 Xtra Villa Lucre - T014                     DEIBITH JOSUE PRADO
+id:154 Xtra San Isidro - T034                      ALEXIS SALAZAR
+id:156 Xtra Cativá - T013                          JUSTO VICTOR MACHUCA
+id:157 Xtra Sabanitas - T012                       JUSTO VICTOR MACHUCA
+id:165 Xtra Ojo de Agua - T007                     ERICK RUIZ
+id:201 Xtra Antón - T216                           GALVEN RIVAS
+id:202 Xtra Santa Marta - T313                     GERTRUDIS PEREZ
+id:203 Xtra Vía España - T401                      ERICK RUIZ
+id:204 Xtra Vista Alegre - T009                    MAGDIEL MORAN
+
+TIENDAS XTRA SIN VENDEDOR ASIGNADO EN SUPABASE (pendientes):
+  Xtra Aguadulce - T027
+  Xtra Algarrobos - T213
+  Xtra Bugaba - T026
+  Xtra Changuinola - T025
+  Xtra Chitré - T011
+  Xtra Chitré Centro - T308
+  Xtra David - T015
+  Xtra Puerto Armuelles - T306
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CADENA: SUPER 99 / IMPORTADORA RICAMAR

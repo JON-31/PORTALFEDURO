@@ -1,6 +1,6 @@
 # MAPA DE FUNCIONES — FEDURO|MARS PORTALFEDURO
 
-Generado: 2026-05-22  
+Generado: 2026-05-22 (actualizado sesión 22-may)  
 Archivos activos: `shared.js`, `index.html`, `admin-datos.html`, `admin-visual.html`, `vendedor.html`, `auditoria.html`  
 Archivos legacy (no documentados): `MARS_FUSIONADO.html`, `HTML1_vendedores.html`
 
@@ -12,9 +12,9 @@ Archivos legacy (no documentados): `MARS_FUSIONADO.html`, `HTML1_vendedores.html
 
 | Función | Línea | Qué hace | Depende de | La usan |
 |---------|-------|----------|-----------|---------|
-| `getSession()` | 8 | Lee `mars_portal_session` de localStorage y lo parsea como JSON | `localStorage` | Todos los HTML al verificar si hay sesión activa |
-| `saveSession(rol, nombre, username, access_token, refresh_token, expires_in)` | 12 | Guarda sesión unificada en localStorage con `expires_at` en milisegundos | `localStorage` | `index.html → doLogin()` |
-| `clearSession()` | 26 | Elimina la clave `mars_portal_session` de localStorage | `localStorage` | `admin-datos.html → cerrarSesionAdmin()`, `admin-visual.html → cerrarSesionAdmin()`, `vendedor.html → cerrarSesion()` |
+| `getSession()` | 8 | Lee `mars_portal_session` de **sessionStorage** y lo parsea como JSON | `sessionStorage` | Todos los HTML al verificar si hay sesión activa |
+| `saveSession(rol, nombre, username, access_token, refresh_token, expires_in)` | 12 | Guarda sesión unificada en **sessionStorage** con `expires_at` en milisegundos | `sessionStorage` | `index.html → doLogin()` |
+| `clearSession()` | 26 | Elimina la clave `mars_portal_session` de **sessionStorage** | `sessionStorage` | `admin-datos.html → cerrarSesionAdmin()`, `admin-visual.html → cerrarSesionAdmin()`, `vendedor.html → cerrarSesion()` |
 
 ### `index.html`
 
@@ -51,7 +51,7 @@ Archivos legacy (no documentados): `MARS_FUSIONADO.html`, `HTML1_vendedores.html
 
 | Función | Línea | Qué hace | Depende de | La usan |
 |---------|-------|----------|-----------|---------|
-| `cerrarSesion()` | 122 | Elimina `mars_portal_session` y redirige a `index.html` — **usa `localStorage.removeItem` directo en vez de `clearSession()`** | `localStorage` | Botón "Salir" |
+| `cerrarSesion()` | 122 | Elimina `mars_portal_session` y redirige a `index.html` — usa `sessionStorage.removeItem` directo | `sessionStorage` | Botón "Salir" |
 
 ---
 
@@ -281,7 +281,7 @@ Todos montan vía `ReactDOM.createRoot(container).render(<App/>)` (ya migrados a
 
 ## REGLA GLOBAL — NORMALIZACIÓN DE NOMBRES DE VENDEDOR
 
-**Causa raíz identificada (2026-05-22):** `VENDOR_ACTUAL` llega del localStorage en formato mixto (`"Nombre Apellido"`), pero todos los arrays estáticos (`MACHETAZO_TIENDAS`, `TIENDAS_REY`, `TIENDAS_INGRESO`) almacenan vendedores en MAYÚSCULAS (`"NOMBRE APELLIDO"`). Una comparación directa `t.v === VENDOR_ACTUAL` falla silenciosamente.
+**Causa raíz identificada (2026-05-22):** `VENDOR_ACTUAL` llega del sessionStorage en formato mixto (`"Nombre Apellido"`), pero todos los arrays estáticos (`MACHETAZO_TIENDAS`, `TIENDAS_REY`, `TIENDAS_INGRESO`) almacenan vendedores en MAYÚSCULAS (`"NOMBRE APELLIDO"`). Una comparación directa `t.v === VENDOR_ACTUAL` falla silenciosamente.
 
 **Patrón estándar obligatorio** para cualquier comparación de nombre de vendedor:
 
@@ -301,3 +301,85 @@ function normVendedor(s) {
 | `vendedor.html` | ~2105 | `MachetazoApp.misTiendas` — tiendas GOLY del vendedor |
 
 **Regla para futuros cambios:** Antes de agregar cualquier filtro `t.v === algo` o `t.vendedor === algo` en cualquier archivo, verificar que usa esta normalización en ambos lados. Si no la usa, es un bug latente.
+
+---
+
+## LÓGICA DE ESTADOS DE INVENTARIO (actualizado 2026-05-22)
+
+### Por PRODUCTO — `filtrarInventario()` vendedor.html (~línea 1168)
+
+```js
+var inv   = d.inventario || 0;
+var venta = d.venta_promedio || d.venta_prom_3m || 0;
+// Sin data
+if (!inv && !venta)  → Sin data
+if (!inv)            → Critico       (badge-danger, rojo)
+if (!venta)          → Sin data
+// Con data
+if (inv < venta)     → Atencion      (badge-warn, naranja)  — no cubre ni el mes
+var cob = (inv * 30) / venta;
+if (cob <= 45)       → Optimo        (badge-ok, verde)
+else                 → SobreStock    (badge-info, azul)
+```
+
+### Por TIENDA — `renderDashboard()` Foro vendedor.html (~línea 1108)
+
+Usa `cp` = promedio de `d.cobertura` (días) de todos los productos de la tienda:
+
+```js
+if (!hasData)  → Sin data
+if (cp < 15)   → Critico
+if (cp < 30)   → Atencion
+if (cp <= 45)  → Optimo
+else           → SobreStock
+```
+
+**Badges CSS:** `badge-danger` (rojo), `badge-warn` (naranja), `badge-ok` (verde), `badge-info` (azul)  
+**Select filtro `#inv-filter-estado` opciones:** `critico`, `atencion`, `optimo`, `sobrestock`, `sindata`
+
+---
+
+## CAMPO DE VENTA EN SUPABASE (actualizado 2026-05-22)
+
+- **Columna Excel XTRA:** `"Venta Unidades Promedio (3M)"` — es venta **MENSUAL** (el nombre es engañoso)
+- **Detección en `adProcessFile()`** (admin-datos.html ~línea 3624):
+  ```js
+  fiAny(['VENTA UNIDADES PROMEDIO (3M)','VENTA UNIDADES PROMEDIO','VENTA PROMEDIO',...])
+  ```
+- **Guardado en Supabase como:** `venta_promedio` (vía admin-datos.html)
+- **Alias alternativo en Supabase:** `venta_prom_3m` (vía admin-visual.html)
+- **Lectura correcta en vendedor.html:** `d.venta_promedio || d.venta_prom_3m || 0`
+- **Header tabla UI:** `"Venta 1M"` (corregido desde "Venta 3M" — sesión 2026-05-22)
+
+---
+
+## NORMALIZACIÓN DE NOMBRES DE TIENDAS XTRA (actualizado 2026-05-22)
+
+**Problema:** `d.tienda` en Supabase viene en formato `"Xtra Nombre - TXXX"`. Los arrays `TIENDAS_INGRESO` usan `t.n` en formato largo (`"SUPERMERCADOS XTRA S.A.(TXXX...)"`) que no coincide.
+
+**Fix aplicado:** Al cargar `INV_DATA_V` (~línea 939 vendedor.html), se normaliza `d.tienda` usando un mapa `t.n → t.store`:
+
+```js
+var _normMap = {};
+(window.TIENDAS_INGRESO_DATA || []).forEach(function(t){ if (t.store) _normMap[t.n] = t.store; });
+INV_DATA_V = INV_DATA_V.map(function(d){
+  return (d.tienda && _normMap[d.tienda]) ? Object.assign({}, d, {tienda: _normMap[d.tienda]}) : d;
+});
+```
+
+**`renderDashboard()`** usa `t.store || t.n` como `displayName` en el master lookup para evitar duplicados tienda-sin-data + tienda-con-data.
+
+**Campo `store` en `TIENDAS_INGRESO`:** Solo existe en entradas XTRA. Valor exacto = lo que está en Supabase como `d.tienda`. Cada entrada XTRA debe tener `store` para que el mapeo funcione. Ver `referencia-tiendas.txt` para el mapeo completo.
+
+**IngresoApp dropdown** (vendedor.html ~línea 2009): muestra `t.store || t.n` para que el vendedor vea nombre corto.
+
+---
+
+## SESIONES — sessionStorage (actualizado 2026-05-22)
+
+**Migración:** En esta sesión se migró de `localStorage` a `sessionStorage` para aislar sesiones por pestaña del navegador. Con `localStorage`, dos usuarios en pestañas distintas del mismo dominio compartían sesión.
+
+**Clave:** `mars_portal_session`  
+**Archivos migrados:** `shared.js` (funciones centrales), `index.html`, `vendedor.html`, `admin-datos.html`, `admin-visual.html`, `auditoria.html`
+
+**PENDIENTE:** `mars_admin_session` (clave legacy) en `admin-datos.html:2184` y `admin-visual.html:1909` — no migrada, evaluar si sigue en uso.
