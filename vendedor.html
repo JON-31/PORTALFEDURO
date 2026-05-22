@@ -1104,7 +1104,7 @@ function renderDashboard() {
     var hasData = s.prods > 0;
     var cp = hasData && s.cob.length > 0 ? Math.round(s.cob.reduce(function(a,c){ return a+c; }, 0) / s.cob.length) : 0;
     var badgeHtml;
-    if (!hasData || (s.inv === 0 && s.venta === 0)) {
+    if (!hasData || (!(s.inv) && !(s.venta))) {
       badgeHtml = '<span style="color:var(--muted);font-size:11px">Sin data</span>';
     } else if (s.inv === 0) {
       badgeHtml = '<span class="badge badge-danger">Critico</span>';
