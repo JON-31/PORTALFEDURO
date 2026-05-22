@@ -119,7 +119,7 @@ Archivos legacy (no documentados): `MARS_FUSIONADO.html`, `HTML1_vendedores.html
 | `eliminarOfertaGuardada(i)` | 2029 | Elimina una oferta del array guardado en `configuracion[ofertas]` | `sbGet()`, `sbUpsert()` | Botón "Eliminar" en cada oferta |
 | `guardarBodegaData()` | 2304 | Guarda datos de bodega en `configuracion[inventario_bodega]` | `sbUpsert()`, `parseBodegaData()` | Botón "Guardar Bodega" |
 | `gtSubirTareas()` | 4051 | Inserta array de tareas en tabla `tareas` de Supabase | `sbAdmin('POST', '/tareas', ...)`, `TIENDAS_VENDEDORES` | Botón "Asignar Tareas" en Gestionar Tareas |
-| `cdDescargar(tipo)` | 3867 | Descarga datos de `tareas`, `inventario` o `machetazo` como archivo Excel usando SheetJS | `CD_DATA`, `XLSX` | Botón "Descargar Excel" en Centro de Descargas |
+| `cdDescargar(tipo)` | 3870 | Descarga datos de `tareas`, `inventario` o `machetazo` como archivo Excel usando SheetJS. Tareas incluye: Vendedor, Tienda, Producto, Inv. Sistema, **Inv. Real**, Estado, Fecha | `CD_DATA`, `XLSX` | Botón "Descargar Excel" en Centro de Descargas |
 | `cdEliminar(tipo)` | 3891 | Elimina TODOS los registros de `tareas` o `reportes` (con confirmación) | `sbAdmin('DELETE', ...)` | Botón "Eliminar Data" en Centro de Descargas |
 
 ### `admin-visual.html`

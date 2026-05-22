@@ -3872,8 +3872,8 @@ async function cdDescargar(tipo) {
   if (!data || data.length === 0) { alert('No hay registros disponibles para descargar'); return; }
   var mappedData, headers, filename;
   if (tipo === 'tareas') {
-    headers = ['Vendedor','Tienda','Producto','Inv. Sistema','Estado','Fecha'];
-    mappedData = data.map(function(r){ return { 'Vendedor':r.vendedor_nombre, 'Tienda':r.tienda, 'Producto':r.producto, 'Inv. Sistema':r.inventario_sistema, 'Estado':r.estado, 'Fecha':r.fecha_asignacion }; });
+    headers = ['Vendedor','Tienda','Producto','Inv. Sistema','Inv. Real','Estado','Fecha'];
+    mappedData = data.map(function(r){ return { 'Vendedor':r.vendedor_nombre, 'Tienda':r.tienda, 'Producto':r.producto, 'Inv. Sistema':r.inventario_sistema, 'Inv. Real':r.inventario_real, 'Estado':r.estado, 'Fecha':r.fecha_asignacion }; });
     filename = 'tareas_' + new Date().toISOString().split('T')[0] + '.xlsx';
   } else if (tipo === 'inventario') {
     headers = ['Vendedor','Tienda','Producto','Cantidad','Mes Vencimiento','Precio Total'];
