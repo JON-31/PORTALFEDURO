@@ -1175,9 +1175,9 @@ function filtrarInventario() {
     } else if (!venta) {
       badge = ''; estado = 'Sin data';
     } else {
-      var cob = d.cobertura || 0;
-      if      (cob <= 7)  { badge = 'badge-warn'; estado = 'Atencion'; }
-      else if (cob <= 21) { badge = 'badge-ok';   estado = 'Optimo';   }
+      var cob = (inv * 90) / venta;
+      if      (cob < 15)  { badge = 'badge-warn'; estado = 'Atencion'; }
+      else if (cob <= 45) { badge = 'badge-ok';   estado = 'Optimo';   }
       else                { badge = 'badge-info';  estado = 'SobreStock'; }
     }
     return '<tr><td>' + (d.tienda||'—') + '</td><td><span class="badge badge-brand">' + (d.marca||'—') + '</span></td><td style="font-weight:600">' + (d.producto||'—') + '</td><td>' + (d.inventario||0).toLocaleString() + '</td><td>' + (d.venta_promedio||0).toLocaleString() + '</td><td>' + (d.cobertura||0) + ' dias</td><td><span class="badge ' + badge + '">' + estado + '</span></td></tr>';
