@@ -1106,13 +1106,13 @@ function renderDashboard() {
     var hasData = s.prods > 0;
     var cp = hasData && s.cob.length > 0 ? Math.round(s.cob.reduce(function(a,c){ return a+c; }, 0) / s.cob.length) : 0;
     var badgeHtml;
-    if (!hasData || (!(s.inv) && !(s.venta))) {
+    if (!hasData) {
       badgeHtml = '<span style="color:var(--muted);font-size:11px">Sin data</span>';
-    } else if (s.inv === 0) {
+    } else if (cp < 15) {
       badgeHtml = '<span class="badge badge-danger">Critico</span>';
-    } else if (s.inv < s.venta) {
+    } else if (cp < 30) {
       badgeHtml = '<span class="badge badge-warn">Atencion</span>';
-    } else if (s.inv <= s.venta * 30) {
+    } else if (cp <= 45) {
       badgeHtml = '<span class="badge badge-ok">Optimo</span>';
     } else {
       badgeHtml = '<span class="badge badge-info">SobreStock</span>';
