@@ -89,7 +89,6 @@ Archivos legacy (no documentados): `MARS_FUSIONADO.html`, `HTML1_vendedores.html
 | Función | Línea | Qué hace | Depende de | La usan |
 |---------|-------|----------|-----------|---------|
 | `cargarDataActual()` | 1543 | Lee `configuracion[inventario]` y llena la tabla editable de inventario | `sbGet()` | `init()` o botón refrescar |
-| `cargarBodegaVendedor()` | 2224 | Lee `configuracion[inventario_bodega]` filtrado por vendedor | `sbAdmin()` | Vista bodega por vendedor |
 | `gtInicializar()` | 3484 | Lee `configuracion[inventario]` y popula lista de vendedores para Gestionar Tareas | `sbAdmin()` | `showView('gestionar-tareas')` |
 
 ---
