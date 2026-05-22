@@ -200,7 +200,7 @@ Todas las estructuras y funciones de esta sección están **duplicadas** entre `
 | `buscarCodigoBodega(descripcion)` | 1194 | Busca el código de barras de un producto en el inventario del vendedor por descripción | `INV_DATA_V` | `renderBodegaTabla()` |
 | `renderBodegaTabla(datos)` | 1209 | Renderiza la tabla de inventario en bodega | `buscarCodigoBodega()` | `cargarBodegaVendedor()` |
 | `filtrarBodegaVendedor(term)` | 1254 | Filtra la tabla de bodega por término de búsqueda | DOM | Input de búsqueda en Bodega |
-| `renderTareas()` | 2350 | Lee tareas propias del vendedor de Supabase usando `ilike.` + `.trim().toUpperCase()` (case-insensitive), las separa en pendientes/completadas y renderiza ambas listas | `sbGetVAuth()`, `VENDOR_ACTUAL`, `completarTarea()` | `showView('tareas')`, `completarTarea()` |
+| `renderTareas()` | 2350 | Lee tareas propias del vendedor de Supabase con `select=*` + `ilike.` (case-insensitive), separa en pendientes/completadas y renderiza ambas listas. **Bug fix**: `view-tareas` estaba anidado dentro de `view-machetazo-react` en el HTML — el div machetazo no estaba cerrado antes de abrir el div tareas, causando que la vista quedara oculta por el padre inactivo. | `sbGetVAuth()`, `VENDOR_ACTUAL`, `completarTarea()` | `showView('tareas')`, `completarTarea()` |
 | `formatOfertaPeriodo(fechaInicio, fechaFin)` | 1154 | Formatea el período de vigencia de una oferta para mostrarlo en la UI | — | `renderOfertas()` |
 
 ---
