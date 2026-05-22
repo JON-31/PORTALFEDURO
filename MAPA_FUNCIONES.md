@@ -1,6 +1,6 @@
 # MAPA DE FUNCIONES — FEDURO|MARS PORTALFEDURO
 
-Generado: 2026-05-21  
+Generado: 2026-05-22  
 Archivos activos: `shared.js`, `index.html`, `admin-datos.html`, `admin-visual.html`, `vendedor.html`, `auditoria.html`  
 Archivos legacy (no documentados): `MARS_FUSIONADO.html`, `HTML1_vendedores.html`
 
@@ -147,7 +147,7 @@ Todas las estructuras y funciones de esta sección están **duplicadas** entre `
 | `TIENDAS_REY` | admin-datos.html, admin-visual.html, vendedor.html | 2542 / 2438 / 1578 | Super Rey | Array `[{id, n, v}]`. 25 tiendas. |
 | `TIENDAS_INGRESO` | admin-datos.html | 2570 | Todas | Array completo multi-cadena (80+ entradas: XTRA, REY, GOLY, Riba Smith, Ricamar). Usado para búsqueda fuzzy. |
 | `MACHETAZO_NOMBRE_MAP` | admin-datos.html | 3664 | GOLY | Objeto inline en `adProcessFile()` que convierte nombres cortos del Excel (ej: `SAN MIGUELITO`) al formato GOLY (ej: `GOLY SAN MIGUELITO`). |
-| `MACHETAZO_USERS` | vendedor.html | 953 | GOLY | Array inline de nombres de vendedores que tienen acceso al módulo Machetazo. Controla visibilidad del tab. |
+| `MACHETAZO_USERS` | vendedor.html | ~953 | GOLY | **Derivado dinámicamente** de `MACHETAZO_TIENDAS.map(t => t.v)` — ya NO es un array hardcodeado. Controla visibilidad del tab Machetazo en el menú del vendedor. La comparación contra `VENDOR_ACTUAL` usa normalización en ambos lados: `.toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'')`. **Fix 2026-05-22**: antes era case-sensitive y causaba que el tab Machetazo no apareciera. |
 
 ### Funciones de lookup
 
@@ -270,9 +270,34 @@ Los tres archivos activos con React (`admin-datos.html`, `admin-visual.html`, `v
 
 | Componente | Archivos | Qué es |
 |-----------|---------|--------|
-| `IngresoApp` | admin-datos.html:2847, admin-visual.html:2743, vendedor.html:1886 | Formulario de ingreso de inventario para cadena XTRA |
-| `MachetazoApp` | admin-datos.html:3094, admin-visual.html:2990, vendedor.html:2108 | Formulario de pedido sugerido para cadena GOLY/Machetazo |
+| `IngresoApp` | admin-datos.html:2847, admin-visual.html:2743, vendedor.html:1886 | Formulario de ingreso de inventario para cadena XTRA. En `vendedor.html` (~1895): `tiendasV` filtra con normalización en ambos lados (`t.v` y `VENDOR_ACTUAL`). **Fix 2026-05-22**: antes el filtro era case-sensitive y la lista de tiendas aparecía vacía. |
+| `MachetazoApp` | admin-datos.html:3094, admin-visual.html:2990, vendedor.html:2108 | Formulario de pedido sugerido para cadena GOLY/Machetazo. En `vendedor.html` (~2105): `misTiendas` filtra con normalización en ambos lados (`t.v` y `VENDOR_ACTUAL`). **Fix 2026-05-22**: antes el filtro era case-sensitive y mostraba "Sin tiendas Machetazo asignadas". |
 | `ReyApp` | admin-datos.html:3317, admin-visual.html:3213 | Formulario de pedido para auditores (Super Rey) |
 | `ItemEditable` | admin-datos.html:2812, admin-visual.html:2708, vendedor.html:1851 | Componente reutilizable de fila de producto en las apps |
 
 Todos montan vía `ReactDOM.createRoot(container).render(<App/>)` (ya migrados a React 18).
+
+---
+
+## REGLA GLOBAL — NORMALIZACIÓN DE NOMBRES DE VENDEDOR
+
+**Causa raíz identificada (2026-05-22):** `VENDOR_ACTUAL` llega del localStorage en formato mixto (`"Nombre Apellido"`), pero todos los arrays estáticos (`MACHETAZO_TIENDAS`, `TIENDAS_REY`, `TIENDAS_INGRESO`) almacenan vendedores en MAYÚSCULAS (`"NOMBRE APELLIDO"`). Una comparación directa `t.v === VENDOR_ACTUAL` falla silenciosamente.
+
+**Patrón estándar obligatorio** para cualquier comparación de nombre de vendedor:
+
+```js
+function normVendedor(s) {
+  return (s || '').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+// Uso: normVendedor(t.v) === normVendedor(VENDOR_ACTUAL)
+```
+
+**Archivos y lugares ya corregidos con este patrón:**
+
+| Archivo | Línea aprox. | Qué filtra |
+|---------|-------------|-----------|
+| `vendedor.html` | ~953 | Visibilidad del tab Machetazo (`MACHETAZO_USERS` vs `VENDOR_ACTUAL`) |
+| `vendedor.html` | ~1895 | `IngresoApp.tiendasV` — tiendas XTRA del vendedor |
+| `vendedor.html` | ~2105 | `MachetazoApp.misTiendas` — tiendas GOLY del vendedor |
+
+**Regla para futuros cambios:** Antes de agregar cualquier filtro `t.v === algo` o `t.vendedor === algo` en cualquier archivo, verificar que usa esta normalización en ambos lados. Si no la usa, es un bug latente.

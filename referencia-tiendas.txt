@@ -1,12 +1,20 @@
 FEDURO | MARS PORTAL — REFERENCIA TIENDAS POR CADENA
 Generado: 2026-05-20
 ============================================================
-IMPORTANTE (actualizado 2026-05-21):
+IMPORTANTE (actualizado 2026-05-22):
 Para la cadena XTRA, los nombres de tienda en el Excel pueden venir
 en MAYÚSCULAS y sin tildes (formato SAP). El sistema normaliza
 automáticamente usando buscarVendedorPorTienda() como fallback.
 No es necesario que el Excel tenga el formato exacto listado aquí.
 El código hace: normStr(tienda_excel) → lookup normalizado → fallback fuzzy por T-code.
+
+REGLA DE NORMALIZACIÓN DE NOMBRES DE VENDEDOR (actualizado 2026-05-22):
+VENDOR_ACTUAL viene del localStorage en formato mixto ("Nombre Apellido")
+pero los arrays estáticos (TIENDAS_INGRESO, MACHETAZO_TIENDAS, TIENDAS_REY)
+almacenan vendedores en MAYÚSCULAS. Cualquier comparación de nombres de
+vendedor contra arrays estáticos DEBE normalizar AMBOS lados con:
+  .toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g,'')
+Comparaciones sin esta normalización son un BUG (case-sensitive → falla silencioso).
 ============================================================
 Uso: este archivo es REFERENCIA HUMANA, no lo lee ningún script.
 Sirve para saber qué vendedor tiene asignada cada tienda.
