@@ -3621,7 +3621,7 @@ async function adProcessFile(input) {
       var cBarcode  = fiAny(['CODIGO DE BARRA','CODIGO DE BARRAS','EAN','BARCODE','COD BARRA','CODIGO BARRAS'],['BARCODE','BARRA','EAN','COD BAR']);
       var cProducto = fiAny(['PRODUCTO','DESCRIPCION','DESC PRODUCTO'],['PRODUCTO','DESCRIPCION','DESC']);
       var cInv      = fiAny(['INVENTARIO','INV','STOCK'],['INVENTARIO','STOCK','INV']);
-      var cVenta    = fiAny(['VENTA UNIDADES PROMEDIO','VENTA PROMEDIO','VTA PROMEDIO','VENTA UND PROMEDIO','VENTA UNID PROMEDIO','VTA UND PROM'],['VENTA','VTA']);
+      var cVenta    = fiAny(['VENTA UNIDADES PROMEDIO (3M)','VENTA UNIDADES PROMEDIO','VENTA PROMEDIO','VTA PROMEDIO','VENTA UND PROMEDIO','VENTA UNID PROMEDIO','VTA UND PROM'],['VENTA','VTA']);
       var cCob      = fiAny(['COBERTURA','COB','DIAS COBERTURA','DIAS COB'],['COBERTURA','COB']);
       console.log('Xtra col indices — tienda:'+cTienda+' prod:'+cProducto+' inv:'+cInv+' venta:'+cVenta+' cob:'+cCob);
       var missing = [];
