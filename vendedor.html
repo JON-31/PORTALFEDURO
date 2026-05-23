@@ -393,26 +393,26 @@ function grupoPorTienda(items) {
 function VentasResumenCard({ config }) {
   const sesion = JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}');
   const resumen = config?.ventas_resumen;
-  if (!resumen) return null;
-
   const normNombre = norm(sesion.nombre || '');
-  const vendedor = Object.entries(resumen).find(([k]) => norm(k) === normNombre)?.[1];
-  if (!vendedor) return null;
+  const vendedor = resumen
+    ? Object.entries(resumen).find(([k]) => norm(k) === normNombre)?.[1]
+    : null;
 
-  const acum      = vendedor.acumulado || 0;
-  const cuota     = vendedor.cuota     || 0;
-  const chocolate = vendedor.chocolate || 0;
-  const confiteria= vendedor.confiteria|| 0;
-  const mascotas  = vendedor.mascotas  || 0;
+  const acum      = vendedor?.acumulado || 0;
+  const cuota     = vendedor?.cuota     || 0;
+  const chocolate = vendedor?.chocolate || 0;
+  const confiteria= vendedor?.confiteria|| 0;
+  const mascotas  = vendedor?.mascotas  || 0;
   const pct       = cuota > 0 ? Math.round((acum / cuota) * 100) : 0;
   const falta     = cuota - acum;
-  const mes       = vendedor.mes || 'este mes';
+  const mes       = vendedor?.mes || 'este mes';
   const w         = Math.min(pct, 100);
 
-  const fillColor  = pct >= 100 ? '#1D9E75' : pct >= 75 ? '#EF9F27' : '#E24B4A';
-  const badgeCls   = pct >= 100 ? 'pct-badge pct-ok' : pct >= 75 ? 'pct-badge pct-warn' : 'pct-badge pct-bad';
-  const faltaColor = falta <= 0 ? '#3B6D11' : '#A32D2D';
-  const faltaTxt   = falta <= 0 ? '¡Meta alcanzada!' : `-$${falta.toLocaleString()}`;
+  const fillColor  = !vendedor ? '#E5E4DF' : pct >= 100 ? '#1D9E75' : pct >= 75 ? '#EF9F27' : '#E24B4A';
+  const badgeCls   = !vendedor ? 'pct-badge' : pct >= 100 ? 'pct-badge pct-ok' : pct >= 75 ? 'pct-badge pct-warn' : 'pct-badge pct-bad';
+  const badgeStyle = !vendedor ? { background: '#F3F4F6', color: '#6B7280' } : {};
+  const faltaColor = !vendedor ? '#6B7280' : falta <= 0 ? '#3B6D11' : '#A32D2D';
+  const faltaTxt   = !vendedor ? '$0' : falta <= 0 ? '¡Meta alcanzada!' : `-$${falta.toLocaleString()}`;
   const $ = n => `$${n.toLocaleString()}`;
 
   return (
@@ -423,7 +423,7 @@ function VentasResumenCard({ config }) {
           <div className="venta-monto">{$(acum)}</div>
           <div className="venta-sub">de {$(cuota)} de cuota</div>
         </div>
-        <span className={badgeCls}>{pct}%</span>
+        <span className={badgeCls} style={badgeStyle}>{pct}%</span>
       </div>
       <div className="venta-progress-wrap">
         <div className="venta-progress-label">
