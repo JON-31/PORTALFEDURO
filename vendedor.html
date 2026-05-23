@@ -350,7 +350,8 @@ function grupoPorTienda(items) {
 function TabInicio({ tareas, config }) {
   const inv = config?.inventario || [];
 
-  const { agotadosPorTienda, criticosPorTienda, atencionPorTienda } = useMemo(() => {
+  const { agotadosPorTienda, criticosPorTienda, atencionPorTienda,
+          totalAgotados, totalCriticos } = useMemo(() => {
     const mapped = inv.map(r => ({ tienda: r.tienda, dias: Math.max(0, Number(r.cobertura)) }));
 
     const agMap = {};
@@ -360,11 +361,15 @@ function TabInicio({ tareas, config }) {
     const agotadosPorTienda = Object.entries(agMap)
       .map(([tienda, count]) => ({ tienda, count }))
       .sort((a, b) => b.count - a.count);
+    const totalAgotados = agotadosPorTienda.reduce((a, t) => a + t.count, 0);
 
-    const criticosPorTienda = grupoPorTienda(mapped.filter(r => r.dias > 0 && r.dias < 10));
+    const criticos = mapped.filter(r => r.dias > 0 && r.dias < 10);
+    const criticosPorTienda = grupoPorTienda(criticos);
+    const totalCriticos = criticos.length;
+
     const atencionPorTienda = grupoPorTienda(mapped.filter(r => r.dias >= 10 && r.dias < 20));
 
-    return { agotadosPorTienda, criticosPorTienda, atencionPorTienda };
+    return { agotadosPorTienda, criticosPorTienda, atencionPorTienda, totalAgotados, totalCriticos };
   }, [inv]);
 
   const tiendasConInv    = new Set(inv.map(r => r.tienda)).size;
@@ -380,11 +385,11 @@ function TabInicio({ tareas, config }) {
           <div className="stat-label">Con inventario</div>
         </div>
         <div className="stat-card">
-          <div className={`stat-value${criticosPorTienda.length > 0 ? ' red' : ''}`}>{criticosPorTienda.length}</div>
+          <div className={`stat-value${totalCriticos > 0 ? ' red' : ''}`}>{totalCriticos}</div>
           <div className="stat-label">Críticos</div>
         </div>
         <div className="stat-card">
-          <div className={`stat-value${agotadosPorTienda.length > 0 ? ' red' : ''}`}>{agotadosPorTienda.length}</div>
+          <div className={`stat-value${totalAgotados > 0 ? ' red' : ''}`}>{totalAgotados}</div>
           <div className="stat-label">Agotados</div>
         </div>
         <div className="stat-card">
@@ -432,7 +437,7 @@ function TabInicio({ tareas, config }) {
 
       {criticosPorTienda.length > 0 && (
         <div className="card">
-          <div className="section-title">CRÍTICOS (&lt;10 DÍAS)</div>
+          <div className="section-title">CRÍTICOS</div>
           <div style={SCROLL_LIST}>
             {criticosPorTienda.map(({ tienda, count, prom }) => (
               <div key={tienda} className="alert-card" style={{ borderLeftColor: '#A32D2D' }}>
@@ -449,7 +454,7 @@ function TabInicio({ tareas, config }) {
 
       {atencionPorTienda.length > 0 && (
         <div className="card">
-          <div className="section-title">ATENCIÓN (10–20 DÍAS)</div>
+          <div className="section-title">ATENCIÓN</div>
           <div style={SCROLL_LIST}>
             {atencionPorTienda.map(({ tienda, count, prom }) => (
               <div key={tienda} className="alert-card" style={{ borderLeftColor: '#854F0B' }}>
@@ -607,15 +612,29 @@ function TabBodega({ config }) {
         value={query} onChange={e => setQuery(e.target.value)} />
       {filtered.length === 0
         ? <div className="empty-state"><div className="empty-icon">📦</div>No se encontraron productos.</div>
-        : filtered.map((item, i) => (
-          <div key={i} className="bodega-item">
-            <div className="bodega-producto">{item.descripcion}</div>
-            <div className="bodega-cantidad-wrap">
-              <div className="bodega-cantidad">M8: {item.m8} {item.unidFact || ''}</div>
-              {item.b8 > 0 && <div className="bodega-b8">B8: {item.b8}</div>}
+        : filtered.map((item, i) => {
+          const showM8 = item.m8 > 0;
+          const showB8 = item.b8 > 0;
+          return (
+            <div key={i} className="bodega-item">
+              <div className="bodega-producto">{item.descripcion}</div>
+              <div className="bodega-cantidad-wrap">
+                {showM8 && (
+                  <>
+                    <div className="bodega-cantidad">{item.m8} {item.unidFact || ''}</div>
+                    {showB8 && <div className="bodega-b8">{item.b8} <span style={{ color: 'var(--muted)', fontSize: 10 }}>B8</span></div>}
+                  </>
+                )}
+                {!showM8 && showB8 && (
+                  <>
+                    <div className="bodega-cantidad">{item.b8} {item.unidFact || ''}</div>
+                    <div className="bodega-b8" style={{ color: 'var(--muted)' }}>B8</div>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        ))
+          );
+        })
       }
     </div>
   );
@@ -774,6 +793,45 @@ function TabOfertas({ config }) {
 }
 
 // =============================================
+// 11. TAB: Ingresos
+// =============================================
+function TabIngresos({ config }) {
+  const tieneMachetazo = (config?.inventario || [])
+    .some(r => norm(r.cadena || '').includes('machetazo'));
+
+  const cardStyle = {
+    display: 'flex', alignItems: 'center', gap: 16,
+    background: 'var(--card)', borderRadius: 16, padding: '20px 18px',
+    marginBottom: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+    cursor: 'default', border: '1.5px solid var(--border)',
+  };
+  const iconStyle = { fontSize: 32, flexShrink: 0 };
+  const titleStyle = { fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 15 };
+  const subStyle = { fontSize: 12, color: 'var(--muted)', marginTop: 3 };
+
+  return (
+    <div>
+      <div style={cardStyle}>
+        <span style={iconStyle}>📦</span>
+        <div>
+          <div style={titleStyle}>Registrar Inventario</div>
+          <div style={subStyle}>Captura el inventario físico de tus tiendas</div>
+        </div>
+      </div>
+      {tieneMachetazo && (
+        <div style={cardStyle}>
+          <span style={iconStyle}>📋</span>
+          <div>
+            <div style={titleStyle}>Registrar Sugerido — Machetazo</div>
+            <div style={subStyle}>Ingresa el pedido sugerido para tiendas Machetazo</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// =============================================
 // ICONOS DE NAVEGACIÓN
 // =============================================
 const ICONS = {
@@ -803,22 +861,29 @@ const ICONS = {
       <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/>
     </svg>
   ),
+  ingresos: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>
+    </svg>
+  ),
 };
 
 const TABS = [
-  { id: 'inicio',  label: 'Inicio'  },
-  { id: 'tiendas', label: 'Tiendas' },
-  { id: 'bodega',  label: 'Bodega'  },
-  { id: 'ventas',  label: 'Ventas'  },
-  { id: 'ofertas', label: 'Ofertas' },
+  { id: 'inicio',   label: 'Inicio'   },
+  { id: 'tiendas',  label: 'Tiendas'  },
+  { id: 'bodega',   label: 'Bodega'   },
+  { id: 'ventas',   label: 'Ventas'   },
+  { id: 'ofertas',  label: 'Ofertas'  },
+  { id: 'ingresos', label: 'Ingresos' },
 ];
 
 const TAB_TITLES = {
-  inicio:  'Inicio',
-  tiendas: 'Mis Tiendas',
-  bodega:  'Bodega',
-  ventas:  'Ventas',
-  ofertas: 'Ofertas',
+  inicio:   'Inicio',
+  tiendas:  'Mis Tiendas',
+  bodega:   'Bodega',
+  ventas:   'Ventas',
+  ofertas:  'Ofertas',
+  ingresos: 'Ingresos',
 };
 
 // =============================================
@@ -964,7 +1029,8 @@ function App() {
         {tab === 'tiendas' && <TabTiendas {...tabProps}/>}
         {tab === 'bodega'  && <TabBodega  {...tabProps}/>}
         {tab === 'ventas'  && <TabVentas  {...tabProps}/>}
-        {tab === 'ofertas' && <TabOfertas {...tabProps}/>}
+        {tab === 'ofertas'  && <TabOfertas  {...tabProps}/>}
+        {tab === 'ingresos' && <TabIngresos {...tabProps}/>}
       </div>
 
       {/* Navegación inferior */}
