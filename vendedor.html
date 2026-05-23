@@ -609,7 +609,11 @@ function TabTiendas({ reportes }) {
 // 8. TAB: Bodega
 // =============================================
 function TabBodega({ config }) {
-  const items = config.inventario_bodega || [];
+  const items = useMemo(() =>
+    (config.inventario_bodega || [])
+      .filter(item => item.m8 > 0 || item.b8 > 0)
+      .sort((a, b) => (a.descripcion || '').localeCompare(b.descripcion || '')),
+  [config]);
 
   if (!items.length) return (
     <div className="empty-state">
@@ -622,18 +626,11 @@ function TabBodega({ config }) {
     <div>
       {items.map((item, i) => (
         <div key={i} className="bodega-item">
-          <div className="bodega-producto">{item.producto}</div>
-          <div className="bodega-cantidad">Cantidad total: <strong>{fmt(item.cantidad)}</strong></div>
-          {item.tiendas && item.tiendas.length > 0 && (
-            <div className="chips">
-              {item.tiendas.map((t, j) => (
-                <span key={j} className="chip">
-                  <span className="chip-tienda">{t.tienda}</span>
-                  {t.md != null && <span className="chip-md">MD: {t.md}</span>}
-                </span>
-              ))}
-            </div>
-          )}
+          <div className="bodega-producto">{item.descripcion}</div>
+          <div className="bodega-cantidad">
+            <strong>{item.m8}</strong> {item.unidFact || ''}
+            {item.b8 > 0 && <span style={{ color: 'var(--muted)', marginLeft: 8 }}>+ {item.b8} unid</span>}
+          </div>
         </div>
       ))}
     </div>
@@ -940,7 +937,6 @@ function App() {
         .filter(r => norm(r.vendedor) === norm(s.nombre));
       console.log('inventario filtrado count:', invFiltrado.length, 'vendedor:', s.nombre);
 
-      console.log('inventario_bodega:', JSON.stringify(cfg.inventario_bodega)?.slice(0, 500));
       setConfig({ ...cfg, inventario: invFiltrado });
 
     } catch (err) {
