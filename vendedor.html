@@ -940,6 +940,7 @@ function App() {
         .filter(r => norm(r.vendedor) === norm(s.nombre));
       console.log('inventario filtrado count:', invFiltrado.length, 'vendedor:', s.nombre);
 
+      console.log('inventario_bodega:', JSON.stringify(cfg.inventario_bodega)?.slice(0, 500));
       setConfig({ ...cfg, inventario: invFiltrado });
 
     } catch (err) {
