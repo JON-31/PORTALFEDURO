@@ -393,16 +393,28 @@ function Carousel({ slides }) {
 // =============================================
 // 6. TAB: Inicio
 // =============================================
-function TabInicio({ reportes, tareas, config }) {
-  const alertas = useMemo(() =>
-    reportes
-      .filter(r => estadoCobertura(r.inventario, r.venta_promedio) === 'critico')
-      .map(r => ({ ...r, cob: calcCobertura(r.inventario, r.venta_promedio) }))
-      .sort((a, b) => a.cob - b.cob),
-  [reportes]);
+function TabInicio({ tareas, config }) {
+  const alertas = useMemo(() => {
+    const inv = config?.inventario || [];
+    return inv
+      .filter(r => {
+        const dias = r.venta_promedio > 0
+          ? Math.round((r.inventario * 30) / r.venta_promedio)
+          : r.inventario === 0 ? null : 999;
+        return dias !== null && dias < 10;
+      })
+      .map(r => ({
+        tienda:   r.tienda,
+        producto: r.producto,
+        cob:      r.venta_promedio > 0
+          ? Math.round((r.inventario * 30) / r.venta_promedio)
+          : 999,
+      }))
+      .sort((a, b) => a.cob - b.cob);
+  }, [config]);
 
-  const tiendasTotal    = new Set(reportes.map(r => r.tienda)).size;
-  const tiendasConInv   = new Set(reportes.filter(r => r.inventario > 0).map(r => r.tienda)).size;
+  const inv              = config?.inventario || [];
+  const tiendasConInv    = new Set(inv.map(r => r.tienda)).size;
   const tareasPendientes = tareas.filter(t => norm(t.estado) !== norm('completada')).length;
 
   return (
@@ -411,20 +423,16 @@ function TabInicio({ reportes, tareas, config }) {
 
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-value">{tiendasTotal}</div>
-          <div className="stat-label">Tiendas asignadas</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-value">{tareasPendientes}</div>
-          <div className="stat-label">Tareas pendientes</div>
-        </div>
-        <div className="stat-card">
           <div className="stat-value">{tiendasConInv}</div>
           <div className="stat-label">Con inventario</div>
         </div>
         <div className="stat-card">
           <div className={`stat-value${alertas.length > 0 ? ' red' : ''}`}>{alertas.length}</div>
           <div className="stat-label">Alertas críticas</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-value">{tareasPendientes}</div>
+          <div className="stat-label">Tareas pendientes</div>
         </div>
       </div>
 
