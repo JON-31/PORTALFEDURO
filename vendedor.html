@@ -396,9 +396,9 @@ function Carousel({ slides }) {
 function TabInicio({ tareas, config }) {
   const alertas = useMemo(() =>
     (config?.inventario || [])
-      .filter(r => Number(r.cobertura) < 10)
-      .sort((a, b) => Number(a.cobertura) - Number(b.cobertura))
-      .map(r => ({ tienda: r.tienda, producto: r.producto, dias: Number(r.cobertura) })),
+      .filter(r => Math.max(0, Number(r.cobertura)) < 10)
+      .sort((a, b) => Math.max(0, Number(a.cobertura)) - Math.max(0, Number(b.cobertura)))
+      .map(r => ({ tienda: r.tienda, producto: r.producto, dias: Math.max(0, Number(r.cobertura)) })),
   [config]);
 
   const inv              = config?.inventario || [];
@@ -434,7 +434,7 @@ function TabInicio({ tareas, config }) {
                 <div className="alert-tienda">{r.tienda}</div>
                 <div className="alert-producto">{r.producto}</div>
               </div>
-              <div className="alert-cob">{r.dias}d</div>
+              <div className="alert-cob">{r.dias === 0 ? 'Agotado' : `${r.dias}d`}</div>
             </div>
           ))}
         </div>
