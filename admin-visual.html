@@ -682,10 +682,8 @@ tbody td.right { text-align: right; }
         <input type="text" id="filtro-tienda" placeholder="🔍 Buscar tienda…">
         <select id="filtro-tienda-cadena">
           <option value="">Todas las cadenas</option>
-          <option value="XTRA">XTRA</option>
-          <option value="REY">Rey</option>
-          <option value="MACHETAZO">Machetazo</option>
-          <option value="INDEPENDIENTE">Independiente</option>
+          <option value="machetazo">Machetazo</option>
+          <option value="xtra">Xtra</option>
         </select>
         <select id="filtro-tienda-vend">
           <option value="">Todos los vendedores</option>
@@ -1020,8 +1018,8 @@ const sb = supabase.createClient(
 //  GRUPOS
 // ═══════════════════════════════════════
 const GRUPOS = {
-  Chocolate:  ['Snickers','M&Ms','Twix','Turin','Mars','Milky Way'],
-  Confection: ['Skittles','Starburst','Wrigley','Doublemint','Lucas','Lucas Muecas'],
+  Chocolate:  ['Snickers','M&M','Twix','Turin','Mars','Milky','MM'],
+  Confection: ['Skittles','Starburst','Wrigley','Doublemint','Lucas','Muecas','Five Rain','Winterfresh'],
   PetCare:    ['Pedigree','Cesar','Whiskas']
 };
 const GRUPO_COLORES = { Chocolate:'#7B4B2A', Confection:'#D4A843', PetCare:'#3b7dd8' };
@@ -1384,7 +1382,7 @@ function renderTiendas(){
   const tiendaMap = {};
   inv.forEach(r => {
     const t = r.tienda || '—';
-    if(!tiendaMap[t]) tiendaMap[t] = { tienda:t, vendedor:r.vendedor||'—', cadena: detectCadena(t), prods:0, agot:0, crit:0 };
+    if(!tiendaMap[t]) tiendaMap[t] = { tienda:t, vendedor:r.vendedor||'—', cadena: r.cadena||'—', prods:0, agot:0, crit:0 };
     tiendaMap[t].prods++;
     const n = Number(r.inventario||0);
     if(n === 0) tiendaMap[t].agot++;
@@ -1434,14 +1432,6 @@ function renderTiendas(){
   document.getElementById('filtro-tienda').oninput = applyFiltroTiendas;
   document.getElementById('filtro-tienda-cadena').onchange = applyFiltroTiendas;
   document.getElementById('filtro-tienda-vend').onchange = applyFiltroTiendas;
-}
-
-function detectCadena(nombre){
-  const n = (nombre||'').toUpperCase();
-  if(n.includes('XTRA')) return 'XTRA';
-  if(n.includes('REY')) return 'REY';
-  if(n.includes('MACHETAZO')) return 'MACHETAZO';
-  return 'INDEPENDIENTE';
 }
 
 // ═══════════════════════════════════════
@@ -1625,9 +1615,9 @@ function renderBodega(){
   if(bod && Array.isArray(bod)){
     const prodMap = {};
     bod.forEach(r => {
-      const p = r.producto||r.descripcion||'—';
+      const p = r.descripcion||'—';
       if(!prodMap[p]) prodMap[p] = { producto:p, grupo:getGrupo(p), bodega:0 };
-      prodMap[p].bodega += Number(r.inventario_bodega||r.inventario||r.cantidad||0);
+      prodMap[p].bodega += Number(r.b8||0);
     });
     const prods = Object.values(prodMap).sort((a,b)=>a.producto.localeCompare(b.producto));
 
