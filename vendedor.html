@@ -876,6 +876,11 @@ function App() {
       }
 
       // 4. Configuracion: slides, bodega, meta, ofertas
+      const { data: cfgData } = await sbPortal
+        .from('configuracion')
+        .select('*');
+      console.log('configuracion keys:', cfgData?.map(r => r.clave));
+
       const { data: cfgRows } = await sbPortal
         .from('configuracion')
         .select('clave, valor')
