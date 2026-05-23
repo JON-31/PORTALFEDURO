@@ -2181,12 +2181,6 @@ async function _doLoginAdmin_disabled() {
       btn.textContent = 'Entrar'; btn.disabled = false; return;
     }
     MARS_TOKEN = data.access_token;
-    localStorage.setItem('mars_admin_session', JSON.stringify({
-      username: username,
-      access_token: data.access_token,
-      refresh_token: data.refresh_token,
-      expires_at: Date.now() + ((data.expires_in || 3600) * 1000)
-    }));
     document.getElementById('admin-login-screen').style.display = 'none';
     var su = document.getElementById('admin-sidebar-user');
     if (su) su.textContent = username.toUpperCase();
