@@ -447,32 +447,44 @@ function TabInicio({ tareas, config }) {
       {agotadosPorTienda.length > 0 && (
         <div className="card">
           <div className="section-title">Productos Agotados</div>
-          {agotadosPorTienda.map(([tienda, count]) => (
-            <div key={tienda} className="alert-card">
-              <span style={{ fontSize: 16, flexShrink: 0 }}>⚫</span>
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <div className="alert-tienda">{tienda}</div>
-                <div className="alert-producto">{count} {count === 1 ? 'producto agotado' : 'productos agotados'}</div>
+          <div style={{
+            maxHeight: 280, overflowY: 'auto', scrollBehavior: 'smooth',
+            borderRadius: 10,
+            boxShadow: agotadosPorTienda.length > 3 ? 'inset 0 -8px 8px -8px rgba(0,0,0,0.08)' : 'none',
+          }}>
+            {agotadosPorTienda.map(([tienda, count]) => (
+              <div key={tienda} className="alert-card">
+                <span style={{ fontSize: 16, flexShrink: 0 }}>⚫</span>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div className="alert-tienda">{tienda}</div>
+                  <div className="alert-producto">{count} {count === 1 ? 'producto agotado' : 'productos agotados'}</div>
+                </div>
+                <div className="alert-cob" style={{ background: '#F3F4F6', color: '#374151' }}>Agotado</div>
               </div>
-              <div className="alert-cob" style={{ background: '#F3F4F6', color: '#374151' }}>Agotado</div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
 
       {criticos.length > 0 && (
         <div className="card">
           <div className="section-title">Críticos (&lt;10 días)</div>
-          {criticosVisible.map((r, i) => (
-            <div key={i} className="alert-card">
-              <span style={{ fontSize: 16, flexShrink: 0 }}>🔴</span>
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <div className="alert-tienda">{r.tienda}</div>
-                <div className="alert-producto">{r.producto}</div>
+          <div style={{
+            maxHeight: 280, overflowY: 'auto', scrollBehavior: 'smooth',
+            borderRadius: 10,
+            boxShadow: criticos.length > 3 ? 'inset 0 -8px 8px -8px rgba(0,0,0,0.08)' : 'none',
+          }}>
+            {criticosVisible.map((r, i) => (
+              <div key={i} className="alert-card">
+                <span style={{ fontSize: 16, flexShrink: 0 }}>🔴</span>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div className="alert-tienda">{r.tienda}</div>
+                  <div className="alert-producto">{r.producto}</div>
+                </div>
+                <div className="alert-cob">{r.dias}d</div>
               </div>
-              <div className="alert-cob">{r.dias}d</div>
-            </div>
-          ))}
+            ))}
+          </div>
           {criticos.length > 10 && (
             <button
               onClick={() => setVerTodos(v => !v)}
