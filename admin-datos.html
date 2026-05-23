@@ -1156,6 +1156,8 @@ function showView(name, el) {
 
 // ===== DASHBOARD =====
 function renderDashboard() {
+  const kpiGrid = document.getElementById('kpi-grid');
+  if (!kpiGrid) return;
   const total = DATA.length;
   const invTotal = DATA.reduce((s, d) => s + d.Inventario, 0);
   const ventaTotal = DATA.reduce((s, d) => s + d.Venta_Prom_3M, 0);
@@ -1163,7 +1165,7 @@ function renderDashboard() {
   const faltantes = DATA.filter(d => d.Inventario === 0).length;
   const criticos = DATA.filter(d => d.Dias_Cobertura > 0 && d.Dias_Cobertura < 30).length;
 
-  document.getElementById('kpi-grid').innerHTML = `
+  kpiGrid.innerHTML = `
     <div class="kpi-card">
       <div class="kpi-label">Registros totales</div>
       <div class="kpi-value">${total.toLocaleString()}</div>
@@ -1307,8 +1309,10 @@ window.setVendPage = function(p) { vendPage = p; renderVendedorTable(_vendRows);
 // ===== TIENDAS =====
 function initTiendas() {
   const sel = document.getElementById('sel-tienda');
+  if (!sel) return;
   sel.innerHTML = TIENDAS.map(t => `<option value="${t}">${t}</option>`).join('');
   const selM = document.getElementById('sel-tienda-marca');
+  if (!selM) return;
   selM.innerHTML = `<option value="">Todas</option>` + MARCAS.map(m => `<option value="${m}">${m}</option>`).join('');
 }
 
@@ -1350,7 +1354,9 @@ function renderTiendaView() {
 let _invRows = [];
 
 function initInventario() {
-  document.getElementById('inv-marca').innerHTML = `<option value="">Todas</option>` + MARCAS.map(m => `<option value="${m}">${m}</option>`).join('');
+  const invMarca = document.getElementById('inv-marca');
+  if (!invMarca) return;
+  invMarca.innerHTML = `<option value="">Todas</option>` + MARCAS.map(m => `<option value="${m}">${m}</option>`).join('');
   document.getElementById('inv-vendedor').innerHTML = `<option value="">Todos</option>` + VENDEDORES.map(v => `<option value="${v}">${v}</option>`).join('');
   renderInventario();
 }
@@ -1399,6 +1405,7 @@ window.setInvPage = function(p) { invPage = p; _renderInvTable(); };
 // ===== AUDITORÍA =====
 function initAuditoria() {
   const sel = document.getElementById('sel-audit-tienda');
+  if (!sel) return;
   sel.innerHTML = TIENDAS.map(t => `<option value="${t}">${t}</option>`).join('');
   renderAuditoria();
 }
