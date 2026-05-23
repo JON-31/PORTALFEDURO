@@ -522,16 +522,21 @@ function TabTiendas({ reportes }) {
   const [query, setQuery] = useState('');
 
   const byTienda = useMemo(() => {
-    const map = {};
+    const map = {};      // norm(tienda) -> { nombre, productos[] }
+    const names = {};    // norm(tienda) -> first canonical name seen
     reportes.forEach(r => {
-      if (!map[r.tienda]) map[r.tienda] = [];
-      map[r.tienda].push(r);
+      const key = norm(r.tienda);
+      if (!names[key]) names[key] = r.tienda;
+      if (!map[key]) map[key] = [];
+      map[key].push(r);
     });
-    return map;
+    return { map, names };
   }, [reportes]);
 
   const tiendas = useMemo(() =>
-    Object.keys(byTienda).sort().filter(t => norm(t).includes(norm(query))),
+    Object.keys(byTienda.map)
+      .sort((a, b) => byTienda.names[a].localeCompare(byTienda.names[b]))
+      .filter(k => k.includes(norm(query))),
   [byTienda, query]);
 
   return (
@@ -540,7 +545,7 @@ function TabTiendas({ reportes }) {
         value={query} onChange={e => setQuery(e.target.value)} />
       {tiendas.length === 0
         ? <div className="empty-state"><div className="empty-icon">🏪</div>No se encontraron tiendas.</div>
-        : tiendas.map(t => <TiendaRow key={t} nombre={t} productos={byTienda[t]} />)
+        : tiendas.map(k => <TiendaRow key={k} nombre={byTienda.names[k]} productos={byTienda.map[k]} />)
       }
     </div>
   );
@@ -824,6 +829,8 @@ function App() {
         .from('reportes')
         .select('*')
         .limit(5000);
+
+      console.log('Query reportes — filas totales:', reps?.length, 'error:', repsError);
 
       if (repsError) {
         console.error('reportes error:', repsError);
