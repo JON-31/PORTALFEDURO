@@ -394,24 +394,12 @@ function Carousel({ slides }) {
 // 6. TAB: Inicio
 // =============================================
 function TabInicio({ tareas, config }) {
-  const alertas = useMemo(() => {
-    const inv = config?.inventario || [];
-    return inv
-      .filter(r => {
-        const dias = r.venta_promedio > 0
-          ? Math.max(0, Math.round((r.inventario * 30) / r.venta_promedio))
-          : r.inventario === 0 ? null : 999;
-        return dias !== null && dias < 10;
-      })
-      .map(r => ({
-        tienda:   r.tienda,
-        producto: r.producto,
-        cob:      r.venta_promedio > 0
-          ? Math.max(0, Math.round((r.inventario * 30) / r.venta_promedio))
-          : 999,
-      }))
-      .sort((a, b) => a.cob - b.cob);
-  }, [config]);
+  const alertas = useMemo(() =>
+    (config?.inventario || [])
+      .filter(r => Number(r.cobertura) < 10)
+      .sort((a, b) => Number(a.cobertura) - Number(b.cobertura))
+      .map(r => ({ tienda: r.tienda, producto: r.producto, dias: Number(r.cobertura) })),
+  [config]);
 
   const inv              = config?.inventario || [];
   const tiendasConInv    = new Set(inv.map(r => r.tienda)).size;
@@ -446,7 +434,7 @@ function TabInicio({ tareas, config }) {
                 <div className="alert-tienda">{r.tienda}</div>
                 <div className="alert-producto">{r.producto}</div>
               </div>
-              <div className="alert-cob">{r.cob}d</div>
+              <div className="alert-cob">{r.dias}d</div>
             </div>
           ))}
         </div>
@@ -654,9 +642,9 @@ function TabVentas({ config }) {
         const porTienda = {};
         prods.forEach(r => {
           const t = r.tienda || '—';
-          if (!porTienda[t]) porTienda[t] = { inv: 0, venta: 0 };
-          porTienda[t].inv   += r.inventario     || 0;
-          porTienda[t].venta += r.venta_promedio || 0;
+          if (!porTienda[t]) porTienda[t] = { inv: 0, cob: [] };
+          porTienda[t].inv += r.inventario || 0;
+          if (r.cobertura != null) porTienda[t].cob.push(Number(r.cobertura));
         });
 
         return (
@@ -672,7 +660,7 @@ function TabVentas({ config }) {
               {Object.entries(porTienda)
                 .sort((a, b) => b[1].inv - a[1].inv)
                 .map(([t, v]) => {
-                  const cob = v.venta > 0 ? Math.round(v.inv * 30 / v.venta) : null;
+                  const cob = v.cob.length > 0 ? Math.round(v.cob.reduce((a, b) => a + b, 0) / v.cob.length) : null;
                   return (
                     <div key={t} className="cat-detail-row">
                       <span style={{ color: 'var(--muted)' }}>{t}</span>
@@ -896,7 +884,6 @@ function App() {
         cfg.inventario = cfg.inventario.filter(r => norm(r.vendedor) === normNombre);
       }
 
-      console.log('muestra inventario[0]:', cfg?.inventario?.[0]);
       setConfig(cfg);
 
     } catch (err) {
