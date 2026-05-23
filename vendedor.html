@@ -94,6 +94,24 @@
     .wt-hecha-nombre { font-size: 13px; color: var(--muted); text-decoration: line-through; }
     .wt-check-circle { width: 20px; height: 20px; border-radius: 50%; background: #1D9E75; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .wt-empty { font-size: 13px; color: var(--green); font-weight: 600; text-align: center; padding: 10px 0; }
+    /* ── ALERT ACCORDION ── */
+    .alert-accordion { background: var(--card); border-left: 4px solid #ccc; border-radius: 12px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; }
+    .alert-accordion:last-child { margin-bottom: 0; }
+    .alert-accordion-hdr { display: flex; align-items: center; gap: 12px; padding: 12px 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .alert-accordion-body { border-top: 1px solid var(--border); overflow-x: auto; }
+    /* ── FILTRO CHIPS ── */
+    .filtro-chips { display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 12px 6px; }
+    .filtro-chip { font-size: 11px; padding: 4px 10px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--card); cursor: pointer; font-weight: 500; }
+    .filtro-chip.active { background: var(--green); color: #fff; border-color: var(--green); }
+    /* ── INGRESO ACCORDION ── */
+    .ingreso-card { background: var(--card); border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); border: 1.5px solid var(--border); overflow: hidden; }
+    .ingreso-hdr { display: flex; align-items: center; gap: 16px; padding: 20px 18px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .ingreso-body { border-top: 1px solid var(--border); padding: 16px 18px; background: #F8F7F3; }
+    .ing-form-group { margin-bottom: 12px; }
+    .ing-label { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 4px; display: block; }
+    .ing-input { width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; background: #fff; outline: none; }
+    .ing-input:focus { border-color: var(--green); }
+    .ing-btn { width: 100%; padding: 12px; background: var(--green); color: #fff; border: none; border-radius: 10px; font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 4px; }
     /* ── VENTAS RESUMEN ── */
     .ventas-card{background:#fff;border:0.5px solid #E5E5E3;border-radius:12px;padding:14px 16px;margin-bottom:12px;}
     .ventas-card-title{font-size:11px;font-weight:500;color:#888780;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;}
@@ -617,6 +635,69 @@ function WidgetTareas({ tareas: inicial }) {
   );
 }
 
+function AlertTiendaAccordion({ tienda, count, prom, badgeTxt, badgeStyle, borderColor, inv, tipo }) {
+  const [open, setOpen] = useState(false);
+
+  const productos = useMemo(() =>
+    inv.filter(r => {
+      if (norm(r.tienda) !== norm(tienda)) return false;
+      const d = Math.max(0, Number(r.cobertura));
+      if (tipo === 'agotado')  return d === 0;
+      if (tipo === 'critico')  return d > 0 && d < 10;
+      if (tipo === 'atencion') return d >= 10 && d < 20;
+      return false;
+    }),
+  [inv, tienda, tipo]);
+
+  const subtitulo = prom != null
+    ? `${count} ${count === 1 ? 'producto' : 'productos'} · ${prom}d promedio`
+    : `${count} ${count === 1 ? 'producto agotado' : 'productos agotados'}`;
+
+  return (
+    <div className="alert-accordion" style={{ borderLeftColor: borderColor }}>
+      <div className="alert-accordion-hdr" onClick={() => setOpen(o => !o)}>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div className="alert-tienda">{tienda}</div>
+          <div className="alert-producto">{subtitulo}</div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div className="alert-cob" style={badgeStyle}>{badgeTxt}</div>
+          <svg className={`chevron${open ? ' open' : ''}`} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </div>
+      </div>
+      {open && (
+        <div className="alert-accordion-body">
+          <table className="inv-table">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th className="num">Inventario</th>
+                <th className="num">Venta 1M</th>
+                <th className="num">Cobertura (d)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {productos.length === 0
+                ? <tr><td colSpan="4" style={{ textAlign: 'center', color: 'var(--muted)', padding: 10 }}>Sin datos</td></tr>
+                : productos.map((p, i) => (
+                  <tr key={i}>
+                    <td style={{ fontSize: 11, fontWeight: 500, maxWidth: 150, wordBreak: 'break-word' }}>{p.producto}</td>
+                    <td className="num">{fmt(p.inventario)}</td>
+                    <td className="num">{fmt(p.venta_promedio)}</td>
+                    <td className="num">{Math.max(0, Number(p.cobertura))}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TabInicio({ tareas, config }) {
   const inv = config?.inventario || [];
 
@@ -676,13 +757,9 @@ function TabInicio({ tareas, config }) {
           <div className="section-title">PRODUCTOS AGOTADOS</div>
           <div style={SCROLL_LIST}>
             {agotadosPorTienda.map(({ tienda, count }) => (
-              <div key={tienda} className="alert-card" style={{ borderLeftColor: '#374151' }}>
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <div className="alert-tienda">{tienda}</div>
-                  <div className="alert-producto">{count} {count === 1 ? 'producto' : 'productos'} agotado{count !== 1 ? 's' : ''}</div>
-                </div>
-                <div className="alert-cob" style={{ background: '#F3F4F6', color: '#374151' }}>Agotado</div>
-              </div>
+              <AlertTiendaAccordion key={tienda} tienda={tienda} count={count} prom={null}
+                badgeTxt="Agotado" badgeStyle={{ background: '#F3F4F6', color: '#374151' }}
+                borderColor="#374151" inv={inv} tipo="agotado"/>
             ))}
           </div>
         </div>
@@ -693,13 +770,9 @@ function TabInicio({ tareas, config }) {
           <div className="section-title">CRÍTICOS</div>
           <div style={SCROLL_LIST}>
             {criticosPorTienda.map(({ tienda, count, prom }) => (
-              <div key={tienda} className="alert-card" style={{ borderLeftColor: '#A32D2D' }}>
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <div className="alert-tienda">{tienda}</div>
-                  <div className="alert-producto">{count} {count === 1 ? 'producto' : 'productos'} · {prom}d promedio</div>
-                </div>
-                <div className="alert-cob" style={{ background: '#FCEBEB', color: '#A32D2D' }}>{prom}d</div>
-              </div>
+              <AlertTiendaAccordion key={tienda} tienda={tienda} count={count} prom={prom}
+                badgeTxt={`${prom}d`} badgeStyle={{ background: '#FCEBEB', color: '#A32D2D' }}
+                borderColor="#A32D2D" inv={inv} tipo="critico"/>
             ))}
           </div>
         </div>
@@ -710,13 +783,9 @@ function TabInicio({ tareas, config }) {
           <div className="section-title">ATENCIÓN</div>
           <div style={SCROLL_LIST}>
             {atencionPorTienda.map(({ tienda, count, prom }) => (
-              <div key={tienda} className="alert-card" style={{ borderLeftColor: '#854F0B' }}>
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <div className="alert-tienda">{tienda}</div>
-                  <div className="alert-producto">{count} {count === 1 ? 'producto' : 'productos'} · {prom}d promedio</div>
-                </div>
-                <div className="alert-cob" style={{ background: '#FAEEDA', color: '#854F0B' }}>{prom}d</div>
-              </div>
+              <AlertTiendaAccordion key={tienda} tienda={tienda} count={count} prom={prom}
+                badgeTxt={`${prom}d`} badgeStyle={{ background: '#FAEEDA', color: '#854F0B' }}
+                borderColor="#854F0B" inv={inv} tipo="atencion"/>
             ))}
           </div>
         </div>
@@ -728,8 +797,17 @@ function TabInicio({ tareas, config }) {
 // =============================================
 // 7. TAB: Tiendas — fila expandible
 // =============================================
+const FILTROS = [
+  { id: 'todos',      label: 'Todos'      },
+  { id: 'critico',    label: 'Crítico'    },
+  { id: 'atencion',   label: 'Atención'   },
+  { id: 'optimo',     label: 'Óptimo'     },
+  { id: 'sobrestock', label: 'SobreStock' },
+];
+
 function TiendaRow({ nombre, productos }) {
-  const [open, setOpen] = useState(false);
+  const [open,   setOpen]   = useState(false);
+  const [filtro, setFiltro] = useState('todos');
 
   const { cobPond, estado } = useMemo(() => {
     let totalInv = 0, totalVD = 0;
@@ -749,6 +827,10 @@ function TiendaRow({ nombre, productos }) {
     return { cobPond, estado };
   }, [productos]);
 
+  const prodFiltrados = filtro === 'todos'
+    ? productos
+    : productos.filter(p => estadoCobertura(p.inventario, p.venta_promedio) === filtro);
+
   return (
     <div className="tienda-row">
       <div className="tienda-header" onClick={() => setOpen(o => !o)}>
@@ -765,6 +847,15 @@ function TiendaRow({ nombre, productos }) {
       </div>
       {open && (
         <div className="tienda-body">
+          <div className="filtro-chips">
+            {FILTROS.map(f => (
+              <button key={f.id}
+                className={`filtro-chip${filtro === f.id ? ' active' : ''}`}
+                onClick={() => setFiltro(f.id)}>
+                {f.label}
+              </button>
+            ))}
+          </div>
           <table className="inv-table">
             <thead>
               <tr>
@@ -776,19 +867,22 @@ function TiendaRow({ nombre, productos }) {
               </tr>
             </thead>
             <tbody>
-              {productos.map((p, i) => {
-                const cob = calcCobertura(p.inventario, p.venta_promedio);
-                const est = estadoCobertura(p.inventario, p.venta_promedio);
-                return (
-                  <tr key={i}>
-                    <td style={{ fontSize: 11, fontWeight: 500, maxWidth: 160, wordBreak: 'break-word' }}>{p.producto}</td>
-                    <td className="num">{fmt(p.inventario)}</td>
-                    <td className="num">{fmt(p.venta_promedio)}</td>
-                    <td className="num">{cob}</td>
-                    <td><Badge estado={est} /></td>
-                  </tr>
-                );
-              })}
+              {prodFiltrados.length === 0
+                ? <tr><td colSpan="5" style={{ textAlign: 'center', color: 'var(--muted)', padding: 10 }}>Sin productos en este estado</td></tr>
+                : prodFiltrados.map((p, i) => {
+                  const cob = calcCobertura(p.inventario, p.venta_promedio);
+                  const est = estadoCobertura(p.inventario, p.venta_promedio);
+                  return (
+                    <tr key={i}>
+                      <td style={{ fontSize: 11, fontWeight: 500, maxWidth: 160, wordBreak: 'break-word' }}>{p.producto}</td>
+                      <td className="num">{fmt(p.inventario)}</td>
+                      <td className="num">{fmt(p.venta_promedio)}</td>
+                      <td className="num">{cob}</td>
+                      <td><Badge estado={est} /></td>
+                    </tr>
+                  );
+                })
+              }
             </tbody>
           </table>
         </div>
@@ -798,11 +892,9 @@ function TiendaRow({ nombre, productos }) {
 }
 
 function TabTiendas({ reportes }) {
-  const [query, setQuery] = useState('');
-
   const byTienda = useMemo(() => {
-    const map = {};      // norm(tienda) -> { nombre, productos[] }
-    const names = {};    // norm(tienda) -> first canonical name seen
+    const map = {};
+    const names = {};
     reportes.forEach(r => {
       const key = norm(r.tienda);
       if (!names[key]) names[key] = r.tienda;
@@ -814,16 +906,13 @@ function TabTiendas({ reportes }) {
 
   const tiendas = useMemo(() =>
     Object.keys(byTienda.map)
-      .sort((a, b) => byTienda.names[a].localeCompare(byTienda.names[b]))
-      .filter(k => k.includes(norm(query))),
-  [byTienda, query]);
+      .sort((a, b) => byTienda.names[a].localeCompare(byTienda.names[b])),
+  [byTienda]);
 
   return (
     <div>
-      <input className="search-input" type="search" placeholder="Buscar tienda…"
-        value={query} onChange={e => setQuery(e.target.value)} />
       {tiendas.length === 0
-        ? <div className="empty-state"><div className="empty-icon">🏪</div>No se encontraron tiendas.</div>
+        ? <div className="empty-state"><div className="empty-icon">🏪</div>Sin tiendas disponibles.</div>
         : tiendas.map(k => <TiendaRow key={k} nombre={byTienda.names[k]} productos={byTienda.map[k]} />)
       }
     </div>
@@ -1049,35 +1138,102 @@ function TabOfertas({ config }) {
 // 11. TAB: Ingresos
 // =============================================
 function TabIngresos({ config }) {
-  const tieneMachetazo = (config?.inventario || [])
-    .some(r => norm(r.cadena || '').includes('machetazo'));
+  const inv = config?.inventario || [];
+  const tiendasDisponibles = useMemo(() =>
+    [...new Set(inv.map(r => r.tienda).filter(Boolean))].sort(),
+  [inv]);
+  const tiendasMachetazo = useMemo(() =>
+    [...new Set(inv.filter(r => norm(r.cadena || '').includes('machetazo')).map(r => r.tienda).filter(Boolean))].sort(),
+  [inv]);
+  const tieneMachetazo = tiendasMachetazo.length > 0;
 
-  const cardStyle = {
-    display: 'flex', alignItems: 'center', gap: 16,
-    background: 'var(--card)', borderRadius: 16, padding: '20px 18px',
-    marginBottom: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-    cursor: 'default', border: '1.5px solid var(--border)',
-  };
-  const iconStyle = { fontSize: 32, flexShrink: 0 };
+  const [openInv, setOpenInv] = useState(false);
+  const [openSug, setOpenSug] = useState(false);
+  const [formInv, setFormInv] = useState({});
+  const [formSug, setFormSug] = useState({});
+  const setI = (k, v) => setFormInv(p => ({ ...p, [k]: v }));
+  const setS = (k, v) => setFormSug(p => ({ ...p, [k]: v }));
+
   const titleStyle = { fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 15 };
-  const subStyle = { fontSize: 12, color: 'var(--muted)', marginTop: 3 };
+  const subStyle   = { fontSize: 12, color: 'var(--muted)', marginTop: 3 };
 
   return (
     <div>
-      <div style={cardStyle}>
-        <span style={iconStyle}>📦</span>
-        <div>
-          <div style={titleStyle}>Registrar Inventario</div>
-          <div style={subStyle}>Captura el inventario físico de tus tiendas</div>
-        </div>
-      </div>
-      {tieneMachetazo && (
-        <div style={cardStyle}>
-          <span style={iconStyle}>📋</span>
-          <div>
-            <div style={titleStyle}>Registrar Sugerido — Machetazo</div>
-            <div style={subStyle}>Ingresa el pedido sugerido para tiendas Machetazo</div>
+      {/* Registrar Inventario */}
+      <div className="ingreso-card">
+        <div className="ingreso-hdr" onClick={() => setOpenInv(o => !o)}>
+          <span style={{ fontSize: 32, flexShrink: 0 }}>📦</span>
+          <div style={{ flex: 1 }}>
+            <div style={titleStyle}>Registrar Inventario</div>
+            <div style={subStyle}>Captura el inventario físico de tus tiendas</div>
           </div>
+          <svg className={`chevron${openInv ? ' open' : ''}`} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </div>
+        {openInv && (
+          <div className="ingreso-body">
+            <div className="ing-form-group">
+              <label className="ing-label">Tienda</label>
+              <select className="ing-input" value={formInv.tienda||''} onChange={e=>setI('tienda',e.target.value)}>
+                <option value="">Seleccionar tienda…</option>
+                {tiendasDisponibles.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            <div className="ing-form-group">
+              <label className="ing-label">Producto</label>
+              <input className="ing-input" placeholder="Nombre del producto" value={formInv.producto||''} onChange={e=>setI('producto',e.target.value)}/>
+            </div>
+            <div className="ing-form-group">
+              <label className="ing-label">Cantidad</label>
+              <input className="ing-input" type="number" placeholder="0" value={formInv.cantidad||''} onChange={e=>setI('cantidad',e.target.value)}/>
+            </div>
+            <div className="ing-form-group">
+              <label className="ing-label">Observación</label>
+              <textarea className="ing-input" rows="2" placeholder="Opcional…" value={formInv.observacion||''} onChange={e=>setI('observacion',e.target.value)}/>
+            </div>
+            <button className="ing-btn">Guardar</button>
+          </div>
+        )}
+      </div>
+
+      {/* Registrar Sugerido — Machetazo */}
+      {tieneMachetazo && (
+        <div className="ingreso-card">
+          <div className="ingreso-hdr" onClick={() => setOpenSug(o => !o)}>
+            <span style={{ fontSize: 32, flexShrink: 0 }}>📋</span>
+            <div style={{ flex: 1 }}>
+              <div style={titleStyle}>Registrar Sugerido — Machetazo</div>
+              <div style={subStyle}>Ingresa el pedido sugerido para tiendas Machetazo</div>
+            </div>
+            <svg className={`chevron${openSug ? ' open' : ''}`} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+          {openSug && (
+            <div className="ingreso-body">
+              <div className="ing-form-group">
+                <label className="ing-label">Tienda Machetazo</label>
+                <select className="ing-input" value={formSug.tienda||''} onChange={e=>setS('tienda',e.target.value)}>
+                  <option value="">Seleccionar tienda…</option>
+                  {tiendasMachetazo.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+              <div className="ing-form-group">
+                <label className="ing-label">Producto</label>
+                <input className="ing-input" placeholder="Nombre del producto" value={formSug.producto||''} onChange={e=>setS('producto',e.target.value)}/>
+              </div>
+              <div className="ing-form-group">
+                <label className="ing-label">Cantidad sugerida</label>
+                <input className="ing-input" type="number" placeholder="0" value={formSug.cantidad||''} onChange={e=>setS('cantidad',e.target.value)}/>
+              </div>
+              <div className="ing-form-group">
+                <label className="ing-label">Observación</label>
+                <textarea className="ing-input" rows="2" placeholder="Opcional…" value={formSug.observacion||''} onChange={e=>setS('observacion',e.target.value)}/>
+              </div>
+              <button className="ing-btn">Guardar</button>
+            </div>
+          )}
         </div>
       )}
     </div>
