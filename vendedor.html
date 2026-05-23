@@ -841,54 +841,25 @@ function App() {
         from += pageSize;
       }
       const reps = allReps;
-      console.log('Total con paginación:', reps.length, 'error:', repsError);
 
       if (repsError) {
         console.error('reportes error:', repsError);
       } else {
-        // Log columnas reales para verificar nombres exactos
-        if (reps && reps.length > 0) console.log('reportes columnas:', Object.keys(reps[0]));
-
-        console.log('Total reportes cargados:', reps.length);
-        console.log('Nombre sesión:', s.nombre);
-        console.log('Nombre normalizado:', norm(s.nombre));
-        console.log('Muestra vendedores en reportes:',
-          [...new Set(reps.slice(0, 50).map(r => r.vendedor_asignado || r.vendedor || ''))]);
-
         const normNombre = norm(s.nombre);
 
-        // Paso intermedio: asignar vendedor a cada reporte
         const repsConVendedor = reps.map(r => {
           const rawVend    = r.vendedor || '';
           const cleanVend  = rawVend.replace(/^[^:]+:\s*/, '').trim();
           const vendedor_asignado = cleanVend || buscarVendedorPorTienda(r.tienda || '');
           return {
             tienda:           r.tienda   || '',
-            tienda_raw:       r.tienda   || '',
             producto:         r.producto || '',
             marca:            r.marca    || '',
             inventario:       r.cantidad || 0,
             venta_promedio:   0,
-            vendedor:         r.vendedor || '',   // original de BD
             vendedor_asignado,
           };
         });
-
-        // DEBUG: tiendas relacionadas con Eleidi o con "brisas"
-        console.log('Todos los vendedores asignados (Eleidi):',
-          repsConVendedor
-            .filter(r => (r.tienda_raw && r.tienda_raw.toLowerCase().includes('brisas')) ||
-                         norm(r.vendedor_asignado).includes('ELEIDI'))
-            .map(r => ({ tienda: r.tienda, vendedor: r.vendedor_asignado, original: r.vendedor }))
-        );
-
-        // DEBUG: registros sin vendedor asignado
-        console.log('Sin vendedor asignado (muestra 20):',
-          repsConVendedor
-            .filter(r => !r.vendedor_asignado)
-            .slice(0, 20)
-            .map(r => ({ tienda: r.tienda, vendedor_original: r.vendedor }))
-        );
 
         const misReportes = repsConVendedor
           .filter(r => norm(r.vendedor_asignado) === normNombre)
@@ -901,8 +872,6 @@ function App() {
             vendedor:       r.vendedor_asignado,
           }));
 
-        console.log('Mis reportes encontrados:', misReportes.length);
-        console.log('Tiendas encontradas:', [...new Set(misReportes.map(r => r.tienda))]);
         setReportes(misReportes);
       }
 
