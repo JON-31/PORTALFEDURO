@@ -88,9 +88,11 @@
     .chevron.open { transform: rotate(180deg); }
 
     /* ── BODEGA ── */
-    .bodega-item { background: var(--card); border-radius: 12px; padding: 14px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .bodega-producto { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; margin-bottom: 3px; }
-    .bodega-cantidad { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+    .bodega-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--card); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .bodega-producto { font-size: 13px; font-weight: 500; flex: 1; min-width: 0; }
+    .bodega-cantidad-wrap { text-align: right; flex-shrink: 0; }
+    .bodega-cantidad { font-size: 14px; font-weight: 700; color: var(--green); white-space: nowrap; }
+    .bodega-b8 { font-size: 11px; color: var(--muted); margin-top: 2px; }
     .chips { display: flex; flex-wrap: wrap; gap: 6px; }
     .chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; background: var(--green-light); border-radius: 20px; font-size: 11px; }
     .chip-tienda { font-weight: 600; color: var(--green); }
@@ -558,9 +560,9 @@ function TabBodega({ config }) {
       {items.map((item, i) => (
         <div key={i} className="bodega-item">
           <div className="bodega-producto">{item.descripcion}</div>
-          <div className="bodega-cantidad">
-            <strong>{item.m8}</strong> {item.unidFact || ''}
-            {item.b8 > 0 && <span style={{ color: 'var(--muted)', marginLeft: 8 }}>+ {item.b8} unid</span>}
+          <div className="bodega-cantidad-wrap">
+            <div className="bodega-cantidad">{item.m8} {item.unidFact || ''}</div>
+            {item.b8 > 0 && <div className="bodega-b8">b8: {item.b8}</div>}
           </div>
         </div>
       ))}
