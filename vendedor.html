@@ -565,7 +565,7 @@ function TabInicio({ tareas, config }) {
     return { agotadosPorTienda, criticosPorTienda, atencionPorTienda, totalAgotados, totalCriticos };
   }, [inv]);
 
-  const tiendasConInv    = new Set(inv.map(r => r.tienda)).size;
+  const totalInventario = inv.reduce((a, r) => a + (r.inventario || 0), 0);
 
   return (
     <div>
@@ -573,16 +573,20 @@ function TabInicio({ tareas, config }) {
 
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-value">{tiendasConInv}</div>
-          <div className="stat-label">Con inventario</div>
+          <div className="stat-value">{fmt(totalInventario)}</div>
+          <div className="stat-label">Inventario Total</div>
         </div>
         <div className="stat-card">
           <div className={`stat-value${totalCriticos > 0 ? ' red' : ''}`}>{totalCriticos}</div>
-          <div className="stat-label">Críticos</div>
+          <div className="stat-label">Productos Críticos</div>
         </div>
         <div className="stat-card">
           <div className={`stat-value${totalAgotados > 0 ? ' red' : ''}`}>{totalAgotados}</div>
-          <div className="stat-label">Agotados</div>
+          <div className="stat-label">Productos Agotados</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-value" style={{ color: '#0F6E56' }}>0%</div>
+          <div className="stat-label">MD%</div>
         </div>
       </div>
 
