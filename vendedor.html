@@ -879,12 +879,11 @@ function App() {
           : row.valor;
       });
 
-      if (Array.isArray(cfg.inventario)) {
-        const normNombre = norm(s.nombre);
-        cfg.inventario = cfg.inventario.filter(r => norm(r.vendedor) === normNombre);
-      }
+      const invFiltrado = (cfg.inventario || [])
+        .filter(r => norm(r.vendedor) === norm(s.nombre));
+      console.log('inventario filtrado count:', invFiltrado.length, 'vendedor:', s.nombre);
 
-      setConfig(cfg);
+      setConfig({ ...cfg, inventario: invFiltrado });
 
     } catch (err) {
       console.error('Error cargando datos:', err);
