@@ -3635,7 +3635,10 @@ async function cdEliminar(tipo) {
   cdCargar(tipo);
 }
 
-// ── INIT ──
+</script>
+
+<script>
+
 // ── FUNCIONES VISTA INICIO ──
 async function iniciarViewInicio() {
   renderCarruselEditor();
@@ -3691,13 +3694,13 @@ function cargarSlidesEnSlots(slides) {
 }
 
 function previewSlide(i, input) {
-  const file = input.files[0];
+  var file = input.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
+  var reader = new FileReader();
+  reader.onload = function(e) {
     window._iniSlides[i] = window._iniSlides[i] || {};
     window._iniSlides[i].img = e.target.result;
-    const prev = document.getElementById('preview-' + i);
+    var prev = document.getElementById('preview-' + i);
     prev.innerHTML = '';
     prev.style.backgroundImage   = 'url(' + e.target.result + ')';
     prev.style.backgroundSize    = 'cover';
@@ -3810,9 +3813,6 @@ document.addEventListener('DOMContentLoaded', function() {
   iniciarViewInicio();
   setTimeout(init, 100);
 });
-</script>
-
-<script>
 
 // ── GESTIONAR TAREAS (vanilla) ──
 var GT_INV_DATA = [];
