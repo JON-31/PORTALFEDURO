@@ -880,6 +880,9 @@ function App() {
         .from('configuracion')
         .select('*');
       console.log('configuracion keys:', cfgData?.map(r => r.clave));
+      console.log('ofertas:', cfgData?.find(r => r.clave === 'ofertas')?.valor);
+      console.log('inventario:', cfgData?.find(r => r.clave === 'inventario')?.valor);
+      console.log('inventario_bodega:', cfgData?.find(r => r.clave === 'inventario_bodega')?.valor);
 
       const { data: cfgRows } = await sbPortal
         .from('configuracion')
