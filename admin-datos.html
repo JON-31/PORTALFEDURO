@@ -3638,10 +3638,12 @@ async function cdEliminar(tipo) {
 // ── INIT ──
 // ── FUNCIONES VISTA INICIO ──
 async function iniciarViewInicio() {
+  renderCarruselEditor();
+
   var resSlides = await sbGet('/configuracion?clave=eq.slides&select=valor');
   var slides = (resSlides && resSlides[0]) ? JSON.parse(resSlides[0].valor || '[]') : [];
-  while (slides.length < 3) slides.push({titulo:'', subtitulo:''});
-  renderCarruselEditor(slides.slice(0,3));
+  while (slides.length < 3) slides.push({img:'', titulo:'', subtitulo:''});
+  cargarSlidesEnSlots(slides.slice(0, 3));
 
   var resVentas = await sbGet('/configuracion?clave=eq.ventas_resumen&select=valor');
   var ventasData = (resVentas && resVentas[0]) ? JSON.parse(resVentas[0].valor || '{}') : {};
@@ -3653,46 +3655,62 @@ async function iniciarViewInicio() {
   renderMdEditor(vendedores);
 }
 
-function renderCarruselEditor(slides) {
+function renderCarruselEditor() {
   var el = document.getElementById('inicio-carrusel-content');
   if (!el) return;
-  window._iniSlides = slides.map(function(s) {
-    return { img: s.img || '', titulo: s.titulo || '', subtitulo: s.subtitulo || '' };
-  });
-  el.innerHTML = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">'
-    + slides.map(function(s, i) {
-        var preview = s.img
-          ? 'background:url(' + s.img + ') center/cover no-repeat;'
-          : 'background:#F5F5F3;';
-        var sub = (s.subtitulo || '').replace(/"/g, '&quot;');
+  window._iniSlides = [{img:'',titulo:'',subtitulo:''},{img:'',titulo:'',subtitulo:''},{img:'',titulo:'',subtitulo:''}];
+  el.innerHTML = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;">'
+    + [0, 1, 2].map(function(i) {
         return '<div>'
-          + '<div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px">Slide ' + (i+1) + '</div>'
-          + '<div id="slide-preview-' + i + '" onclick="document.getElementById(\'slide-file-' + i + '\').click()" '
-          + 'style="' + preview + 'height:120px;border-radius:8px;border:1.5px dashed #E5E5E3;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative">'
-          + (s.img ? '' : '<span style="font-size:11px;color:#aaa;text-align:center;padding:8px">Clic para subir imagen</span>')
+          + '<div style="font-size:11px;color:#888;margin-bottom:4px;">Slide ' + (i+1) + '</div>'
+          + '<div onclick="document.getElementById(\'file-slide-' + i + '\').click()" '
+          + 'style="height:120px;background:#F5F5F3;border:1.5px dashed #D3D1C7;border-radius:8px;cursor:pointer;overflow:hidden;display:flex;align-items:center;justify-content:center;" '
+          + 'id="preview-' + i + '">'
+          + '<span style="font-size:12px;color:#888;">Clic para subir imagen</span>'
           + '</div>'
-          + '<input type="file" id="slide-file-' + i + '" accept="image/*" style="display:none" onchange="carruselFileChange(this,' + i + ')">'
-          + '<input type="text" placeholder="Subtítulo…" value="' + sub + '" oninput="window._iniSlides[' + i + '].subtitulo=this.value" style="margin-top:6px;width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit">'
+          + '<input type="file" accept="image/*" id="file-slide-' + i + '" style="display:none" onchange="previewSlide(' + i + ',this)">'
+          + '<input type="text" placeholder="Subtítulo..." id="sub-slide-' + i + '" style="width:100%;margin-top:6px;font-size:12px;padding:5px 8px;border:0.5px solid #E5E5E3;border-radius:6px;">'
           + '</div>';
       }).join('')
     + '</div>';
 }
 
-function carruselFileChange(input, i) {
-  if (!input.files || !input.files[0]) return;
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    window._iniSlides[i].img = e.target.result;
-    var prev = document.getElementById('slide-preview-' + i);
-    if (prev) {
-      prev.style.background = 'url(' + e.target.result + ') center/cover no-repeat';
+function cargarSlidesEnSlots(slides) {
+  window._iniSlides = slides;
+  slides.forEach(function(s, i) {
+    var prev = document.getElementById('preview-' + i);
+    var sub  = document.getElementById('sub-slide-' + i);
+    if (s.img && prev) {
       prev.innerHTML = '';
+      prev.style.backgroundImage   = 'url(' + s.img + ')';
+      prev.style.backgroundSize    = 'cover';
+      prev.style.backgroundPosition = 'center';
     }
+    if (sub) sub.value = s.subtitulo || '';
+  });
+}
+
+function previewSlide(i, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    window._iniSlides[i] = window._iniSlides[i] || {};
+    window._iniSlides[i].img = e.target.result;
+    const prev = document.getElementById('preview-' + i);
+    prev.innerHTML = '';
+    prev.style.backgroundImage   = 'url(' + e.target.result + ')';
+    prev.style.backgroundSize    = 'cover';
+    prev.style.backgroundPosition = 'center';
   };
-  reader.readAsDataURL(input.files[0]);
+  reader.readAsDataURL(file);
 }
 
 async function guardarCarrusel() {
+  [0, 1, 2].forEach(function(i) {
+    var sub = document.getElementById('sub-slide-' + i);
+    if (sub && window._iniSlides && window._iniSlides[i]) window._iniSlides[i].subtitulo = sub.value;
+  });
   var msg = document.getElementById('inicio-carrusel-msg');
   var btn = document.querySelector('[onclick="guardarCarrusel()"]');
   if (btn) btn.disabled = true;
