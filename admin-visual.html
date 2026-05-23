@@ -1010,9 +1010,7 @@ tbody td.right { text-align: right; }
 // ═══════════════════════════════════════
 //  SUPABASE
 // ═══════════════════════════════════════
-const SUPABASE_URL = 'https://npatcmgjqxpjxhbcqsqv.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wYXRjbWdqcXhwanhoYmNxc3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMzNzYwMDAsImV4cCI6MjA1ODk1MjAwMH0.t0V0HjI8UBb1VTtCNZeCcD5mEQDLkYenLQ2JJkLBvhM';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const sb = supabase.createClient(SB_URL, ANON_KEY);
 
 // ═══════════════════════════════════════
 //  GRUPOS
@@ -1623,9 +1621,9 @@ function renderBodega(){
   if(bod && Array.isArray(bod)){
     const prodMap = {};
     bod.forEach(r => {
-      const p = r.producto||'—';
+      const p = r.producto||r.descripcion||'—';
       if(!prodMap[p]) prodMap[p] = { producto:p, grupo:getGrupo(p), bodega:0 };
-      prodMap[p].bodega += Number(r.inventario_bodega||r.inventario||0);
+      prodMap[p].bodega += Number(r.inventario_bodega||r.inventario||r.cantidad||0);
     });
     const prods = Object.values(prodMap).sort((a,b)=>a.producto.localeCompare(b.producto));
 
