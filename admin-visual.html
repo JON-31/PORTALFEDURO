@@ -1127,7 +1127,23 @@ async function loadData(){
     if(cfg.data){
       cfg.data.forEach(row => {
         const v = typeof row.valor === 'string' ? JSON.parse(row.valor) : row.valor;
-        if(row.clave === 'ventas_resumen')    DATA.ventas_resumen    = v;
+        if(row.clave === 'ventas_resumen'){
+          if(v && !Array.isArray(v)){
+            DATA.ventas_resumen = Object.entries(v).map(([nombre, d]) => {
+              const choc = Number(d.chocolate||0), conf = Number(d.confiteria||0), pet = Number(d.mascotas||0);
+              const total = choc + conf + pet || 1;
+              const cuota = Number(d.cuota||0);
+              return {
+                vendedor:   nombre,
+                choc_venta: choc, choc_cuota: Math.round(cuota * choc / total),
+                conf_venta: conf, conf_cuota: Math.round(cuota * conf / total),
+                pet_venta:  pet,  pet_cuota:  Math.round(cuota * pet  / total)
+              };
+            });
+          } else {
+            DATA.ventas_resumen = v;
+          }
+        }
         if(row.clave === 'inventario')        DATA.inventario        = v;
         if(row.clave === 'inventario_bodega') DATA.inventario_bodega = v;
         if(row.clave === 'ofertas')           DATA.ofertas           = v;
