@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FEDURO|MARS — Admin Datos</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="shared.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -12,27 +12,34 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
 <style>
 :root {
-  --red: #CC0000;
-  --red-dark: #990000;
-  --red-light: #FF2222;
-  --black: #1C1400;
-  --dark: #261A00;
-  --card: #332200;
-  --card2: #3D2A00;
-  --border: #5A3D00;
-  --text: #F5E6C0;
-  --muted: #A08040;
-  --white: #FFFFFF;
-  --yellow: #E6A817;
-  --green: #00C853;
-  --orange: #FF8C00;
+  --sidebar-bg: #0F6E56;
+  --sidebar-text: rgba(255,255,255,0.88);
+  --sidebar-muted: rgba(255,255,255,0.48);
+  --sidebar-active: rgba(255,255,255,0.15);
+  --green: #1D9E75;
+  --bg: #F5F5F3;
+  --card: #FFFFFF;
+  --border: #E5E5E3;
+  --text: #1a1a1a;
+  --muted: #6B7280;
+  --yellow: #EF9F27;
+  --red: #E24B4A;
+  --blue: #378ADD;
+  /* aliases for legacy inline styles */
+  --card2: #F0F0EE;
+  --dark: #0F6E56;
+  --black: #1a1a1a;
+  --red-light: #E24B4A;
+  --red-dark: #B91C1C;
+  --orange: #EF9F27;
+  --white: #ffffff;
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
 
 body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--black);
+  font-family: system-ui, -apple-system, 'DM Sans', sans-serif;
+  background: var(--bg);
   color: var(--text);
   min-height: 100vh;
   overflow-x: hidden;
@@ -44,123 +51,103 @@ body {
   top: 0; left: 0;
   width: 240px;
   height: 100vh;
-  background: var(--dark);
-  border-right: 1px solid var(--border);
+  background: var(--sidebar-bg);
   display: flex;
   flex-direction: column;
   z-index: 100;
-}
-
-.sidebar-logo {
-  padding: 28px 24px 24px;
-  border-bottom: 1px solid var(--border);
-}
-
-.logo-mars {
-  font-family: 'Bebas Neue', cursive;
-  font-size: 42px;
-  color: var(--red);
-  letter-spacing: 4px;
-  line-height: 1;
-}
-
-.logo-sub {
-  font-size: 11px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-top: 4px;
-}
-
-.sidebar-nav {
-  flex: 1;
-  padding: 20px 0;
   overflow-y: auto;
 }
 
+.sidebar-logo {
+  padding: 22px 20px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  flex-shrink: 0;
+}
+
+.logo-mars {
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.3px;
+  line-height: 1.3;
+}
+
+.logo-sub { font-size: 11px; color: var(--sidebar-muted); margin-top: 2px; }
+
+.sidebar-user {
+  padding: 12px 20px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.10);
+  flex-shrink: 0;
+}
+
+.sidebar-user-name { font-size: 13px; font-weight: 600; color: #fff; }
+
+.sidebar-user-btn {
+  font-size: 11px; color: var(--sidebar-muted);
+  background: none; border: none; cursor: pointer;
+  padding: 0; margin-top: 4px; display: block;
+  text-decoration: underline; font-family: inherit;
+}
+
+.sidebar-nav { flex: 1; padding: 10px 0; overflow-y: auto; }
+
 .nav-section-label {
-  font-size: 10px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  padding: 12px 24px 8px;
+  font-size: 10px; color: var(--sidebar-muted);
+  text-transform: uppercase; letter-spacing: 1.5px;
+  padding: 14px 20px 4px; font-weight: 700;
 }
 
 .nav-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 24px;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: var(--muted);
-  font-size: 14px;
-  font-weight: 500;
-  border-left: 3px solid transparent;
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 20px; cursor: pointer;
+  color: var(--sidebar-text); font-size: 13.5px;
+  font-weight: 500; border-left: 3px solid transparent;
+  transition: background 0.15s; user-select: none;
 }
 
-.nav-item:hover {
-  color: var(--text);
-  background: rgba(255,255,255,0.04);
-}
+.nav-item:hover { background: rgba(255,255,255,0.08); }
 
 .nav-item.active {
-  color: var(--red-light);
-  background: rgba(204,0,0,0.08);
-  border-left-color: var(--red);
+  background: var(--sidebar-active);
+  border-left-color: #fff;
+  color: #fff; font-weight: 700;
 }
 
-.nav-icon { font-size: 18px; width: 20px; text-align: center; }
-
-.sidebar-footer {
-  padding: 20px 24px;
-  border-top: 1px solid var(--border);
-  font-size: 12px;
-  color: var(--muted);
-}
+.nav-icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
 
 /* MAIN */
 .main {
   margin-left: 240px;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 .topbar {
-  background: var(--dark);
+  background: var(--card);
   border-bottom: 1px solid var(--border);
-  padding: 16px 36px;
+  padding: 0 28px;
+  height: 54px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 12px;
   position: sticky;
   top: 0;
   z-index: 50;
 }
 
-.topbar-title {
-  font-family: 'Bebas Neue', cursive;
-  font-size: 22px;
-  color: var(--text);
-  letter-spacing: 2px;
-}
+.topbar-title { font-size: 16px; font-weight: 700; color: var(--text); flex: 1; }
 
 .topbar-chain {
-  background: var(--red);
-  color: white;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 5px 14px;
+  background: var(--green);
+  color: white; font-size: 11px;
+  font-weight: 700; padding: 4px 12px;
   border-radius: 20px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
 }
 
 .content {
   flex: 1;
-  padding: 36px;
+  padding: 24px 28px;
   max-width: 1400px;
   width: 100%;
   overflow-y: auto;
@@ -170,318 +157,186 @@ body {
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 16px;
-  margin-bottom: 32px;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .kpi-card {
   background: var(--card);
-  border: 1px solid var(--border);
+  border: 0.5px solid var(--border);
   border-radius: 12px;
-  padding: 22px;
+  padding: 18px;
   position: relative;
   overflow: hidden;
-  transition: border-color 0.2s;
 }
-
-.kpi-card:hover { border-color: var(--red); }
 
 .kpi-card::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 3px;
-  background: var(--red);
+  background: var(--green);
 }
 
-.kpi-label {
-  font-size: 11px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  margin-bottom: 10px;
-}
+.kpi-label { font-size: 11px; color: var(--muted); font-weight: 600; margin-bottom: 8px; }
 
 .kpi-value {
-  font-family: 'Bebas Neue', cursive;
-  font-size: 36px;
-  color: var(--white);
-  line-height: 1;
-  margin-bottom: 6px;
+  font-size: 28px; font-weight: 800;
+  color: var(--text); line-height: 1; margin-bottom: 4px;
 }
 
 .kpi-sub { font-size: 12px; color: var(--muted); }
 
-.kpi-alert .kpi-value { color: var(--red-light); }
-.kpi-warn .kpi-value { color: var(--orange); }
-.kpi-ok .kpi-value { color: var(--green); }
+.kpi-alert .kpi-value { color: #A32D2D; }
+.kpi-warn .kpi-value  { color: #854F0B; }
+.kpi-ok .kpi-value    { color: var(--green); }
 
 /* SECTION HEADER */
 .section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+  display: flex; justify-content: space-between;
+  align-items: center; margin-bottom: 16px;
 }
 
-.section-title {
-  font-family: 'Bebas Neue', cursive;
-  font-size: 20px;
-  letter-spacing: 2px;
-  color: var(--text);
-}
+.section-title { font-size: 15px; font-weight: 700; color: var(--text); }
 
 /* FILTER BAR */
 .filter-bar {
   background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 18px 22px;
-  margin-bottom: 22px;
-  display: flex;
-  gap: 16px;
-  align-items: flex-end;
-  flex-wrap: wrap;
+  border: 0.5px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  display: flex; gap: 14px;
+  align-items: flex-end; flex-wrap: wrap;
 }
 
-.filter-group { display: flex; flex-direction: column; gap: 6px; min-width: 180px; flex: 1; }
-.filter-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); }
+.filter-group { display: flex; flex-direction: column; gap: 5px; min-width: 160px; flex: 1; }
+.filter-label { font-size: 11px; font-weight: 700; color: var(--muted); }
 
-select, input[type="text"] {
-  background: var(--card2);
+select, input[type="text"], input[type="date"], input[type="number"] {
+  background: var(--card);
   border: 1px solid var(--border);
   color: var(--text);
-  padding: 10px 14px;
+  padding: 9px 12px;
   border-radius: 8px;
-  font-family: 'DM Sans', sans-serif;
+  font-family: inherit;
   font-size: 13px;
   outline: none;
   width: 100%;
-  transition: border-color 0.2s;
+  transition: border-color 0.15s;
 }
 
-select:focus, input[type="text"]:focus { border-color: var(--red); }
+select:focus, input:focus { border-color: var(--green); }
 
 /* TABLE */
 .table-wrapper {
   background: var(--card);
-  border: 1px solid var(--border);
+  border: 0.5px solid var(--border);
   border-radius: 12px;
   overflow: hidden;
 }
 
 .table-header-row {
-  padding: 18px 22px;
+  padding: 14px 18px;
   border-bottom: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: flex; justify-content: space-between; align-items: center;
 }
 
-.table-count {
-  font-size: 12px;
-  color: var(--muted);
-}
+.table-count { font-size: 12px; color: var(--muted); }
 
 table { width: 100%; border-collapse: collapse; }
 
 thead th {
-  background: var(--card2);
-  padding: 12px 16px;
+  background: #FAFAFA;
+  padding: 10px 14px;
   text-align: left;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
+  font-size: 11px; font-weight: 700;
   color: var(--muted);
-  font-weight: 600;
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
 }
 
 tbody td {
-  padding: 12px 16px;
+  padding: 11px 14px;
   font-size: 13px;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid var(--border);
   color: var(--text);
 }
 
-tbody tr:hover { background: rgba(255,255,255,0.03); }
+tbody tr:hover { background: #FAFAFA; }
 tbody tr:last-child td { border-bottom: none; }
 
 /* BADGES */
-.badge {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.badge-ok { background: rgba(0,200,83,0.15); color: #00C853; }
-.badge-warn { background: rgba(255,107,0,0.15); color: #FF6B00; }
-.badge-danger { background: rgba(204,0,0,0.15); color: #FF4444; }
-.badge-zero { background: rgba(136,136,136,0.15); color: #888; }
-.badge-brand { background: rgba(204,0,0,0.15); color: var(--red-light); font-size: 10px; }
+.badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.badge-ok     { background: #EAF3DE; color: #3B6D11; }
+.badge-warn   { background: #FAEEDA; color: #854F0B; }
+.badge-danger { background: #FCEBEB; color: #A32D2D; }
+.badge-zero   { background: #F3F4F6; color: #6B7280; }
+.badge-brand  { background: #EAF3DE; color: #3B6D11; font-size: 10px; }
 
 /* VENDEDOR PROFILE */
 .vendedor-profile {
-  background: linear-gradient(135deg, #1A0000 0%, #2A0000 50%, #1A1A1A 100%);
-  border: 1px solid var(--red-dark);
-  border-radius: 14px;
-  padding: 32px;
-  margin-bottom: 28px;
-  position: relative;
-  overflow: hidden;
+  background: var(--card);
+  border: 0.5px solid var(--border);
+  border-radius: 12px;
+  padding: 24px; margin-bottom: 16px;
 }
 
-.vendedor-profile::before {
-  content: 'MARS';
-  position: absolute;
-  right: -20px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-family: 'Bebas Neue', cursive;
-  font-size: 180px;
-  color: rgba(204,0,0,0.07);
-  line-height: 1;
-  pointer-events: none;
-}
+.vendedor-name { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+.vendedor-role { font-size: 12px; color: var(--muted); margin-bottom: 18px; }
 
-.vendedor-name {
-  font-family: 'Bebas Neue', cursive;
-  font-size: 32px;
-  color: var(--white);
-  letter-spacing: 3px;
-  margin-bottom: 6px;
-}
-
-.vendedor-role {
-  font-size: 12px;
-  color: var(--red-light);
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-bottom: 28px;
-}
-
-.vendedor-stats {
-  display: flex;
-  gap: 40px;
-  flex-wrap: wrap;
-}
-
+.vendedor-stats { display: flex; gap: 32px; flex-wrap: wrap; }
 .vstat { text-align: left; }
-.vstat-value {
-  font-family: 'Bebas Neue', cursive;
-  font-size: 32px;
-  color: var(--white);
-  line-height: 1;
-}
-.vstat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+.vstat-value { font-size: 24px; font-weight: 800; color: var(--text); line-height: 1; }
+.vstat-label { font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 3px; }
 
 /* AUDIT SCORE */
 .audit-score-card {
   background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 28px;
-  margin-bottom: 24px;
-  display: flex;
-  align-items: center;
-  gap: 32px;
+  border: 0.5px solid var(--border);
+  border-radius: 12px;
+  padding: 22px; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 24px;
 }
 
 .score-circle {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border: 3px solid;
+  width: 80px; height: 80px; border-radius: 50%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  flex-shrink: 0; border: 3px solid;
 }
 
-.score-number {
-  font-family: 'Bebas Neue', cursive;
-  font-size: 32px;
-  line-height: 1;
-}
-
-.score-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
-
+.score-number { font-size: 24px; font-weight: 800; line-height: 1; }
+.score-label  { font-size: 10px; font-weight: 700; }
 .score-high { border-color: var(--green); color: var(--green); }
-.score-mid { border-color: var(--orange); color: var(--orange); }
-.score-low { border-color: var(--red-light); color: var(--red-light); }
+.score-mid  { border-color: var(--yellow); color: var(--yellow); }
+.score-low  { border-color: var(--red); color: var(--red); }
 
-/* OFERTA CARDS */
-.ofertas-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 16px;
-}
+/* OFERTAS */
+.ofertas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
 
 .oferta-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 22px;
-  position: relative;
-  overflow: hidden;
-  transition: border-color 0.2s;
+  background: var(--card); border: 0.5px solid var(--border);
+  border-radius: 12px; padding: 18px;
+  position: relative; overflow: hidden;
 }
 
-.oferta-card:hover { border-color: var(--red); }
-
-.oferta-tipo {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: var(--muted);
-  margin-bottom: 12px;
-}
-
-.oferta-nombre {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: 10px;
-  line-height: 1.4;
-}
-
-.oferta-desc {
-  font-family: 'Bebas Neue', cursive;
-  font-size: 22px;
-  color: var(--red-light);
-  letter-spacing: 1px;
-  margin-bottom: 14px;
-}
+.oferta-tipo { font-size: 10px; font-weight: 700; color: var(--muted); margin-bottom: 8px; }
+.oferta-nombre { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 8px; line-height: 1.4; }
+.oferta-desc   { font-size: 13px; color: var(--green); font-weight: 700; margin-bottom: 12px; }
 
 .oferta-periodo {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--muted);
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--muted);
+  padding-top: 12px; border-top: 1px solid var(--border);
 }
 
-.oferta-mensual::before {
+.oferta-mensual::before, .oferta-quincenal::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 3px;
-  background: linear-gradient(90deg, var(--red), var(--orange));
-}
-
-.oferta-quincenal::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: var(--red);
+  background: var(--green);
 }
 
 /* VIEWS */
@@ -489,137 +344,127 @@ tbody tr:last-child td { border-bottom: none; }
 .view.active { display: block; }
 
 /* SCROLLBAR */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--dark); }
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
 /* PAGINATION */
 .pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  padding: 18px;
-  border-top: 1px solid var(--border);
+  display: flex; justify-content: center; align-items: center;
+  gap: 6px; padding: 14px; border-top: 1px solid var(--border);
 }
 
 .page-btn {
-  background: var(--card2);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 7px 13px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 13px;
-  font-family: 'DM Sans', sans-serif;
-  transition: all 0.2s;
+  background: var(--card); border: 1px solid var(--border);
+  color: var(--text); padding: 6px 12px; border-radius: 6px;
+  cursor: pointer; font-size: 13px; font-family: inherit;
+  transition: all 0.15s;
 }
 
-.page-btn:hover, .page-btn.active { background: var(--red); border-color: var(--red); color: white; }
-.page-info { font-size: 13px; color: var(--muted); padding: 0 10px; }
+.page-btn:hover, .page-btn.active { background: var(--green); border-color: var(--green); color: #fff; }
+.page-info { font-size: 12px; color: var(--muted); padding: 0 8px; }
 
 /* COBERTURA BAR */
 .cob-bar-wrap { display: flex; align-items: center; gap: 8px; }
-.cob-bar {
-  height: 6px;
-  border-radius: 3px;
-  background: var(--border);
-  flex: 1;
-  max-width: 80px;
-  overflow: hidden;
-}
+.cob-bar { height: 5px; border-radius: 3px; background: var(--border); flex: 1; max-width: 80px; overflow: hidden; }
 .cob-fill { height: 100%; border-radius: 3px; }
 
-/* ADMIN DATA TABLE */
-#data-input-table input, #data-input-table select {
-  background: var(--card2);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  width: 100%;
-  min-width: 80px;
+/* BODEGA / DATA INPUT TABLE */
+#bodega-input-table input, #data-input-table input, #data-input-table select {
+  background: var(--card); border: 1px solid var(--border);
+  color: var(--text); padding: 6px 9px; border-radius: 6px;
+  font-size: 12px; width: 100%; min-width: 80px;
 }
-#data-input-table input:focus { border-color: var(--red); outline: none; }
+#bodega-input-table input:focus, #data-input-table input:focus { border-color: var(--green); outline: none; }
+
 .del-row-btn {
-  background: rgba(204,0,0,0.2);
-  border: 1px solid var(--red);
-  color: var(--red-light);
-  padding: 4px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 12px;
+  background: #FEF2F2; border: 1px solid #FECACA;
+  color: var(--red); padding: 4px 10px;
+  border-radius: 6px; cursor: pointer; font-size: 12px;
 }
 
 /* HAMBURGER */
 .hamburger {
-  display: none;
-  background: none;
-  border: none;
-  color: var(--text);
-  font-size: 22px;
-  cursor: pointer;
-  padding: 6px 10px;
-  border-radius: 6px;
-  line-height: 1;
+  display: none; background: none; border: none;
+  color: var(--text); font-size: 22px; cursor: pointer;
+  padding: 4px 8px; border-radius: 6px; line-height: 1;
 }
-.hamburger:hover { background: var(--card); }
 
 /* SIDEBAR OVERLAY */
 .sidebar-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.65);
-  z-index: 99;
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.4); z-index: 99;
 }
 .sidebar-overlay.active { display: block; }
 
-/* RESPONSIVE */
-@media (max-width: 1100px) {
-  .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+/* INICIO CARDS */
+.inicio-card {
+  background: var(--card);
+  border: 0.5px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
 }
+
+.inicio-card-title {
+  font-size: 13px; font-weight: 700; color: var(--text);
+  margin-bottom: 14px; padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.form-group { margin-bottom: 12px; }
+.form-label { font-size: 11px; font-weight: 700; color: var(--muted); margin-bottom: 5px; display: block; }
+
+.ventas-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.ventas-table th { padding: 8px 10px; text-align: left; font-weight: 700; color: var(--muted); border-bottom: 1px solid var(--border); white-space: nowrap; font-size: 11px; }
+.ventas-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.ventas-table td input { padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 12px; width: 100%; min-width: 75px; }
+.ventas-table td input:focus { border-color: var(--green); outline: none; }
+.ventas-table tr:last-child td { border-bottom: none; }
+
+.btn-green {
+  background: var(--green); color: #fff; border: none;
+  padding: 10px 22px; border-radius: 8px; cursor: pointer;
+  font-size: 13px; font-weight: 700; font-family: inherit;
+}
+.btn-green:hover { background: #17875f; }
+.btn-outline {
+  background: var(--card); border: 1px solid var(--border);
+  color: var(--text); padding: 9px 16px; border-radius: 8px;
+  cursor: pointer; font-size: 13px; font-family: inherit;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1100px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 768px) {
   .hamburger { display: flex; align-items: center; }
-  .sidebar {
-    transform: translateX(-100%);
-    transition: transform 0.25s ease;
-    z-index: 100;
-  }
+  .sidebar { transform: translateX(-100%); transition: transform 0.25s ease; }
   .sidebar.open { transform: translateX(0); }
   .main { margin-left: 0; }
-  .topbar { padding: 0 16px; gap: 8px; }
-  .topbar-title { font-size: 15px; }
-  .topbar-chain { font-size: 11px; }
+  .topbar { padding: 0 14px; }
   .kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  .kpi-card { padding: 16px; }
-  .kpi-value { font-size: 28px; }
   .content { padding: 14px; }
   .filter-bar { flex-direction: column; gap: 10px; }
   .filter-group { min-width: unset; width: 100%; }
   .section-header { flex-direction: column; align-items: flex-start; gap: 6px; }
-  .table-wrapper { border-radius: 8px; }
-  table { font-size: 12px; }
-  th, td { padding: 8px 10px; }
   .ofertas-grid { grid-template-columns: 1fr; }
+  th, td { padding: 8px 10px; }
 }
-@media (max-width: 480px) {
-  .kpi-grid { grid-template-columns: 1fr; }
-  .kpi-value { font-size: 32px; }
-}
-/* Gestionar Ofertas - Dinámica pills */
-.dinamica-group { display:flex; flex-wrap:wrap; gap:10px; margin:8px 0; }
-.dinamica-pill { display:inline-flex; align-items:center; padding:9px 16px; border-radius:20px; border:2px solid var(--border); background:var(--card2); color:var(--muted); cursor:pointer; font-size:12px; font-weight:700; transition:all 0.18s; letter-spacing:0.3px; user-select:none; }
-.dinamica-pill:hover { border-color:var(--yellow); color:var(--yellow); }
-.dinamica-pill.selected { border-color:var(--yellow); background:var(--yellow); color:#1a1410; }
-/* Autocomplete gestionar ofertas */
+@media (max-width: 480px) { .kpi-grid { grid-template-columns: 1fr; } }
+
+/* DINAMICA PILLS */
+.dinamica-group { display:flex; flex-wrap:wrap; gap:8px; margin:8px 0; }
+.dinamica-pill { display:inline-flex; align-items:center; padding:8px 14px; border-radius:20px; border:1.5px solid var(--border); background:var(--card); color:var(--muted); cursor:pointer; font-size:12px; font-weight:600; transition:all 0.15s; user-select:none; }
+.dinamica-pill:hover { border-color:var(--green); color:var(--green); }
+.dinamica-pill.selected { border-color:var(--green); background:var(--green); color:#fff; }
+
+/* AUTOCOMPLETE */
 .autocomplete-wrapper { position:relative; }
-.autocomplete-dropdown { position:absolute; top:100%; left:0; right:0; background:var(--card); border:1px solid var(--border); border-radius:8px; z-index:300; max-height:220px; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,0.5); margin-top:4px; }
+.autocomplete-dropdown { position:absolute; top:100%; left:0; right:0; background:var(--card); border:1px solid var(--border); border-radius:8px; z-index:300; max-height:220px; overflow-y:auto; box-shadow:0 8px 24px rgba(0,0,0,0.10); margin-top:4px; }
 .autocomplete-item { padding:9px 14px; cursor:pointer; font-size:12px; border-bottom:1px solid var(--border); }
 .autocomplete-item:last-child { border-bottom:none; }
-.autocomplete-item:hover { background:var(--card2); }
-.autocomplete-item .ac-code { font-family:monospace; color:var(--yellow); font-size:10px; margin-top:2px; }
+.autocomplete-item:hover { background:#FAFAFA; }
+.autocomplete-item .ac-code { font-family:monospace; color:var(--green); font-size:10px; margin-top:2px; }
 .autocomplete-item .ac-name { color:var(--text); font-weight:600; }
 </style>
 </head>
@@ -632,66 +477,58 @@ tbody tr:last-child td { border-bottom: none; }
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
-    <div class="logo-mars">MARS</div>
-    <div class="logo-sub">Admin · Datos</div>
+    <div class="logo-mars">MARS · Admin Datos</div>
+    <div class="logo-sub">Portal de Gestión</div>
+  </div>
+  <div class="sidebar-user">
+    <div class="sidebar-user-name" id="admin-sidebar-user">—</div>
+    <button class="sidebar-user-btn" onclick="cerrarSesionAdmin()">Cerrar sesión</button>
   </div>
   <nav class="sidebar-nav">
-    <div class="nav-section-label">Analisis</div>
-    <div class="nav-item" onclick="showView('dashboard', this)">
-      <span class="nav-icon">&#128202;</span> Dashboard
+    <div class="nav-section-label">Inicio</div>
+    <div class="nav-item active" onclick="showView('inicio', this); iniciarViewInicio()">
+      <span class="nav-icon">🏠</span> Inicio
     </div>
-    <div class="nav-item" onclick="showView('vendedores', this)">
-      <span class="nav-icon">&#128100;</span> Vendedores
-    </div>
-    <div class="nav-item" onclick="showView('tiendas', this)">
-      <span class="nav-icon">&#127978;</span> Tiendas
-    </div>
-    <div class="nav-section-label">Operaciones</div>
+
+    <div class="nav-section-label">Inventario</div>
     <div class="nav-item" onclick="showView('inventario', this)">
-      <span class="nav-icon">&#128230;</span> Inventario por Cadena
+      <span class="nav-icon">🏪</span> Tiendas
     </div>
-    <div class="nav-item active" onclick="showView('bodega', this)">
-      <span class="nav-icon">&#127981;</span> Inventario en Bodega
+    <div class="nav-item" onclick="showView('bodega', this)">
+      <span class="nav-icon">🏭</span> Bodega
     </div>
-    <div class="nav-item" onclick="showView('auditoria', this)">
-      <span class="nav-icon">&#9989;</span> Auditoria
-    </div>
-    <div class="nav-item" onclick="showView('ofertas', this)">
-      <span class="nav-icon">&#127873;</span> Ofertas
-    </div>
-    <div class="nav-section-label">Ingresos</div>
-    <div class="nav-item" onclick="showView('ingreso', this)">
-      <span class="nav-icon">&#128221;</span> Ingresar Inventario
-    </div>
-    <div class="nav-section-label">Admin Data</div>
-    <div class="nav-item" onclick="showView('actualizar-data', this)">
-      <span class="nav-icon">&#128202;</span> Actualizar Data
+
+    <div class="nav-section-label">Gestión</div>
+    <div class="nav-item" onclick="showView('centro-descargas', this)">
+      <span class="nav-icon">📥</span> Ingresos
     </div>
     <div class="nav-item" onclick="showView('gestionar-ofertas', this)">
-      <span class="nav-icon">&#127873;</span> Gestionar Ofertas
+      <span class="nav-icon">🏷️</span> Ofertas
     </div>
-    <div class="nav-section-label">Tareas y Descargas</div>
     <div class="nav-item" onclick="showView('gestionar-tareas', this)">
-      <span class="nav-icon">&#128203;</span> Gestionar Tareas
+      <span class="nav-icon">📋</span> Tareas
     </div>
-    <div class="nav-item" onclick="showView('centro-descargas', this)">
-      <span class="nav-icon">&#128190;</span> Centro de Descargas
+    <div class="nav-item" onclick="showView('actualizar-data', this)">
+      <span class="nav-icon">📤</span> Actualizar Data
+    </div>
+
+    <div class="nav-section-label">Análisis</div>
+    <div class="nav-item" onclick="showView('dashboard', this)">
+      <span class="nav-icon">📊</span> Dashboard
+    </div>
+    <div class="nav-item" onclick="showView('vendedores', this)">
+      <span class="nav-icon">👤</span> Vendedores
     </div>
   </nav>
-  <div class="sidebar-footer">
-    <span id="admin-sidebar-user" style="color:var(--muted);font-size:12px;display:block;margin-bottom:6px"></span>
-    Cadena: <strong style="color:var(--red)">XTRA</strong><br>
-    <span id="footer-date"></span>
-    <button onclick="cerrarSesionAdmin()" style="margin-top:10px;width:100%;background:transparent;border:1px solid #333;color:var(--muted);padding:7px;border-radius:8px;cursor:pointer;font-size:12px;">Cerrar sesión</button>
-  </div>
 </aside>
 
 <!-- MAIN -->
 <div class="main">
   <div class="topbar">
     <button class="hamburger" onclick="toggleSidebar()" aria-label="Menú">&#9776;</button>
-    <div class="topbar-title" id="topbar-title">Inventario en Bodega</div>
-    <div class="topbar-chain">🏪 Supermercados XTRA</div>
+    <div class="topbar-title" id="topbar-title">Inicio</div>
+    <div class="topbar-chain">MARS Panamá</div>
+    <span id="footer-date" style="display:none"></span>
   </div>
 
   <div class="content">
@@ -703,6 +540,81 @@ tbody tr:last-child td { border-bottom: none; }
    
 
    
+
+    <!-- INICIO -->
+    <div class="view active" id="view-inicio">
+
+      <!-- Card 1: Carrusel -->
+      <div class="inicio-card">
+        <div class="inicio-card-title">🖼️ Imágenes del carrusel</div>
+        <div id="inicio-carrusel-content" style="color:var(--muted);font-size:13px">Cargando…</div>
+        <button class="btn-green" onclick="guardarCarrusel()" style="margin-top:14px">Guardar cambios</button>
+        <div id="inicio-carrusel-msg" style="margin-top:8px;font-size:13px;font-weight:600"></div>
+      </div>
+
+      <!-- Card 2: Ventas y cuotas -->
+      <div class="inicio-card">
+        <div class="inicio-card-title">💰 Ventas acumuladas y cuotas</div>
+        <div class="form-group" style="max-width:220px">
+          <label class="form-label">Mes</label>
+          <select id="inicio-mes">
+            <option>Enero</option><option>Febrero</option><option>Marzo</option>
+            <option>Abril</option><option>Mayo</option><option>Junio</option>
+            <option>Julio</option><option>Agosto</option><option>Septiembre</option>
+            <option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
+          </select>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="ventas-table">
+            <thead>
+              <tr>
+                <th>Vendedor</th>
+                <th>Cuota</th>
+                <th>Acumulado</th>
+                <th>Chocolate</th>
+                <th>Confection</th>
+                <th>PetCare</th>
+                <th>%</th>
+                <th>Falta</th>
+              </tr>
+            </thead>
+            <tbody id="inicio-ventas-tbody">
+              <tr><td colspan="8" style="color:var(--muted);text-align:center;padding:16px">Cargando…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <button class="btn-green" onclick="guardarVentasResumen()" style="margin-top:14px">Guardar</button>
+        <div id="inicio-ventas-msg" style="margin-top:8px;font-size:13px;font-weight:600"></div>
+      </div>
+
+      <!-- Card 3: MD% -->
+      <div class="inicio-card">
+        <div class="inicio-card-title">⚠️ Mercancía dañada (%)</div>
+        <div style="overflow-x:auto">
+          <table class="ventas-table">
+            <thead><tr><th>Vendedor</th><th>MD%</th></tr></thead>
+            <tbody id="inicio-md-tbody">
+              <tr><td colspan="2" style="color:var(--muted);text-align:center;padding:16px">Cargando…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <button class="btn-green" onclick="guardarMdVendedores()" style="margin-top:14px">Guardar todo</button>
+        <div id="inicio-md-msg" style="margin-top:8px;font-size:13px;font-weight:600"></div>
+      </div>
+
+      <!-- Card 4: Subir Excel — acceso directo a Actualizar Data -->
+      <div class="inicio-card" style="display:flex;align-items:center;gap:20px">
+        <div style="font-size:36px;flex-shrink:0">📤</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700;margin-bottom:4px">Subir inventario por cadena</div>
+          <div style="font-size:13px;color:var(--muted)">Procesa y sube archivos Excel de inventario por cadena a Supabase.</div>
+        </div>
+        <button class="btn-green" onclick="showView('actualizar-data', document.querySelector('[onclick*=actualizar-data]'))">
+          Ir a Actualizar Data →
+        </button>
+      </div>
+
+    </div>
 
     <!-- DASHBOARD -->
     <div class="view" id="view-dashboard">
@@ -919,7 +831,7 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
 
     <!-- INVENTARIO EN BODEGA -->
-    <div class="view active" id="view-bodega">
+    <div class="view" id="view-bodega">
       <div class="section-header">
         <div class="section-title">🏭 Inventario en Bodega</div>
       </div>
@@ -1405,7 +1317,7 @@ function showView(name, el) {
   document.getElementById('view-' + name).classList.add('active');
   el.classList.add('active');
   closeSidebar();
-  const titles = { dashboard: 'Dashboard', vendedores: 'Portal de Vendedores', tiendas: 'Gestión de Tiendas', inventario: 'Inventario por Cadena', bodega: 'Inventario en Bodega', auditoria: 'Auditoría de Productos', ofertas: 'Ofertas Vigentes', ingreso: 'Ingresar Inventario', admin: 'Administrador', 'actualizar-data': 'Actualizar Data de Inventario', 'gestionar-ofertas': 'Gestionar Ofertas', 'gestionar-tareas': 'Gestionar Tareas', 'centro-descargas': 'Centro de Descargas' };
+  const titles = { inicio: 'Inicio', dashboard: 'Dashboard', vendedores: 'Vendedores', tiendas: 'Tiendas', inventario: 'Inventario por Cadena', bodega: 'Bodega', auditoria: 'Auditoría de Productos', ofertas: 'Ofertas Vigentes', ingreso: 'Ingresos', admin: 'Administrador', 'actualizar-data': 'Actualizar Data', 'gestionar-ofertas': 'Ofertas', 'gestionar-tareas': 'Tareas', 'centro-descargas': 'Ingresos' };
   document.getElementById('topbar-title').textContent = titles[name] || name;
   if (name === 'vendedores') renderVendedorProfile();
   if (name === 'tiendas') renderTiendaView();
@@ -3901,13 +3813,138 @@ async function cdEliminar(tipo) {
 }
 
 // ── INIT ──
+// ── FUNCIONES VISTA INICIO ──
+async function iniciarViewInicio() {
+  var resSlides = await sbGet('/configuracion?clave=eq.slides&select=valor');
+  var slides = (resSlides && resSlides[0]) ? JSON.parse(resSlides[0].valor || '[]') : [];
+  while (slides.length < 3) slides.push({titulo:'', subtitulo:''});
+  renderCarruselEditor(slides.slice(0,3));
+
+  var resVentas = await sbGet('/configuracion?clave=eq.ventas_resumen&select=valor');
+  var ventasData = (resVentas && resVentas[0]) ? JSON.parse(resVentas[0].valor || '{}') : {};
+
+  var resUsers = await sbGet('/usuarios?rol=eq.vendedor&select=nombre&order=nombre');
+  var vendedores = (resUsers && resUsers.length) ? resUsers.map(function(u){return u.nombre;}) : Object.keys(ventasData);
+
+  renderVentasEditor(vendedores, ventasData);
+  renderMdEditor(vendedores);
+}
+
+function renderCarruselEditor(slides) {
+  var el = document.getElementById('inicio-carrusel-content');
+  if (!el) return;
+  window._iniSlides = slides;
+  el.innerHTML = slides.map(function(s, i) {
+    var t = (s.titulo||'').replace(/"/g,'&quot;');
+    var sb = (s.subtitulo||'').replace(/"/g,'&quot;');
+    return '<div style="margin-bottom:12px;padding:14px;border:1px solid var(--border);border-radius:10px">'
+      + '<div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:10px">Slide ' + (i+1) + '</div>'
+      + '<div class="form-group"><label class="form-label">Título</label>'
+      + '<input type="text" value="' + t + '" oninput="window._iniSlides[' + i + '].titulo=this.value" style="max-width:460px"></div>'
+      + '<div class="form-group"><label class="form-label">Subtítulo</label>'
+      + '<input type="text" value="' + sb + '" oninput="window._iniSlides[' + i + '].subtitulo=this.value" style="max-width:460px"></div>'
+      + '</div>';
+  }).join('');
+}
+
+async function guardarCarrusel() {
+  var msg = document.getElementById('inicio-carrusel-msg');
+  var btn = document.querySelector('[onclick="guardarCarrusel()"]');
+  if (btn) btn.disabled = true;
+  try {
+    await sbUpsert('configuracion', {clave:'slides', valor: JSON.stringify(window._iniSlides || [])});
+    if (msg) { msg.textContent = '✅ Carrusel guardado.'; msg.style.color = '#1D9E75'; }
+  } catch(e) {
+    if (msg) { msg.textContent = '❌ Error: ' + e.message; msg.style.color = '#A32D2D'; }
+  }
+  if (btn) btn.disabled = false;
+  setTimeout(function(){ if(msg) msg.textContent=''; }, 3000);
+}
+
+function renderVentasEditor(vendedores, data) {
+  window._iniVendedores = vendedores;
+  window._iniVentasData = {};
+  vendedores.forEach(function(v) {
+    window._iniVentasData[v] = data[v] || {cuota:0, acumulado:0, chocolate:0, confiteria:0, mascotas:0};
+  });
+  renderVentasTable();
+}
+
+function renderVentasTable() {
+  var tbody = document.getElementById('inicio-ventas-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = (window._iniVendedores || []).map(function(v) {
+    var d = window._iniVentasData[v] || {};
+    var cuota = Number(d.cuota||0), acum = Number(d.acumulado||0);
+    var pct = cuota > 0 ? Math.round(acum/cuota*100) : 0;
+    var falta = cuota - acum;
+    var pctColor = pct>=100?'#1D9E75':pct>=75?'#854F0B':'#A32D2D';
+    var faltaColor = falta<=0?'#1D9E75':'#A32D2D';
+    var faltaTxt = falta<=0?'✓ Meta':'$'+falta.toLocaleString();
+    var vKey = v.replace(/'/g,"\\'");
+    return '<tr>'
+      + '<td style="font-weight:600;white-space:nowrap">' + v + '</td>'
+      + '<td><input type="number" value="' + (d.cuota||0) + '" min="0" onchange="window._iniVentasData[\'' + vKey + '\'].cuota=Number(this.value);renderVentasTable()"></td>'
+      + '<td><input type="number" value="' + (d.acumulado||0) + '" min="0" onchange="window._iniVentasData[\'' + vKey + '\'].acumulado=Number(this.value);renderVentasTable()"></td>'
+      + '<td><input type="number" value="' + (d.chocolate||0) + '" min="0" onchange="window._iniVentasData[\'' + vKey + '\'].chocolate=Number(this.value)"></td>'
+      + '<td><input type="number" value="' + (d.confiteria||0) + '" min="0" onchange="window._iniVentasData[\'' + vKey + '\'].confiteria=Number(this.value)"></td>'
+      + '<td><input type="number" value="' + (d.mascotas||0) + '" min="0" onchange="window._iniVentasData[\'' + vKey + '\'].mascotas=Number(this.value)"></td>'
+      + '<td style="font-weight:700;color:' + pctColor + '">' + pct + '%</td>'
+      + '<td style="font-weight:600;color:' + faltaColor + '">' + faltaTxt + '</td>'
+      + '</tr>';
+  }).join('');
+}
+
+async function guardarVentasResumen() {
+  var mes = (document.getElementById('inicio-mes')||{}).value || '';
+  var msg = document.getElementById('inicio-ventas-msg');
+  var payload = {};
+  (window._iniVendedores||[]).forEach(function(v) {
+    payload[v] = Object.assign({}, window._iniVentasData[v]||{}, {mes: mes});
+  });
+  try {
+    await sbUpsert('configuracion', {clave:'ventas_resumen', valor: JSON.stringify(payload)});
+    if (msg) { msg.textContent = '✅ Ventas guardadas.'; msg.style.color = '#1D9E75'; }
+  } catch(e) {
+    if (msg) { msg.textContent = '❌ Error: ' + e.message; msg.style.color = '#A32D2D'; }
+  }
+  setTimeout(function(){ if(msg) msg.textContent=''; }, 3000);
+}
+
+function renderMdEditor(vendedores) {
+  var tbody = document.getElementById('inicio-md-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = vendedores.map(function(v) {
+    var id = 'md-' + v.replace(/\s+/g,'_');
+    return '<tr><td style="font-weight:600">' + v + '</td>'
+      + '<td style="width:130px"><input type="number" id="' + id + '" min="0" max="100" step="0.1" placeholder="0.0" style="max-width:110px"></td></tr>';
+  }).join('');
+}
+
+async function guardarMdVendedores() {
+  var rows = document.querySelectorAll('#inicio-md-tbody tr');
+  var payload = {};
+  rows.forEach(function(row) {
+    var nombre = row.cells[0].textContent.trim();
+    var val = parseFloat(row.cells[1].querySelector('input').value) || 0;
+    payload[nombre] = val;
+  });
+  var msg = document.getElementById('inicio-md-msg');
+  try {
+    await sbUpsert('configuracion', {clave:'md_vendedores', valor: JSON.stringify(payload)});
+    if (msg) { msg.textContent = '✅ MD% guardado.'; msg.style.color = '#1D9E75'; }
+  } catch(e) {
+    if (msg) { msg.textContent = '❌ Error: ' + e.message; msg.style.color = '#A32D2D'; }
+  }
+  setTimeout(function(){ if(msg) msg.textContent=''; }, 3000);
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   var s = JSON.parse(sessionStorage.getItem('mars_portal_session')||'{}');
   var nombre = s.nombre || 'ADMIN';
   var el = document.getElementById('admin-sidebar-user');
   if (el) el.textContent = nombre;
-  document.getElementById('footer-date').textContent = new Date().toLocaleDateString('es-PA',{day:'2-digit',month:'short',year:'numeric'});
-  cargarBodegaData();
+  iniciarViewInicio();
   setTimeout(init, 100);
 });
 </script>
