@@ -896,6 +896,7 @@ function App() {
         cfg.inventario = cfg.inventario.filter(r => norm(r.vendedor) === normNombre);
       }
 
+      console.log('muestra inventario[0]:', cfg?.inventario?.[0]);
       setConfig(cfg);
 
     } catch (err) {
