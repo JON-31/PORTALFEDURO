@@ -65,11 +65,15 @@
 
 
     /* ── ALERTS ── */
-    .alert-card { display: flex; align-items: center; gap: 12px; background: #FCEBEB; border-left: 4px solid #A32D2D; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; }
+    .alert-card { display: flex; align-items: center; gap: 12px; background: var(--card); border-left: 4px solid #ccc; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     .alert-card:last-child { margin-bottom: 0; }
-    .alert-tienda { font-size: 13px; font-weight: 600; color: #A32D2D; }
+    .alert-tienda { font-size: 13px; font-weight: 600; color: #1A1A1A; }
     .alert-producto { font-size: 12px; color: var(--muted); margin-top: 2px; }
-    .alert-cob { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: #A32D2D; white-space: nowrap; background: #fff; border-radius: 8px; padding: 4px 8px; }
+    .alert-cob { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; white-space: nowrap; border-radius: 8px; padding: 4px 12px; }
+    .tarea-card { display: flex; align-items: center; gap: 12px; background: var(--card); border-left: 4px solid var(--green); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .tarea-card:last-child { margin-bottom: 0; }
+    .tarea-tienda { font-size: 13px; font-weight: 600; color: #1A1A1A; }
+    .tarea-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
     /* ── TIENDAS ── */
     .search-input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; background: var(--card); margin-bottom: 12px; }
@@ -326,31 +330,45 @@ function Carousel({ slides }) {
 // =============================================
 // 6. TAB: Inicio
 // =============================================
-function TabInicio({ tareas, config }) {
-  const { criticos, agotadosPorTienda } = useMemo(() => {
-    const all = (config?.inventario || [])
-      .map(r => ({ tienda: r.tienda, producto: r.producto, dias: Math.max(0, Number(r.cobertura)) }))
-      .filter(r => r.dias < 10)
-      .sort((a, b) => a.dias - b.dias);
+const SCROLL_LIST = { maxHeight: 280, overflowY: 'auto', scrollBehavior: 'smooth', borderRadius: 10 };
 
-    const criticos = all.filter(r => r.dias > 0);
+function grupoPorTienda(items) {
+  const map = {};
+  items.forEach(r => {
+    if (!map[r.tienda]) map[r.tienda] = [];
+    map[r.tienda].push(r.dias);
+  });
+  return Object.entries(map)
+    .map(([tienda, dias]) => ({
+      tienda,
+      count: dias.length,
+      prom: Math.round(dias.reduce((a, b) => a + b, 0) / dias.length),
+    }))
+    .sort((a, b) => a.prom - b.prom);
+}
+
+function TabInicio({ tareas, config }) {
+  const inv = config?.inventario || [];
+
+  const { agotadosPorTienda, criticosPorTienda, atencionPorTienda } = useMemo(() => {
+    const mapped = inv.map(r => ({ tienda: r.tienda, dias: Math.max(0, Number(r.cobertura)) }));
 
     const agMap = {};
-    all.filter(r => r.dias === 0).forEach(r => {
-      if (!agMap[r.tienda]) agMap[r.tienda] = 0;
-      agMap[r.tienda]++;
+    mapped.filter(r => r.dias === 0).forEach(r => {
+      agMap[r.tienda] = (agMap[r.tienda] || 0) + 1;
     });
-    const agotadosPorTienda = Object.entries(agMap).sort((a, b) => b[1] - a[1]);
+    const agotadosPorTienda = Object.entries(agMap)
+      .map(([tienda, count]) => ({ tienda, count }))
+      .sort((a, b) => b.count - a.count);
 
-    return { criticos, agotadosPorTienda };
-  }, [config]);
+    const criticosPorTienda = grupoPorTienda(mapped.filter(r => r.dias > 0 && r.dias < 10));
+    const atencionPorTienda = grupoPorTienda(mapped.filter(r => r.dias >= 10 && r.dias < 20));
 
-  const [verTodos, setVerTodos] = useState(false);
+    return { agotadosPorTienda, criticosPorTienda, atencionPorTienda };
+  }, [inv]);
 
-  const inv              = config?.inventario || [];
   const tiendasConInv    = new Set(inv.map(r => r.tienda)).size;
-  const tareasPendientes = tareas.filter(t => norm(t.estado) !== norm('completada')).length;
-  const criticosVisible  = verTodos ? criticos : criticos.slice(0, 10);
+  const tareasList       = tareas.filter(t => norm(t.estado) !== norm('completada'));
 
   return (
     <div>
@@ -362,35 +380,48 @@ function TabInicio({ tareas, config }) {
           <div className="stat-label">Con inventario</div>
         </div>
         <div className="stat-card">
-          <div className={`stat-value${criticos.length > 0 ? ' red' : ''}`}>{criticos.length}</div>
+          <div className={`stat-value${criticosPorTienda.length > 0 ? ' red' : ''}`}>{criticosPorTienda.length}</div>
           <div className="stat-label">Críticos</div>
         </div>
         <div className="stat-card">
-          <div className={`stat-value${agotadosPorTienda.length > 0 ? ' red' : ''}`}>
-            {agotadosPorTienda.reduce((a, [, n]) => a + n, 0)}
-          </div>
+          <div className={`stat-value${agotadosPorTienda.length > 0 ? ' red' : ''}`}>{agotadosPorTienda.length}</div>
           <div className="stat-label">Agotados</div>
         </div>
         <div className="stat-card">
-          <div className="stat-value">{tareasPendientes}</div>
-          <div className="stat-label">Tareas pendientes</div>
+          <div className="stat-value">{tareasList.length}</div>
+          <div className="stat-label">Tareas</div>
         </div>
+      </div>
+
+      {/* Tareas pendientes — siempre visible */}
+      <div className="card">
+        <div className="section-title">TAREAS PENDIENTES</div>
+        {tareasList.length === 0
+          ? <div style={{ fontSize: 13, color: 'var(--muted)', padding: '6px 0' }}>Sin tareas asignadas.</div>
+          : (
+            <div style={{ ...SCROLL_LIST, maxHeight: 200 }}>
+              {tareasList.map((t, i) => (
+                <div key={i} className="tarea-card">
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div className="tarea-tienda">{t.tienda || t.nombre || '—'}</div>
+                    <div className="tarea-desc">{t.descripcion || t.producto || t.tipo || ''}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        }
       </div>
 
       {agotadosPorTienda.length > 0 && (
         <div className="card">
-          <div className="section-title">Productos Agotados</div>
-          <div style={{
-            maxHeight: 280, overflowY: 'auto', scrollBehavior: 'smooth',
-            borderRadius: 10,
-            boxShadow: agotadosPorTienda.length > 3 ? 'inset 0 -8px 8px -8px rgba(0,0,0,0.08)' : 'none',
-          }}>
-            {agotadosPorTienda.map(([tienda, count]) => (
-              <div key={tienda} className="alert-card">
-                <span style={{ fontSize: 16, flexShrink: 0 }}>⚫</span>
+          <div className="section-title">PRODUCTOS AGOTADOS</div>
+          <div style={SCROLL_LIST}>
+            {agotadosPorTienda.map(({ tienda, count }) => (
+              <div key={tienda} className="alert-card" style={{ borderLeftColor: '#374151' }}>
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <div className="alert-tienda">{tienda}</div>
-                  <div className="alert-producto">{count} {count === 1 ? 'producto agotado' : 'productos agotados'}</div>
+                  <div className="alert-producto">{count} {count === 1 ? 'producto' : 'productos'} agotado{count !== 1 ? 's' : ''}</div>
                 </div>
                 <div className="alert-cob" style={{ background: '#F3F4F6', color: '#374151' }}>Agotado</div>
               </div>
@@ -399,34 +430,37 @@ function TabInicio({ tareas, config }) {
         </div>
       )}
 
-      {criticos.length > 0 && (
+      {criticosPorTienda.length > 0 && (
         <div className="card">
-          <div className="section-title">Críticos (&lt;10 días)</div>
-          <div style={{
-            maxHeight: 280, overflowY: 'auto', scrollBehavior: 'smooth',
-            borderRadius: 10,
-            boxShadow: criticos.length > 3 ? 'inset 0 -8px 8px -8px rgba(0,0,0,0.08)' : 'none',
-          }}>
-            {criticosVisible.map((r, i) => (
-              <div key={i} className="alert-card">
-                <span style={{ fontSize: 16, flexShrink: 0 }}>🔴</span>
+          <div className="section-title">CRÍTICOS (&lt;10 DÍAS)</div>
+          <div style={SCROLL_LIST}>
+            {criticosPorTienda.map(({ tienda, count, prom }) => (
+              <div key={tienda} className="alert-card" style={{ borderLeftColor: '#A32D2D' }}>
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div className="alert-tienda">{r.tienda}</div>
-                  <div className="alert-producto">{r.producto}</div>
+                  <div className="alert-tienda">{tienda}</div>
+                  <div className="alert-producto">{count} {count === 1 ? 'producto' : 'productos'} · {prom}d promedio</div>
                 </div>
-                <div className="alert-cob">{r.dias}d</div>
+                <div className="alert-cob" style={{ background: '#FCEBEB', color: '#A32D2D' }}>{prom}d</div>
               </div>
             ))}
           </div>
-          {criticos.length > 10 && (
-            <button
-              onClick={() => setVerTodos(v => !v)}
-              style={{ marginTop: 10, width: '100%', padding: '8px', background: 'none',
-                border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer',
-                fontSize: 13, color: 'var(--muted)' }}>
-              {verTodos ? 'Ver menos' : `Ver todos (${criticos.length})`}
-            </button>
-          )}
+        </div>
+      )}
+
+      {atencionPorTienda.length > 0 && (
+        <div className="card">
+          <div className="section-title">ATENCIÓN (10–20 DÍAS)</div>
+          <div style={SCROLL_LIST}>
+            {atencionPorTienda.map(({ tienda, count, prom }) => (
+              <div key={tienda} className="alert-card" style={{ borderLeftColor: '#854F0B' }}>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div className="alert-tienda">{tienda}</div>
+                  <div className="alert-producto">{count} {count === 1 ? 'producto' : 'productos'} · {prom}d promedio</div>
+                </div>
+                <div className="alert-cob" style={{ background: '#FAEEDA', color: '#854F0B' }}>{prom}d</div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
