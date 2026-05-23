@@ -63,18 +63,6 @@
     .carousel-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.45); cursor: pointer; transition: background 0.2s; border: none; }
     .carousel-dot.active { background: #fff; }
 
-    /* ── LOGIN ── */
-    .login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(160deg, var(--green) 0%, var(--green-dark) 100%); padding: 24px; }
-    .login-card { background: #fff; border-radius: 20px; padding: 32px 24px; width: 100%; max-width: 360px; }
-    .login-logo { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; color: var(--green); text-align: center; margin-bottom: 4px; }
-    .login-sub { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 28px; }
-    .form-group { margin-bottom: 16px; }
-    .form-label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px; }
-    .form-input { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 15px; outline: none; transition: border-color 0.2s; background: var(--bg); }
-    .form-input:focus { border-color: var(--green); background: #fff; }
-    .btn-primary { width: 100%; padding: 14px; background: var(--green); color: #fff; border: none; border-radius: 10px; font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; transition: opacity 0.2s; margin-top: 4px; }
-    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-    .error-msg { color: #A32D2D; background: #FCEBEB; border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-top: 12px; }
 
     /* ── ALERTS ── */
     .alert-card { display: flex; align-items: center; gap: 12px; background: #FCEBEB; border-left: 4px solid #A32D2D; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; }
@@ -291,63 +279,6 @@ function Badge({ estado }) {
 // =============================================
 // 4. COMPONENTE: Login
 // =============================================
-function Login({ onLogin }) {
-  const [user, setUser]   = useState('');
-  const [pass, setPass]   = useState('');
-  const [err, setErr]     = useState('');
-  const [busy, setBusy]   = useState(false);
-
-  const submit = async e => {
-    e.preventDefault();
-    if (!user || !pass) { setErr('Completa todos los campos.'); return; }
-    setBusy(true); setErr('');
-    try {
-      const { data, error } = await sbPortal
-        .from('usuarios')
-        .select('id, nombre, username, rol')
-        .eq('username', user.trim().toLowerCase())
-        .eq('password', pass)
-        .eq('rol', 'vendedor')
-        .single();
-      if (error || !data) { setErr('Usuario o contraseña incorrectos.'); return; }
-      const sesion = { id: data.id, nombre: data.nombre, username: data.username, rol: data.rol };
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify(sesion));
-      onLogin(sesion);
-    } catch {
-      setErr('Error de conexión. Intenta nuevamente.');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <div className="login-screen">
-      <div className="login-card">
-        <div className="login-logo">FEDURO</div>
-        <div className="login-sub">Portal de Vendedores · MARS Panamá</div>
-        <form onSubmit={submit}>
-          <div className="form-group">
-            <label className="form-label">Usuario</label>
-            <input className="form-input" type="text" value={user}
-              onChange={e => setUser(e.target.value)}
-              autoCapitalize="none" autoComplete="username" />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Contraseña</label>
-            <input className="form-input" type="password" value={pass}
-              onChange={e => setPass(e.target.value)}
-              autoComplete="current-password" />
-          </div>
-          <button className="btn-primary" type="submit" disabled={busy}>
-            {busy ? 'Entrando…' : 'Entrar'}
-          </button>
-          {err && <div className="error-msg">{err}</div>}
-        </form>
-      </div>
-    </div>
-  );
-}
-
 // =============================================
 // 5. COMPONENTE: Carousel
 // =============================================
@@ -841,26 +772,23 @@ const TAB_TITLES = {
 // 11. APP PRINCIPAL
 // =============================================
 function App() {
-  const [sesion,   setSesion]   = useState(null);
+  const sesion = (() => {
+    try {
+      const s = JSON.parse(sessionStorage.getItem(SESSION_KEY));
+      if (!s || s.rol !== 'vendedor') { window.location.href = 'index.html'; return null; }
+      return s;
+    } catch { window.location.href = 'index.html'; return null; }
+  })();
+
   const [loading,  setLoading]  = useState(true);
   const [tab,      setTab]      = useState('inicio');
   const [reportes, setReportes] = useState([]);
   const [tareas,   setTareas]   = useState([]);
   const [config,   setConfig]   = useState({});
 
-  // Restaurar sesión al inicio
-  useEffect(() => {
-    const raw = sessionStorage.getItem(SESSION_KEY);
-    if (raw) {
-      try { setSesion(JSON.parse(raw)); return; } catch {}
-    }
-    setLoading(false);
-  }, []);
-
-  // Cargar datos cuando hay sesión
   useEffect(() => {
     if (sesion) loadData(sesion);
-  }, [sesion]);
+  }, []);
 
   const loadData = async s => {
     setLoading(true);
@@ -948,8 +876,7 @@ function App() {
 
   const logout = () => {
     sessionStorage.removeItem(SESSION_KEY);
-    setSesion(null);
-    setReportes([]); setTareas([]); setConfig({});
+    window.location.href = 'index.html';
   };
 
   if (loading) return (
@@ -959,7 +886,7 @@ function App() {
     </div>
   );
 
-  if (!sesion) return <Login onLogin={s => { setSesion(s); }}/>;
+  if (!sesion) return null;
 
   const tabProps = { reportes, tareas, config };
   const nombre1 = (sesion.nombre || '').split(' ')[0];
