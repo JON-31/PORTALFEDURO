@@ -94,6 +94,25 @@
     .wt-hecha-nombre { font-size: 13px; color: var(--muted); text-decoration: line-through; }
     .wt-check-circle { width: 20px; height: 20px; border-radius: 50%; background: #1D9E75; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .wt-empty { font-size: 13px; color: var(--green); font-weight: 600; text-align: center; padding: 10px 0; }
+    /* ── VENTAS RESUMEN ── */
+    .ventas-card{background:#fff;border:0.5px solid #E5E5E3;border-radius:12px;padding:14px 16px;margin-bottom:12px;}
+    .ventas-card-title{font-size:11px;font-weight:500;color:#888780;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;}
+    .venta-principal{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:12px;}
+    .venta-monto{font-size:28px;font-weight:500;color:#1a1a1a;line-height:1;}
+    .venta-sub{font-size:11px;color:#888780;margin-top:3px;}
+    .pct-badge{font-size:13px;font-weight:500;padding:4px 12px;border-radius:20px;}
+    .pct-ok{background:#EAF3DE;color:#3B6D11;}
+    .pct-warn{background:#FAEEDA;color:#854F0B;}
+    .pct-bad{background:#FCEBEB;color:#A32D2D;}
+    .venta-progress-wrap{margin-bottom:12px;}
+    .venta-progress-label{display:flex;justify-content:space-between;margin-bottom:5px;}
+    .venta-progress-label span{font-size:11px;color:#888780;}
+    .venta-progress-bar{height:8px;background:#F1EFE8;border-radius:4px;overflow:hidden;}
+    .venta-progress-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+    .venta-fila{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-top:0.5px solid #E5E5E3;}
+    .venta-fila-label{font-size:12px;color:#888780;}
+    .venta-fila-val{font-size:12px;font-weight:500;color:#1a1a1a;}
+    .venta-falta{font-size:12px;font-weight:500;}
 
     /* ── TIENDAS ── */
     .search-input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; background: var(--card); margin-bottom: 12px; }
@@ -368,6 +387,64 @@ function grupoPorTienda(items) {
 }
 
 // ── Ícono SVG checkmark para círculo verde ──
+// =============================================
+// VENTAS RESUMEN CARD
+// =============================================
+function VentasResumenCard({ config }) {
+  const sesion = JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}');
+  const resumen = config?.ventas_resumen;
+  if (!resumen) return null;
+
+  const normNombre = norm(sesion.nombre || '');
+  const vendedor = Object.entries(resumen).find(([k]) => norm(k) === normNombre)?.[1];
+  if (!vendedor) return null;
+
+  const acum      = vendedor.acumulado || 0;
+  const cuota     = vendedor.cuota     || 0;
+  const chocolate = vendedor.chocolate || 0;
+  const confiteria= vendedor.confiteria|| 0;
+  const mascotas  = vendedor.mascotas  || 0;
+  const pct       = cuota > 0 ? Math.round((acum / cuota) * 100) : 0;
+  const falta     = cuota - acum;
+  const mes       = vendedor.mes || 'este mes';
+  const w         = Math.min(pct, 100);
+
+  const fillColor  = pct >= 100 ? '#1D9E75' : pct >= 75 ? '#EF9F27' : '#E24B4A';
+  const badgeCls   = pct >= 100 ? 'pct-badge pct-ok' : pct >= 75 ? 'pct-badge pct-warn' : 'pct-badge pct-bad';
+  const faltaColor = falta <= 0 ? '#3B6D11' : '#A32D2D';
+  const faltaTxt   = falta <= 0 ? '¡Meta alcanzada!' : `-$${falta.toLocaleString()}`;
+  const $ = n => `$${n.toLocaleString()}`;
+
+  return (
+    <div className="ventas-card">
+      <div className="ventas-card-title">Venta acumulada · {mes}</div>
+      <div className="venta-principal">
+        <div>
+          <div className="venta-monto">{$(acum)}</div>
+          <div className="venta-sub">de {$(cuota)} de cuota</div>
+        </div>
+        <span className={badgeCls}>{pct}%</span>
+      </div>
+      <div className="venta-progress-wrap">
+        <div className="venta-progress-label">
+          <span>Avance</span>
+          <span>Meta: {$(cuota)}</span>
+        </div>
+        <div className="venta-progress-bar">
+          <div className="venta-progress-fill" style={{ width: `${w}%`, background: fillColor }}/>
+        </div>
+      </div>
+      <div className="venta-fila"><span className="venta-fila-label">Chocolate</span><span className="venta-fila-val">{$(chocolate)}</span></div>
+      <div className="venta-fila"><span className="venta-fila-label">Confitería</span><span className="venta-fila-val">{$(confiteria)}</span></div>
+      <div className="venta-fila"><span className="venta-fila-label">Mascotas</span><span className="venta-fila-val">{$(mascotas)}</span></div>
+      <div className="venta-fila">
+        <span className="venta-fila-label" style={{ fontWeight: 500, color: '#1a1a1a' }}>Falta para la meta</span>
+        <span className="venta-falta" style={{ color: faltaColor }}>{faltaTxt}</span>
+      </div>
+    </div>
+  );
+}
+
 const IcoCheck = () => (
   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="2 6 5 9 10 3"/>
@@ -570,6 +647,8 @@ function TabInicio({ tareas, config }) {
   return (
     <div>
       <Carousel slides={config.slides} />
+
+      <VentasResumenCard config={config}/>
 
       <div className="stats-grid">
         <div className="stat-card">
