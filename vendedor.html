@@ -824,13 +824,24 @@ function App() {
       const misTareas = (allTareas || []).filter(t => norm(t.vendedor_nombre) === norm(s.nombre));
       setTareas(misTareas);
 
-      // 2. Reportes: cargar todos, asignar vendedor donde esté vacío, filtrar por sesión
-      const { data: reps, error: repsError } = await sbPortal
-        .from('reportes')
-        .select('*')
-        .limit(5000);
-
-      console.log('Query reportes — filas totales:', reps?.length, 'error:', repsError);
+      // 2. Reportes: cargar todos con paginación (RLS puede cortar limit simple)
+      let allReps = [];
+      let from = 0;
+      const pageSize = 1000;
+      let repsError = null;
+      while (true) {
+        const { data, error } = await sbPortal
+          .from('reportes')
+          .select('*')
+          .range(from, from + pageSize - 1);
+        if (error) { repsError = error; break; }
+        if (!data || data.length === 0) break;
+        allReps = allReps.concat(data);
+        if (data.length < pageSize) break;
+        from += pageSize;
+      }
+      const reps = allReps;
+      console.log('Total con paginación:', reps.length, 'error:', repsError);
 
       if (repsError) {
         console.error('reportes error:', repsError);
