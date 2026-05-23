@@ -576,11 +576,22 @@ function TabTiendas({ reportes }) {
 // 8. TAB: Bodega
 // =============================================
 function TabBodega({ config }) {
+  const [query, setQuery] = useState('');
+
   const items = useMemo(() =>
     (config.inventario_bodega || [])
       .filter(item => item.m8 > 0 || item.b8 > 0)
       .sort((a, b) => (a.descripcion || '').localeCompare(b.descripcion || '')),
   [config]);
+
+  const filtered = useMemo(() => {
+    const q = norm(query);
+    if (!q) return items;
+    return items.filter(item =>
+      norm(item.descripcion || '').includes(q) ||
+      norm(item.codigoBarras || '').includes(q)
+    );
+  }, [items, query]);
 
   if (!items.length) return (
     <div className="empty-state">
@@ -591,15 +602,21 @@ function TabBodega({ config }) {
 
   return (
     <div>
-      {items.map((item, i) => (
-        <div key={i} className="bodega-item">
-          <div className="bodega-producto">{item.descripcion}</div>
-          <div className="bodega-cantidad-wrap">
-            <div className="bodega-cantidad">{item.m8} {item.unidFact || ''}</div>
-            {item.b8 > 0 && <div className="bodega-b8">b8: {item.b8}</div>}
+      <input className="search-input" type="search"
+        placeholder="🔍 Buscar producto o código..."
+        value={query} onChange={e => setQuery(e.target.value)} />
+      {filtered.length === 0
+        ? <div className="empty-state"><div className="empty-icon">📦</div>No se encontraron productos.</div>
+        : filtered.map((item, i) => (
+          <div key={i} className="bodega-item">
+            <div className="bodega-producto">{item.descripcion}</div>
+            <div className="bodega-cantidad-wrap">
+              <div className="bodega-cantidad">M8: {item.m8} {item.unidFact || ''}</div>
+              {item.b8 > 0 && <div className="bodega-b8">B8: {item.b8}</div>}
+            </div>
           </div>
-        </div>
-      ))}
+        ))
+      }
     </div>
   );
 }
