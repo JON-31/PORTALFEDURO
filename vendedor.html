@@ -77,11 +77,11 @@
     .error-msg { color: #A32D2D; background: #FCEBEB; border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-top: 12px; }
 
     /* ── ALERTS ── */
-    .alert-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); gap: 8px; }
-    .alert-item:last-child { border-bottom: none; }
-    .alert-tienda { font-size: 13px; font-weight: 600; }
+    .alert-card { display: flex; align-items: center; gap: 12px; background: #FCEBEB; border-left: 4px solid #A32D2D; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; }
+    .alert-card:last-child { margin-bottom: 0; }
+    .alert-tienda { font-size: 13px; font-weight: 600; color: #A32D2D; }
     .alert-producto { font-size: 12px; color: var(--muted); margin-top: 2px; }
-    .alert-cob { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: #A32D2D; white-space: nowrap; }
+    .alert-cob { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: #A32D2D; white-space: nowrap; background: #fff; border-radius: 8px; padding: 4px 8px; }
 
     /* ── TIENDAS ── */
     .search-input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; background: var(--card); margin-bottom: 12px; }
@@ -399,7 +399,7 @@ function TabInicio({ tareas, config }) {
     return inv
       .filter(r => {
         const dias = r.venta_promedio > 0
-          ? Math.round((r.inventario * 30) / r.venta_promedio)
+          ? Math.max(0, Math.round((r.inventario * 30) / r.venta_promedio))
           : r.inventario === 0 ? null : 999;
         return dias !== null && dias < 10;
       })
@@ -407,7 +407,7 @@ function TabInicio({ tareas, config }) {
         tienda:   r.tienda,
         producto: r.producto,
         cob:      r.venta_promedio > 0
-          ? Math.round((r.inventario * 30) / r.venta_promedio)
+          ? Math.max(0, Math.round((r.inventario * 30) / r.venta_promedio))
           : 999,
       }))
       .sort((a, b) => a.cob - b.cob);
@@ -440,8 +440,9 @@ function TabInicio({ tareas, config }) {
         <div className="card">
           <div className="section-title">Alertas Críticas</div>
           {alertas.slice(0, 12).map((r, i) => (
-            <div key={i} className="alert-item">
-              <div style={{ minWidth: 0 }}>
+            <div key={i} className="alert-card">
+              <span style={{ fontSize: 16, flexShrink: 0 }}>🔴</span>
+              <div style={{ minWidth: 0, flex: 1 }}>
                 <div className="alert-tienda">{r.tienda}</div>
                 <div className="alert-producto">{r.producto}</div>
               </div>
