@@ -1009,73 +1009,87 @@ function DonutChart({ pct, color }) {
 const MARCA_PALETTE = ['#0F6E56','#854F0B','#185FA5','#A32D2D','#3B6D11','#6B7280','#7C3AED'];
 
 function TabVentas({ config }) {
-  const inventario = config.inventario || [];
+  const sesion   = JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}');
+  const inv      = config?.inventario || [];
+  const resumen  = config?.ventas_resumen;
+  const vd       = resumen
+    ? Object.entries(resumen).find(([k]) => norm(k) === norm(sesion.nombre || ''))?.[1]
+    : null;
 
-  const byMarca = useMemo(() => {
+  const acum      = vd?.acumulado  || 0;
+  const cuota     = vd?.cuota      || 0;
+  const chocolate = vd?.chocolate  || 0;
+  const confiteria= vd?.confiteria || 0;
+  const mascotas  = vd?.mascotas   || 0;
+  const pct       = cuota > 0 ? Math.round((acum / cuota) * 100) : 0;
+  const w         = Math.min(pct, 100);
+  const fillColor = pct >= 100 ? '#1D9E75' : pct >= 75 ? '#EF9F27' : '#E24B4A';
+  const badgeBg   = pct >= 100 ? '#EAF3DE' : pct >= 75 ? '#FAEEDA' : '#FCEBEB';
+  const badgeClr  = pct >= 100 ? '#3B6D11' : pct >= 75 ? '#854F0B' : '#A32D2D';
+  const $         = n => `$${Number(n).toLocaleString()}`;
+
+  const porTienda = useMemo(() => {
     const map = {};
-    inventario.forEach(r => {
-      const m = r.marca || 'Sin marca';
-      if (!map[m]) map[m] = [];
-      map[m].push(r);
+    inv.forEach(r => {
+      const t = r.tienda || '—';
+      map[t] = (map[t] || 0) + (r.venta_promedio || 0);
     });
-    return map;
-  }, [inventario]);
+    return Object.entries(map).sort((a, b) => b[1] - a[1]);
+  }, [inv]);
 
-  const marcaKeys = useMemo(() => Object.keys(byMarca).sort(), [byMarca]);
-  const totalInv  = inventario.reduce((a, r) => a + (r.inventario || 0), 0);
-
-  if (!inventario.length) return (
-    <div className="empty-state">
-      <div className="empty-icon">📊</div>
-      Sin datos de ventas disponibles.
-    </div>
-  );
+  const cardStyle = { background: 'var(--card)', border: '0.5px solid #E5E5E3', borderRadius: 12, padding: '16px 14px', marginBottom: 12 };
+  const secLabel  = { fontSize: 11, fontWeight: 700, color: 'var(--muted)', letterSpacing: 1, marginBottom: 12 };
+  const rowStyle  = { display: 'flex', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid var(--border)' };
 
   return (
     <div>
-      {marcaKeys.map((marca, idx) => {
-        const prods   = byMarca[marca];
-        const marcaInv = prods.reduce((a, r) => a + (r.inventario || 0), 0);
-        const pct     = totalInv > 0 ? marcaInv / totalInv : 0;
-        const color   = MARCA_PALETTE[idx % MARCA_PALETTE.length];
-
-        const porTienda = {};
-        prods.forEach(r => {
-          const t = r.tienda || '—';
-          if (!porTienda[t]) porTienda[t] = { inv: 0, cob: [] };
-          porTienda[t].inv += r.inventario || 0;
-          if (r.cobertura != null) porTienda[t].cob.push(Number(r.cobertura));
-        });
-
-        return (
-          <div key={marca} className="cat-card">
-            <div className="cat-header">
-              <DonutChart pct={pct} color={color}/>
-              <div>
-                <div className="cat-name">{marca}</div>
-                <div className="cat-subtotal">{fmt(marcaInv)} uds · {Math.round(pct * 100)}% del total</div>
-              </div>
-            </div>
-            <div style={{ borderTop: '1px solid var(--border)', paddingTop: 10 }}>
-              {Object.entries(porTienda)
-                .sort((a, b) => b[1].inv - a[1].inv)
-                .map(([t, v]) => {
-                  const cob = v.cob.length > 0 ? Math.round(v.cob.reduce((a, b) => a + b, 0) / v.cob.length) : null;
-                  return (
-                    <div key={t} className="cat-detail-row">
-                      <span style={{ color: 'var(--muted)' }}>{t}</span>
-                      <span style={{ fontWeight: 600 }}>
-                        {fmt(v.inv)} uds
-                        {cob != null && <span style={{ color: 'var(--muted)', fontWeight: 400 }}> · {cob}d cob</span>}
-                      </span>
-                    </div>
-                  );
-                })
-              }
-            </div>
+      {/* Bloque 1 — Acumulado vs meta */}
+      <div style={cardStyle}>
+        <div style={secLabel}>ACUMULADO VS META</div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+          <div>
+            <div style={{ fontSize: 30, fontWeight: 800, fontFamily: "'Syne', sans-serif", lineHeight: 1 }}>{$(acum)}</div>
+            <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 4 }}>de {$(cuota)} de cuota</div>
           </div>
-        );
-      })}
+          <span style={{ background: badgeBg, color: badgeClr, fontWeight: 700, fontSize: 14, padding: '4px 10px', borderRadius: 20 }}>{pct}%</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--muted)', marginBottom: 6 }}>
+          <span>Avance</span>
+          <span>Meta: {$(cuota)}</span>
+        </div>
+        <div style={{ background: '#F3F4F6', borderRadius: 8, height: 8, overflow: 'hidden' }}>
+          <div style={{ width: `${w}%`, height: '100%', background: fillColor, borderRadius: 8 }}/>
+        </div>
+      </div>
+
+      {/* Bloque 2 — Por segmento */}
+      <div style={cardStyle}>
+        <div style={secLabel}>POR SEGMENTO</div>
+        {[
+          { label: 'Chocolate',  color: '#1D9E75', val: chocolate  },
+          { label: 'Confección', color: '#EF9F27', val: confiteria },
+          { label: 'PetCare',    color: '#378ADD', val: mascotas   },
+        ].map(({ label, color, val }, i, arr) => (
+          <div key={label} style={{ ...rowStyle, borderBottom: i === arr.length - 1 ? 'none' : '1px solid var(--border)' }}>
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: color, flexShrink: 0, marginRight: 10 }}/>
+            <span style={{ flex: 1, fontWeight: 500, fontSize: 14 }}>{label}</span>
+            <span style={{ fontWeight: 700, fontSize: 14 }}>{$(val)}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Bloque 3 — Por tienda */}
+      {porTienda.length > 0 && (
+        <div style={cardStyle}>
+          <div style={secLabel}>POR TIENDA</div>
+          {porTienda.map(([tienda, total], i) => (
+            <div key={tienda} style={{ ...rowStyle, borderBottom: i === porTienda.length - 1 ? 'none' : '1px solid var(--border)' }}>
+              <span style={{ flex: 1, fontWeight: 500, fontSize: 14 }}>{tienda}</span>
+              <span style={{ fontWeight: 700, fontSize: 14 }}>{$(Math.round(total))}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
