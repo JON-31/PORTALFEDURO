@@ -394,16 +394,30 @@ function Carousel({ slides }) {
 // 6. TAB: Inicio
 // =============================================
 function TabInicio({ tareas, config }) {
-  const alertas = useMemo(() =>
-    (config?.inventario || [])
-      .filter(r => Math.max(0, Number(r.cobertura)) < 10)
-      .sort((a, b) => Math.max(0, Number(a.cobertura)) - Math.max(0, Number(b.cobertura)))
-      .map(r => ({ tienda: r.tienda, producto: r.producto, dias: Math.max(0, Number(r.cobertura)) })),
-  [config]);
+  const { criticos, agotadosPorTienda } = useMemo(() => {
+    const all = (config?.inventario || [])
+      .map(r => ({ tienda: r.tienda, producto: r.producto, dias: Math.max(0, Number(r.cobertura)) }))
+      .filter(r => r.dias < 10)
+      .sort((a, b) => a.dias - b.dias);
+
+    const criticos = all.filter(r => r.dias > 0);
+
+    const agMap = {};
+    all.filter(r => r.dias === 0).forEach(r => {
+      if (!agMap[r.tienda]) agMap[r.tienda] = 0;
+      agMap[r.tienda]++;
+    });
+    const agotadosPorTienda = Object.entries(agMap).sort((a, b) => b[1] - a[1]);
+
+    return { criticos, agotadosPorTienda };
+  }, [config]);
+
+  const [verTodos, setVerTodos] = useState(false);
 
   const inv              = config?.inventario || [];
   const tiendasConInv    = new Set(inv.map(r => r.tienda)).size;
   const tareasPendientes = tareas.filter(t => norm(t.estado) !== norm('completada')).length;
+  const criticosVisible  = verTodos ? criticos : criticos.slice(0, 10);
 
   return (
     <div>
@@ -415,8 +429,14 @@ function TabInicio({ tareas, config }) {
           <div className="stat-label">Con inventario</div>
         </div>
         <div className="stat-card">
-          <div className={`stat-value${alertas.length > 0 ? ' red' : ''}`}>{alertas.length}</div>
-          <div className="stat-label">Alertas críticas</div>
+          <div className={`stat-value${criticos.length > 0 ? ' red' : ''}`}>{criticos.length}</div>
+          <div className="stat-label">Críticos</div>
+        </div>
+        <div className="stat-card">
+          <div className={`stat-value${agotadosPorTienda.length > 0 ? ' red' : ''}`}>
+            {agotadosPorTienda.reduce((a, [, n]) => a + n, 0)}
+          </div>
+          <div className="stat-label">Agotados</div>
         </div>
         <div className="stat-card">
           <div className="stat-value">{tareasPendientes}</div>
@@ -424,19 +444,44 @@ function TabInicio({ tareas, config }) {
         </div>
       </div>
 
-      {alertas.length > 0 && (
+      {agotadosPorTienda.length > 0 && (
         <div className="card">
-          <div className="section-title">Alertas Críticas</div>
-          {alertas.slice(0, 12).map((r, i) => (
+          <div className="section-title">Productos Agotados</div>
+          {agotadosPorTienda.map(([tienda, count]) => (
+            <div key={tienda} className="alert-card">
+              <span style={{ fontSize: 16, flexShrink: 0 }}>⚫</span>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div className="alert-tienda">{tienda}</div>
+                <div className="alert-producto">{count} {count === 1 ? 'producto agotado' : 'productos agotados'}</div>
+              </div>
+              <div className="alert-cob" style={{ background: '#F3F4F6', color: '#374151' }}>Agotado</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {criticos.length > 0 && (
+        <div className="card">
+          <div className="section-title">Críticos (&lt;10 días)</div>
+          {criticosVisible.map((r, i) => (
             <div key={i} className="alert-card">
               <span style={{ fontSize: 16, flexShrink: 0 }}>🔴</span>
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div className="alert-tienda">{r.tienda}</div>
                 <div className="alert-producto">{r.producto}</div>
               </div>
-              <div className="alert-cob">{r.dias === 0 ? 'Agotado' : `${r.dias}d`}</div>
+              <div className="alert-cob">{r.dias}d</div>
             </div>
           ))}
+          {criticos.length > 10 && (
+            <button
+              onClick={() => setVerTodos(v => !v)}
+              style={{ marginTop: 10, width: '100%', padding: '8px', background: 'none',
+                border: '1px solid var(--border)', borderRadius: 8, cursor: 'pointer',
+                fontSize: 13, color: 'var(--muted)' }}>
+              {verTodos ? 'Ver menos' : `Ver todos (${criticos.length})`}
+            </button>
+          )}
         </div>
       )}
     </div>
