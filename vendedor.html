@@ -609,84 +609,76 @@ function DonutChart({ pct, color }) {
   );
 }
 
-const CAT_COLORS = {
-  'Chocolate':  '#0F6E56',
-  'Confitería': '#854F0B',
-  'Mascotas':   '#185FA5',
-  'Otras':      '#6B7280',
-};
+const MARCA_PALETTE = ['#0F6E56','#854F0B','#185FA5','#A32D2D','#3B6D11','#6B7280','#7C3AED'];
 
-function TabVentas({ reportes, config }) {
-  const meta      = config.meta_mes || {};
-  const objetivo  = meta.objetivo  || 0;
-  const acumulado = meta.acumulado || reportes.reduce((a, r) => a + (r.venta_promedio || 0), 0);
-  const pctMeta   = objetivo > 0 ? Math.min(acumulado / objetivo, 1) : 0;
+function TabVentas({ config }) {
+  const inventario = config.inventario || [];
 
-  const totalVentas = reportes.reduce((a, r) => a + (r.venta_promedio || 0), 0);
-
-  const cats = useMemo(() => {
-    const map = { 'Chocolate': [], 'Confitería': [], 'Mascotas': [], 'Otras': [] };
-    reportes.forEach(r => { map[getCategoria(r.producto)].push(r); });
+  const byMarca = useMemo(() => {
+    const map = {};
+    inventario.forEach(r => {
+      const m = r.marca || 'Sin marca';
+      if (!map[m]) map[m] = [];
+      map[m].push(r);
+    });
     return map;
-  }, [reportes]);
+  }, [inventario]);
+
+  const marcaKeys = useMemo(() => Object.keys(byMarca).sort(), [byMarca]);
+  const totalInv  = inventario.reduce((a, r) => a + (r.inventario || 0), 0);
+
+  if (!inventario.length) return (
+    <div className="empty-state">
+      <div className="empty-icon">📊</div>
+      Sin datos de ventas disponibles.
+    </div>
+  );
 
   return (
     <div>
-      {objetivo > 0 && (
-        <div className="card">
-          <div className="section-title">Meta del Mes</div>
-          <div className="meta-bar-labels">
-            <span style={{ fontWeight: 600 }}>{fmt(acumulado)} uds</span>
-            <span>Meta: {fmt(objetivo)}</span>
-          </div>
-          <div className="meta-bar-track">
-            <div className="meta-bar-fill" style={{ width: `${pctMeta * 100}%` }}/>
-          </div>
-          <div className="meta-pct">{Math.round(pctMeta * 100)}% completado</div>
-        </div>
-      )}
+      {marcaKeys.map((marca, idx) => {
+        const prods   = byMarca[marca];
+        const marcaInv = prods.reduce((a, r) => a + (r.inventario || 0), 0);
+        const pct     = totalInv > 0 ? marcaInv / totalInv : 0;
+        const color   = MARCA_PALETTE[idx % MARCA_PALETTE.length];
 
-      {Object.entries(cats).map(([cat, prods]) => {
-        if (!prods.length) return null;
-        const catVenta = prods.reduce((a, r) => a + (r.venta_promedio || 0), 0);
-        const pct      = totalVentas > 0 ? catVenta / totalVentas : 0;
-        const color    = CAT_COLORS[cat];
-
-        const byTienda = {};
+        const porTienda = {};
         prods.forEach(r => {
-          byTienda[r.tienda] = (byTienda[r.tienda] || 0) + (r.venta_promedio || 0);
+          const t = r.tienda || '—';
+          if (!porTienda[t]) porTienda[t] = { inv: 0, venta: 0 };
+          porTienda[t].inv   += r.inventario     || 0;
+          porTienda[t].venta += r.venta_promedio || 0;
         });
 
         return (
-          <div key={cat} className="cat-card">
+          <div key={marca} className="cat-card">
             <div className="cat-header">
               <DonutChart pct={pct} color={color}/>
               <div>
-                <div className="cat-name">{cat}</div>
-                <div className="cat-subtotal">{fmt(catVenta)} uds · {Math.round(pct * 100)}% del total</div>
+                <div className="cat-name">{marca}</div>
+                <div className="cat-subtotal">{fmt(marcaInv)} uds · {Math.round(pct * 100)}% del total</div>
               </div>
             </div>
             <div style={{ borderTop: '1px solid var(--border)', paddingTop: 10 }}>
-              {Object.entries(byTienda)
-                .sort((a, b) => b[1] - a[1])
-                .map(([t, v]) => (
-                  <div key={t} className="cat-detail-row">
-                    <span style={{ color: 'var(--muted)' }}>{t}</span>
-                    <span style={{ fontWeight: 600 }}>{fmt(v)}</span>
-                  </div>
-                ))
+              {Object.entries(porTienda)
+                .sort((a, b) => b[1].inv - a[1].inv)
+                .map(([t, v]) => {
+                  const cob = v.venta > 0 ? Math.round(v.inv * 30 / v.venta) : null;
+                  return (
+                    <div key={t} className="cat-detail-row">
+                      <span style={{ color: 'var(--muted)' }}>{t}</span>
+                      <span style={{ fontWeight: 600 }}>
+                        {fmt(v.inv)} uds
+                        {cob != null && <span style={{ color: 'var(--muted)', fontWeight: 400 }}> · {cob}d cob</span>}
+                      </span>
+                    </div>
+                  );
+                })
               }
             </div>
           </div>
         );
       })}
-
-      {!reportes.length && (
-        <div className="empty-state">
-          <div className="empty-icon">📊</div>
-          Sin datos de ventas disponibles.
-        </div>
-      )}
     </div>
   );
 }
@@ -722,19 +714,22 @@ function TabOfertas({ config }) {
   return (
     <div>
       {ofertas.map((o, i) => {
-        const est = estadoOferta(o.fecha_vencimiento);
-        const cfg = OFERTA_EST[est];
+        const est = estadoOferta(o.fecha_fin);
+        const est_cfg = OFERTA_EST[est];
         return (
           <div key={i} className="oferta-card">
-            <div className="oferta-tipo">{o.tipo || 'Oferta'}</div>
-            <div className="oferta-desc">{o.descripcion}</div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+              <div className="oferta-tipo">{o.tipo || 'Oferta'}</div>
+              <span className="badge" style={{ background: est_cfg.bg, color: est_cfg.color }}>{est_cfg.label}</span>
+            </div>
+            <div style={{ fontWeight: 600, marginBottom: 4 }}>{o.producto}</div>
+            <div className="oferta-desc">{o.dinamica}</div>
             <div className="oferta-footer">
               <span className="oferta-fecha">
-                {o.fecha_vencimiento
-                  ? `Vence: ${new Date(o.fecha_vencimiento).toLocaleDateString('es-PA')}`
+                {o.fecha_fin
+                  ? `Vence: ${new Date(o.fecha_fin).toLocaleDateString('es-PA')}`
                   : 'Sin fecha límite'}
               </span>
-              <span className="badge" style={{ background: cfg.bg, color: cfg.color }}>{cfg.label}</span>
             </div>
           </div>
         );
@@ -875,25 +870,23 @@ function App() {
         setReportes(misReportes);
       }
 
-      // 4. Configuracion: slides, bodega, meta, ofertas
+      // 4. Configuracion
       const { data: cfgData } = await sbPortal
         .from('configuracion')
         .select('*');
-      console.log('configuracion keys:', cfgData?.map(r => r.clave));
-      console.log('ofertas:', cfgData?.find(r => r.clave === 'ofertas')?.valor);
-      console.log('inventario:', cfgData?.find(r => r.clave === 'inventario')?.valor);
-      console.log('inventario_bodega:', cfgData?.find(r => r.clave === 'inventario_bodega')?.valor);
-
-      const { data: cfgRows } = await sbPortal
-        .from('configuracion')
-        .select('clave, valor')
-        .in('clave', ['slides', 'inventario_bodega', 'meta_mes', 'ofertas']);
 
       const cfg = {};
-      (cfgRows || []).forEach(row => {
-        try { cfg[row.clave] = typeof row.valor === 'string' ? JSON.parse(row.valor) : row.valor; }
-        catch { cfg[row.clave] = row.valor; }
+      (cfgData || []).forEach(row => {
+        cfg[row.clave] = typeof row.valor === 'string'
+          ? (() => { try { return JSON.parse(row.valor); } catch { return row.valor; } })()
+          : row.valor;
       });
+
+      if (Array.isArray(cfg.inventario)) {
+        const normNombre = norm(s.nombre);
+        cfg.inventario = cfg.inventario.filter(r => norm(r.vendedor) === normNombre);
+      }
+
       setConfig(cfg);
 
     } catch (err) {
