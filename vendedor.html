@@ -1090,7 +1090,8 @@ function renderDashboard() {
       prods: recs.length,
       inv: recs.reduce(function(a,d){ return a+(d.inventario||0); }, 0),
       venta: recs.reduce(function(a,d){ return a+(d.venta_promedio||d.venta_prom_3m||0); }, 0),
-      cob: recs.map(function(d){ return d.cobertura||0; })
+      cob: recs.map(function(d){ return d.cobertura||0; }),
+      recs: recs
     };
   });
 
@@ -1102,7 +1103,8 @@ function renderDashboard() {
         prods: recs.length,
         inv: recs.reduce(function(a,d){ return a+(d.inventario||0); }, 0),
         venta: recs.reduce(function(a,d){ return a+(d.venta_promedio||d.venta_prom_3m||0); }, 0),
-        cob: recs.map(function(d){ return d.cobertura||0; })
+        cob: recs.map(function(d){ return d.cobertura||0; }),
+        recs: recs
       };
     }
   });
@@ -1110,15 +1112,21 @@ function renderDashboard() {
   var rows = Object.entries(stores).sort(function(a,b){ return a[0].localeCompare(b[0]); }).map(function(entry) {
     var t = entry[0]; var s = entry[1];
     var hasData = s.prods > 0;
-    var cp = hasData && s.cob.length > 0 ? Math.round(s.cob.reduce(function(a,c){ return a+c; }, 0) / s.cob.length) : 0;
+    var totalInv = 0, totalVentaDiaria = 0;
+    (s.recs || []).forEach(function(p) {
+      var inv = p.inventario || 0;
+      var ven = p.venta_promedio || p.venta_prom_3m || 0;
+      if (ven > 0) { totalInv += inv; totalVentaDiaria += ven / 30; }
+    });
+    var cp = totalVentaDiaria > 0 ? Math.round(totalInv / totalVentaDiaria) : 0;
     var badgeHtml;
     if (!hasData) {
       badgeHtml = '<span style="color:var(--muted);font-size:11px">Sin data</span>';
-    } else if (cp < 15) {
+    } else if (cp < 10) {
       badgeHtml = '<span class="badge badge-danger">Critico</span>';
-    } else if (cp < 30) {
+    } else if (cp < 20) {
       badgeHtml = '<span class="badge badge-warn">Atencion</span>';
-    } else if (cp <= 45) {
+    } else if (cp <= 40) {
       badgeHtml = '<span class="badge badge-ok">Optimo</span>';
     } else {
       badgeHtml = '<span class="badge badge-info">SobreStock</span>';
@@ -1160,10 +1168,15 @@ function filtrarInventario() {
       var _ven = d.venta_promedio || d.venta_prom_3m || 0;
       var _est;
       if (_inv === 0 && _ven === 0)   _est = 'sindata';
-      else if (_inv === 0)            _est = 'critico';
       else if (_ven === 0)            _est = 'sindata';
-      else if (_inv < _ven)           _est = 'atencion';
-      else { var _cob = (_inv * 30) / _ven; _est = _cob <= 45 ? 'optimo' : 'sobrestock'; }
+      else if (_inv === 0)            _est = 'critico';
+      else {
+        var _cob = (_inv * 30) / _ven;
+        if (_cob < 10)       _est = 'critico';
+        else if (_cob < 20)  _est = 'atencion';
+        else if (_cob <= 40) _est = 'optimo';
+        else                 _est = 'sobrestock';
+      }
       if (fE !== _est) return false;
     }
     return true;
@@ -1175,16 +1188,16 @@ function filtrarInventario() {
     var badge, estado;
     if (!inv && !venta) {
       badge = ''; estado = 'Sin data';
-    } else if (!inv) {
-      badge = 'badge-danger'; estado = 'Critico';
     } else if (!venta) {
       badge = ''; estado = 'Sin data';
-    } else if (inv < venta) {
-      badge = 'badge-warn'; estado = 'Atencion';
+    } else if (!inv) {
+      badge = 'badge-danger'; estado = 'Critico';
     } else {
       var cob = (inv * 30) / venta;
-      if      (cob <= 45) { badge = 'badge-ok';  estado = 'Optimo';     }
-      else                { badge = 'badge-info'; estado = 'SobreStock'; }
+      if      (cob < 10)  { badge = 'badge-danger'; estado = 'Critico';    }
+      else if (cob < 20)  { badge = 'badge-warn';   estado = 'Atencion';   }
+      else if (cob <= 40) { badge = 'badge-ok';     estado = 'Optimo';     }
+      else                { badge = 'badge-info';   estado = 'SobreStock'; }
     }
     return '<tr><td>' + (d.tienda||'—') + '</td><td><span class="badge badge-brand">' + (d.marca||'—') + '</span></td><td style="font-weight:600">' + (d.producto||'—') + '</td><td>' + (d.inventario||0).toLocaleString() + '</td><td>' + (d.venta_promedio||0).toLocaleString() + '</td><td>' + (d.cobertura||0) + ' dias</td><td><span class="badge ' + badge + '">' + estado + '</span></td></tr>';
   }).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Sin registros</td></tr>';
