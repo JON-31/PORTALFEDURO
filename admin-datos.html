@@ -1229,6 +1229,7 @@ let _vendRows = []; // cache de filas filtradas para paginación
 
 function initVendedores() {
   const sel = document.getElementById('sel-vendedor');
+  if (!sel) return;
   sel.innerHTML = VENDEDORES.map(v => `<option value="${v}">${v}</option>`).join('');
 }
 
