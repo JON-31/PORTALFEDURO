@@ -1214,6 +1214,16 @@ function TabIngresos({ config }) {
           {openSug && (
             <div className="ingreso-body">
               <div className="ing-form-group">
+                <label className="ing-label">Tipo de sugerido</label>
+                <select className="ing-input" value={formSug.tipo||''} onChange={e=>setS('tipo',e.target.value)}>
+                  <option value="">Seleccionar tipo…</option>
+                  <option value="Pedido Adicional">Pedido Adicional</option>
+                  <option value="Pedido para Tonga">Pedido para Tonga</option>
+                  <option value="Pedido para Isla">Pedido para Isla</option>
+                  <option value="Pedido para Muebles">Pedido para Muebles</option>
+                </select>
+              </div>
+              <div className="ing-form-group">
                 <label className="ing-label">Tienda Machetazo</label>
                 <select className="ing-input" value={formSug.tienda||''} onChange={e=>setS('tienda',e.target.value)}>
                   <option value="">Seleccionar tienda…</option>
