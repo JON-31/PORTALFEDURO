@@ -254,9 +254,17 @@ var MACHETAZO_LUT = {
 
 function buscarVendedorMachetazo(tienda) {
   var t = (tienda || '').toUpperCase().trim();
+  // 1. Exact match
   if (MACHETAZO_LUT[t]) return MACHETAZO_LUT[t];
+  // 2. Substring: clave contenida en tienda o viceversa
   for (var k in MACHETAZO_LUT) {
     if (t.indexOf(k) >= 0 || k.indexOf(t) >= 0) return MACHETAZO_LUT[k];
+  }
+  // 3. Keyword: extraer palabras significativas de la tienda y buscar en claves
+  var SKIP = /^(COMPANIA|IMPORTADORA|SUPERMERCADO|SUPERMERCADOS|GOLY|SA|SRL|INC|RICAMAR|VIRZI|TAMEK|JUMBO|RIBA|SMITH|DEL|DE|LA|LAS|LOS|EL|Y|THE)$/;
+  var words = t.split(/[\s,\.\/\(\)]+/).filter(function(w){ return w.length >= 4 && !SKIP.test(w); });
+  for (var k in MACHETAZO_LUT) {
+    if (words.some(function(w){ return k.indexOf(w) >= 0; })) return MACHETAZO_LUT[k];
   }
   return '';
 }
@@ -831,14 +839,20 @@ function App() {
 
         const normNombre = norm(s.nombre);
         const misReportes = reps
-          .map(r => ({
-            tienda:         r.tienda        || r.Tienda        || '',
-            producto:       r.producto      || r.Producto      || '',
-            marca:          r.marca         || r.Marca         || '',
-            inventario:     r.inventario    || r.Inventario    || 0,
-            venta_promedio: r.venta_promedio || r.venta_prom_3m || r.VentaPromedio || 0,
-            vendedor:       r.vendedor      || r.Vendedor      || buscarVendedorPorTienda(r.tienda || r.Tienda || ''),
-          }))
+          .map(r => {
+            // Limpiar prefijos como "MACHETAZO: NOMBRE" → "NOMBRE"
+            const rawVend  = r.vendedor || '';
+            const cleanVend = rawVend.replace(/^[^:]+:\s*/, '').trim();
+            const vendedor  = cleanVend || buscarVendedorPorTienda(r.tienda || '');
+            return {
+              tienda:         r.tienda    || '',
+              producto:       r.producto  || '',
+              marca:          r.marca     || '',
+              inventario:     r.cantidad  || 0,   // columna real: 'cantidad'
+              venta_promedio: 0,                   // no existe en tabla reportes
+              vendedor,
+            };
+          })
           .filter(r => norm(r.vendedor) === normNombre);
 
         console.log('Mis reportes encontrados:', misReportes.length);
