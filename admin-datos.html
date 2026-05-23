@@ -491,9 +491,6 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
 
     <div class="nav-section-label">Inventario</div>
-    <div class="nav-item" onclick="showView('inventario', this)">
-      <span class="nav-icon">🏪</span> Tiendas
-    </div>
     <div class="nav-item" onclick="showView('bodega', this)">
       <span class="nav-icon">🏭</span> Bodega
     </div>
@@ -510,14 +507,6 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
     <div class="nav-item" onclick="showView('actualizar-data', this)">
       <span class="nav-icon">📤</span> Actualizar Data
-    </div>
-
-    <div class="nav-section-label">Análisis</div>
-    <div class="nav-item" onclick="showView('dashboard', this)">
-      <span class="nav-icon">📊</span> Dashboard
-    </div>
-    <div class="nav-item" onclick="showView('vendedores', this)">
-      <span class="nav-icon">👤</span> Vendedores
     </div>
   </nav>
 </aside>
@@ -614,172 +603,6 @@ tbody tr:last-child td { border-bottom: none; }
         </button>
       </div>
 
-    </div>
-
-    <!-- DASHBOARD -->
-    <div class="view" id="view-dashboard">
-      <div class="kpi-grid" id="kpi-grid"></div>
-      <div class="section-header">
-        <div class="section-title">Resumen por Vendedor</div>
-      </div>
-      <div class="table-wrapper">
-        <div class="table-header-row">
-          <span class="section-title" style="font-size:15px">Todos los vendedores</span>
-          <span class="table-count" id="dash-count"></span>
-        </div>
-        <div style="overflow-x:auto">
-          <table>
-            <thead>
-              <tr>
-                <th>Vendedor</th>
-                <th>Tiendas</th>
-                <th>Productos</th>
-                <th>Inv. Total</th>
-                <th>Venta Prom 3M</th>
-                <th>Cob. Prom (días)</th>
-                <th>Faltantes</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody id="dash-table-body"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- VENDEDORES -->
-    <div class="view" id="view-vendedores">
-      <div class="filter-bar">
-        <div class="filter-group">
-          <div class="filter-label">Vendedor</div>
-          <select id="sel-vendedor" onchange="renderVendedorProfile()"></select>
-        </div>
-        <div class="filter-group">
-          <div class="filter-label">Filtrar por Tienda</div>
-          <select id="sel-vendedor-tienda" onchange="renderVendedorTable_filtered()">
-            <option value="">Todas las tiendas</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <div class="filter-label">Filtrar por Marca</div>
-          <select id="sel-vendedor-marca" onchange="renderVendedorTable_filtered()">
-            <option value="">Todas las marcas</option>
-          </select>
-        </div>
-      </div>
-      <div id="vendedor-profile-area"></div>
-      <div class="table-wrapper">
-        <div class="table-header-row">
-          <span class="section-title" style="font-size:15px">Inventario por Tienda</span>
-          <span class="table-count" id="vend-count"></span>
-        </div>
-        <div style="overflow-x:auto">
-          <table>
-            <thead>
-              <tr>
-                <th>Tienda</th>
-                <th>Marca</th>
-                <th>Producto</th>
-                <th>Inventario</th>
-                <th>Venta Prom 3M</th>
-                <th>Cobertura</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody id="vend-table-body"></tbody>
-          </table>
-        </div>
-        <div class="pagination" id="vend-pagination"></div>
-      </div>
-    </div>
-
-    <!-- TIENDAS -->
-    <div class="view" id="view-tiendas">
-      <div class="filter-bar">
-        <div class="filter-group">
-          <div class="filter-label">Tienda</div>
-          <select id="sel-tienda" onchange="renderTiendaView()"></select>
-        </div>
-        <div class="filter-group">
-          <div class="filter-label">Marca</div>
-          <select id="sel-tienda-marca" onchange="renderTiendaView()"></select>
-        </div>
-      </div>
-      <div class="kpi-grid" id="tienda-kpis" style="grid-template-columns:repeat(4,1fr)"></div>
-      <div class="table-wrapper">
-        <div class="table-header-row">
-          <span class="section-title" style="font-size:15px">Productos en Tienda</span>
-          <span class="table-count" id="tienda-count"></span>
-        </div>
-        <div style="overflow-x:auto">
-          <table>
-            <thead>
-              <tr>
-                <th>Producto</th>
-                <th>Marca</th>
-                <th>EAN</th>
-                <th>Inventario</th>
-                <th>Venta Prom 3M</th>
-                <th>Cobertura (días)</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody id="tienda-table-body"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- INVENTARIO GENERAL -->
-    <div class="view" id="view-inventario">
-      <div class="filter-bar">
-        <div class="filter-group">
-          <div class="filter-label">Buscar producto</div>
-          <input type="text" id="inv-search" placeholder="Nombre del producto..." oninput="renderInventario()">
-        </div>
-        <div class="filter-group">
-          <div class="filter-label">Marca</div>
-          <select id="inv-marca" onchange="renderInventario()"></select>
-        </div>
-        <div class="filter-group">
-          <div class="filter-label">Estado de cobertura</div>
-          <select id="inv-estado" onchange="renderInventario()">
-            <option value="">Todos</option>
-            <option value="critico">Crítico (&lt; 30 días)</option>
-            <option value="atencion">Atención (30-60 días)</option>
-            <option value="ok">Óptimo (&gt; 60 días)</option>
-            <option value="agotado">Agotado (0 inventario)</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <div class="filter-label">Vendedor</div>
-          <select id="inv-vendedor" onchange="renderInventario()"></select>
-        </div>
-      </div>
-      <div class="table-wrapper">
-        <div class="table-header-row">
-          <span class="section-title" style="font-size:15px">Inventario Completo</span>
-          <span class="table-count" id="inv-count"></span>
-        </div>
-        <div style="overflow-x:auto">
-          <table>
-            <thead>
-              <tr>
-                <th>Tienda</th>
-                <th>Vendedor</th>
-                <th>Marca</th>
-                <th>Producto</th>
-                <th>Inventario</th>
-                <th>Venta Prom 3M</th>
-                <th>Cobertura</th>
-                <th>Estado</th>
-              </tr>
-            </thead>
-            <tbody id="inv-table-body"></tbody>
-          </table>
-        </div>
-        <div class="pagination" id="inv-pagination"></div>
-      </div>
     </div>
 
     <!-- AUDITORÍA -->
@@ -3833,18 +3656,40 @@ async function iniciarViewInicio() {
 function renderCarruselEditor(slides) {
   var el = document.getElementById('inicio-carrusel-content');
   if (!el) return;
-  window._iniSlides = slides;
-  el.innerHTML = slides.map(function(s, i) {
-    var t = (s.titulo||'').replace(/"/g,'&quot;');
-    var sb = (s.subtitulo||'').replace(/"/g,'&quot;');
-    return '<div style="margin-bottom:12px;padding:14px;border:1px solid var(--border);border-radius:10px">'
-      + '<div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:10px">Slide ' + (i+1) + '</div>'
-      + '<div class="form-group"><label class="form-label">Título</label>'
-      + '<input type="text" value="' + t + '" oninput="window._iniSlides[' + i + '].titulo=this.value" style="max-width:460px"></div>'
-      + '<div class="form-group"><label class="form-label">Subtítulo</label>'
-      + '<input type="text" value="' + sb + '" oninput="window._iniSlides[' + i + '].subtitulo=this.value" style="max-width:460px"></div>'
-      + '</div>';
-  }).join('');
+  window._iniSlides = slides.map(function(s) {
+    return { img: s.img || '', titulo: s.titulo || '', subtitulo: s.subtitulo || '' };
+  });
+  el.innerHTML = '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">'
+    + slides.map(function(s, i) {
+        var preview = s.img
+          ? 'background:url(' + s.img + ') center/cover no-repeat;'
+          : 'background:#F5F5F3;';
+        var sub = (s.subtitulo || '').replace(/"/g, '&quot;');
+        return '<div>'
+          + '<div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px">Slide ' + (i+1) + '</div>'
+          + '<div id="slide-preview-' + i + '" onclick="document.getElementById(\'slide-file-' + i + '\').click()" '
+          + 'style="' + preview + 'height:120px;border-radius:8px;border:1.5px dashed #E5E5E3;cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative">'
+          + (s.img ? '' : '<span style="font-size:11px;color:#aaa;text-align:center;padding:8px">Clic para subir imagen</span>')
+          + '</div>'
+          + '<input type="file" id="slide-file-' + i + '" accept="image/*" style="display:none" onchange="carruselFileChange(this,' + i + ')">'
+          + '<input type="text" placeholder="Subtítulo…" value="' + sub + '" oninput="window._iniSlides[' + i + '].subtitulo=this.value" style="margin-top:6px;width:100%;padding:7px 9px;border:1px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit">'
+          + '</div>';
+      }).join('')
+    + '</div>';
+}
+
+function carruselFileChange(input, i) {
+  if (!input.files || !input.files[0]) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    window._iniSlides[i].img = e.target.result;
+    var prev = document.getElementById('slide-preview-' + i);
+    if (prev) {
+      prev.style.background = 'url(' + e.target.result + ') center/cover no-repeat';
+      prev.innerHTML = '';
+    }
+  };
+  reader.readAsDataURL(input.files[0]);
 }
 
 async function guardarCarrusel() {

@@ -369,9 +369,11 @@ function Carousel({ slides }) {
       <div className="carousel-track" style={{ transform: `translateX(-${idx * 100}%)` }}>
         {items.map((s, i) => (
           <div key={i} className="carousel-slide"
-            style={{ background: s.bg || s.background || 'linear-gradient(135deg,#0F6E56,#1A9B7A)' }}>
+            style={{ background: s.img
+              ? `linear-gradient(rgba(0,0,0,0.38),rgba(0,0,0,0.38)), url(${s.img}) center/cover no-repeat`
+              : (s.bg || s.background || 'linear-gradient(135deg,#0F6E56,#1A9B7A)') }}>
             <div className="carousel-slide-title">{s.title || s.titulo}</div>
-            <div className="carousel-slide-body">{s.body || s.descripcion || ''}</div>
+            <div className="carousel-slide-body">{s.body || s.subtitulo || s.descripcion || ''}</div>
           </div>
         ))}
       </div>
