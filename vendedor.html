@@ -1322,9 +1322,23 @@ function TabIngresos({ tareas, config }) {
       codigo:   formInv.codigo || null,
       cantidad: Number(formInv.cantidad),
       observacion: formInv.observacion || null,
+      mes_vencimiento: formInv.mes_vencimiento || null,
       fecha_registro: new Date().toISOString()
     });
     if(error) { alert('Error: ' + error.message); return; }
+    await sbPortal.from('reportes').insert({
+      vendedor:        s.nombre,
+      tienda:          formInv.tienda,
+      barcode:         formInv.barcode || null,
+      codigo:          formInv.codigo || null,
+      producto:        formInv.producto,
+      marca:           'MARS',
+      tipo:            'Inventario',
+      cantidad:        Number(formInv.cantidad),
+      monto_estimado:  0,
+      mes_vencimiento: formInv.mes_vencimiento || null,
+      fecha_reporte:   new Date().toLocaleDateString('es-ES')
+    });
     alert('✅ Ingreso guardado');
     setFormInv({});
   };
@@ -1457,6 +1471,12 @@ function TabIngresos({ tareas, config }) {
             <div className="ing-form-group">
               <label className="ing-label">Cantidad</label>
               <input className="ing-input" type="number" placeholder="0" value={formInv.cantidad||''} onChange={e=>setI('cantidad',e.target.value)}/>
+            </div>
+            <div className="ing-form-group">
+              <label className="ing-label">Mes de Vencimiento</label>
+              <input className="ing-input" type="month"
+                value={formInv.mes_vencimiento||''}
+                onChange={e => setI('mes_vencimiento', e.target.value)}/>
             </div>
             <div className="ing-form-group">
               <label className="ing-label">Observación</label>
