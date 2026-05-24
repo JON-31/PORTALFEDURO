@@ -694,8 +694,7 @@ function AlertTiendaAccordion({ tienda, count, prom, badgeTxt, badgeStyle, borde
   );
 }
 
-function TabInicio({ tareas, config }) {
-  const [tareasLocal, setTareasLocal] = useState(tareas);
+function TabInicio({ tareas, onUpdateTareas, config }) {
   const inv = config?.inventario || [];
 
   const { agotadosPorTienda, criticosPorTienda, atencionPorTienda,
@@ -747,7 +746,7 @@ function TabInicio({ tareas, config }) {
         </div>
       </div>
 
-      <WidgetTareas tareas={tareasLocal} onUpdate={setTareasLocal}/>
+      <WidgetTareas tareas={tareas} onUpdate={onUpdateTareas}/>
 
       {agotadosPorTienda.length > 0 && (
         <div className="card">
@@ -1490,7 +1489,7 @@ function App() {
 
   if (!sesion) return null;
 
-  const tabProps = { reportes, tareas, config };
+  const tabProps = { reportes, tareas, onUpdateTareas: setTareas, config };
   const nombre1 = (sesion.nombre || '').split(' ')[0];
 
   return (
