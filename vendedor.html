@@ -570,11 +570,12 @@ function WidgetTareas({ tareas: inicial }) {
       } else {
         extra.comentario = vals.observacion || null;
       }
-      await sbPortal.from('tareas').update({
+      const { error: updErr } = await sbPortal.from('tareas').update({
         estado: 'completada',
         fecha_completada: new Date().toISOString(),
         ...extra
       }).eq('id', tarea.id);
+      if(updErr) throw new Error(updErr.message || JSON.stringify(updErr));
       setTareas(prev => prev.map(t =>
         t.id === tarea.id ? { ...t, estado: 'completada' } : t
       ));
