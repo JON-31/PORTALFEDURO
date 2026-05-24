@@ -521,8 +521,9 @@ function WidgetTareas({ tareas, onUpdate }) {
   const [openId, setOpenId] = useState(null);
   const [busyId, setBusyId] = useState(null);
 
-  const pendientes = (tareas || []).filter(t => norm(t.estado) !== 'completada');
-  const hechas     = (tareas || []).filter(t => norm(t.estado) === 'completada');
+  console.log('[widget] tareas estados:', (tareas||[]).map(t => t.estado + '|' + norm(t.estado)));
+  const pendientes = (tareas || []).filter(t => norm(t.estado) !== 'COMPLETADA');
+  const hechas     = (tareas || []).filter(t => norm(t.estado) === 'COMPLETADA');
 
   const completar = async (tarea, vals) => {
     setBusyId(tarea.id);
