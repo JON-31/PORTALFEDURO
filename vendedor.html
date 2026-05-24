@@ -1033,6 +1033,11 @@ function TabTiendas({ reportes, config }) {
     const sesion = JSON.parse(sessionStorage.getItem('mars_portal_session') || '{}');
     const normNombre = norm(sesion.nombre || '');
 
+    console.log('[TabTiendas] sesion.nombre:', sesion.nombre, '| normNombre:', normNombre);
+    console.log('[TabTiendas] inv total:', inv.length);
+    console.log('[TabTiendas] inv vendedores únicos:', [...new Set(inv.map(r => r.vendedor))].slice(0,10));
+    console.log('[TabTiendas] inv filtrado por vendedor:', inv.filter(r => norm(r.vendedor||'') === normNombre).length);
+
     const tiendasInv = [...new Set(
       inv.filter(r => norm(r.vendedor || '') === normNombre)
          .map(r => r.tienda)
