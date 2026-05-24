@@ -479,11 +479,13 @@ function FormTarea({ tarea, onDone, busy }) {
   const set = (k, v) => setVals(p => ({ ...p, [k]: v }));
   const tipo = (tarea.tipo || '').toLowerCase();
 
-  if(tipo === 'verificacion') {
+  if(tipo === 'verificacion' || tipo === 'sugerido') {
     return (
       <div className="wt-tarea-panel">
         <div style={{fontSize:12, color:'var(--muted)', fontStyle:'italic', padding:'8px 0'}}>
-          Esta tarea se completará automáticamente al registrar el sugerido.
+          {tipo === 'sugerido'
+            ? 'Esta tarea se completará automáticamente al registrar el sugerido en Ingresos.'
+            : 'Esta tarea se completará automáticamente al registrar el sugerido Machetazo.'}
         </div>
       </div>
     );
@@ -1191,10 +1193,10 @@ function TabIngresos({ tareas, config }) {
     }
     const s = getSession();
     const tareaVer = (tareas || []).find(t =>
-      (t.tipo||'').toLowerCase() === 'verificacion' &&
+      ((t.tipo||'').toLowerCase() === 'verificacion' || (t.tipo||'').toLowerCase() === 'sugerido') &&
       norm(t.tienda) === norm(formSug.tienda) &&
       norm(t.producto) === norm(formSug.producto) &&
-      norm(t.estado) !== 'completada'
+      norm(t.estado) !== 'COMPLETADA'
     );
     const { error } = await sbPortal.from('ingresos').insert({
       vendedor_nombre: s.nombre,
