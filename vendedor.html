@@ -1051,11 +1051,18 @@ function TabTiendas({ reportes, config }) {
       repMap[key].push(r);
     });
 
-    return tiendasInv.map(tienda => ({
-      tienda,
-      productos: repMap[norm(tienda)] || [],
-      sinData: !repMap[norm(tienda)]
-    }));
+    return tiendasInv.map(tienda => {
+      const productosInv = inv.filter(r =>
+        norm(r.vendedor || '') === normNombre &&
+        norm(r.tienda) === norm(tienda)
+      );
+      const productosRep = repMap[norm(tienda)] || [];
+      return {
+        tienda,
+        productos: productosInv.length ? productosInv : productosRep,
+        sinData: productosInv.length === 0
+      };
+    });
   }, [reportes, config]);
 
   return (
