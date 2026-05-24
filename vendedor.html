@@ -876,7 +876,12 @@ function TabInicio({ tareas, onUpdateTareas, config }) {
           <div className="stat-label">Productos Agotados</div>
         </div>
         <div className="stat-card">
-          <div className="stat-value" style={{ color: '#0F6E56' }}>0%</div>
+          <div className="stat-value" style={{ color: '#0F6E56' }}>{(() => {
+            const sesion = JSON.parse(sessionStorage.getItem('mars_portal_session') || '{}');
+            const md = config?.md_vendedores || {};
+            const key = Object.keys(md).find(k => norm(k) === norm(sesion.nombre || ''));
+            return key != null ? md[key] + '%' : '—';
+          })()}</div>
           <div className="stat-label">MD%</div>
         </div>
       </div>
