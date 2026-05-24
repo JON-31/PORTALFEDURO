@@ -3627,9 +3627,9 @@ async function cdCargar(tipo) {
   if (tipo === 'tareas') {
     data = await sbAdmin('GET', '/tareas?select=*&order=fecha_asignacion.desc') || [];
   } else if (tipo === 'inventario') {
-    data = await sbAdmin('GET', '/reportes?mes_vencimiento=not.is.null&select=vendedor,tienda,producto,cantidad,mes_vencimiento,monto_estimado&order=id.desc') || [];
+    data = await sbAdmin('GET', '/reportes?mes_vencimiento=not.is.null&select=id,vendedor,tienda,producto,cantidad,mes_vencimiento,monto_estimado&order=id.desc') || [];
   } else {
-    data = await sbAdmin('GET', '/reportes?mes_vencimiento=is.null&select=vendedor,tienda,tipo,codigo,barcode,producto,cantidad&order=id.desc') || [];
+    data = await sbAdmin('GET', '/reportes?mes_vencimiento=is.null&select=id,vendedor,tienda,tipo,codigo,barcode,producto,cantidad&order=id.desc') || [];
   }
   CD_DATA[tipo] = data;
   document.getElementById('cd-count-' + tipo).textContent = data.length + ' reg.';
@@ -3655,12 +3655,17 @@ async function cdCargar(tipo) {
     labels = ['Vendedor','Tienda','Tipo de Pedido','Material','Código de Barra','Producto','Cantidad'];
   }
 
-  var th = labels.map(function(l){ return '<th style="padding:7px 10px;text-align:left;font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap;border-bottom:1px solid var(--border)">'+l+'</th>'; }).join('');
+  var th = labels.map(function(l){ return '<th style="padding:7px 10px;text-align:left;font-size:11px;color:var(--muted);font-weight:600;white-space:nowrap;border-bottom:1px solid var(--border)">'+l+'</th>'; }).join('') +
+    '<th style="width:40px;border-bottom:1px solid var(--border)"></th>';
   var visible = data.slice(0, 50);
   var tbody = visible.map(function(row){
-    return '<tr>' + cols.map(function(c){ return '<td style="padding:6px 10px;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.04);white-space:nowrap">'+(row[c]!=null?row[c]:'—')+'</td>'; }).join('') + '</tr>';
+    var subtipo = tipo !== 'tareas' ? (row.mes_vencimiento ? 'inv' : 'mac') : '';
+    var btnEl = '<td style="padding:4px 8px;border-bottom:1px solid rgba(255,255,255,0.04)">' +
+      '<button onclick="cdEliminarFila(\''+tipo+'\',' + (row.id||'null') + ',\''+subtipo+'\')" ' +
+      'style="background:#FCEBEB;color:#A32D2D;border:none;border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer">🗑️</button></td>';
+    return '<tr>' + cols.map(function(c){ return '<td style="padding:6px 10px;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.04);white-space:nowrap">'+(row[c]!=null?row[c]:'—')+'</td>'; }).join('') + btnEl + '</tr>';
   }).join('');
-  var extra = data.length > 50 ? '<tr><td colspan="'+cols.length+'" style="padding:8px 10px;font-size:11px;color:var(--muted);text-align:center">…y '+(data.length-50)+' registros más</td></tr>' : '';
+  var extra = data.length > 50 ? '<tr><td colspan="'+(cols.length+1)+'" style="padding:8px 10px;font-size:11px;color:var(--muted);text-align:center">…y '+(data.length-50)+' registros más</td></tr>' : '';
   prevEl.innerHTML = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead><tr>'+th+'</tr></thead><tbody>'+tbody+extra+'</tbody></table></div>';
 }
 
@@ -3701,6 +3706,17 @@ async function cdDescargar(tipo) {
   document.getElementById('cd-delete-' + tipo).style.display = 'inline-block';
 }
 
+async function cdEliminarFila(tipo, id, subtipo) {
+  if(!confirm('¿Eliminar este registro?')) return;
+  if(!id) { alert('Sin ID — no se puede eliminar'); return; }
+  if(tipo === 'tareas') {
+    await sbAdmin('DELETE', '/tareas?id=eq.' + id);
+  } else {
+    await sbAdmin('DELETE', '/reportes?id=eq.' + id);
+  }
+  CD_DATA[tipo] = null;
+  cdCargar(tipo);
+}
 async function cdEliminar(tipo) {
   if (!confirm('¿Estás seguro? Esta acción eliminará TODA la data de ' + tipo + ' y no se puede deshacer.')) return;
   if (tipo === 'tareas') {
