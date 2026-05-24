@@ -1798,6 +1798,10 @@ function App() {
       const invFiltrado = (cfg.inventario || [])
         .filter(r => norm(r.vendedor) === norm(s.nombre));
       console.log('inventario filtrado count:', invFiltrado.length, 'vendedor:', s.nombre);
+      console.log('[loadData] inv filtrado total:', invFiltrado.length);
+      console.log('[loadData] inv por cadena:', invFiltrado.reduce((a,r) => { a[r.cadena]=(a[r.cadena]||0)+1; return a; }, {}));
+      console.log('[loadData] criticos (cob 1-9):', invFiltrado.filter(r => Number(r.cobertura) > 0 && Number(r.cobertura) < 10).length);
+      console.log('[loadData] agotados (cob 0):', invFiltrado.filter(r => Number(r.cobertura) === 0).length);
 
       setConfig({ ...cfg, inventario: invFiltrado });
 
