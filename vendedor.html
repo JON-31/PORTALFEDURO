@@ -72,6 +72,7 @@
     .alert-cob { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; white-space: nowrap; border-radius: 8px; padding: 4px 12px; }
     /* ── WIDGET TAREAS ── */
     .wt-card { background: var(--card); border-radius: 16px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    .wt-scroll { max-height: 420px; overflow-y: auto; }
     .wt-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
     .wt-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; }
     .wt-section-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
@@ -578,6 +579,7 @@ function WidgetTareas({ tareas: inicial }) {
         <span className="wt-title">Tareas</span>
       </div>
 
+      <div className="wt-scroll">
       {/* Pendientes */}
       <div style={{ marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -634,6 +636,7 @@ function WidgetTareas({ tareas: inicial }) {
           ))}
         </div>
       )}
+      </div>{/* /wt-scroll */}
     </div>
   );
 }
