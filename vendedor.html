@@ -543,8 +543,11 @@ function WidgetTareas({ tareas: inicial, onUpdate }) {
         ...extra
       }).eq('id', tarea.id);
       if(updErr) throw new Error(updErr.message || JSON.stringify(updErr));
+      console.log('[completar] update exitoso, tarea.id=', tarea.id);
+      console.log('[completar] tareas antes:', tareas.length, tareas.map(t=>t.id+':'+t.estado));
       setTareas(prev => {
         const next = prev.map(t => t.id === tarea.id ? { ...t, estado: 'completada' } : t);
+        console.log('[completar] next:', next.map(t=>t.id+':'+t.estado));
         if(onUpdate) onUpdate(next);
         return next;
       });
