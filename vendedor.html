@@ -1027,29 +1027,48 @@ function TiendaRow({ nombre, productos }) {
   );
 }
 
-function TabTiendas({ reportes }) {
-  const byTienda = useMemo(() => {
-    const map = {};
-    const names = {};
+function TabTiendas({ reportes, config }) {
+  const tiendas = useMemo(() => {
+    const inv = config?.inventario || [];
+    const sesion = JSON.parse(sessionStorage.getItem('mars_portal_session') || '{}');
+    const normNombre = norm(sesion.nombre || '');
+
+    const tiendasInv = [...new Set(
+      inv.filter(r => norm(r.vendedor || '') === normNombre)
+         .map(r => r.tienda)
+         .filter(Boolean)
+    )].sort();
+
+    const repMap = {};
     reportes.forEach(r => {
       const key = norm(r.tienda);
-      if (!names[key]) names[key] = r.tienda;
-      if (!map[key]) map[key] = [];
-      map[key].push(r);
+      if(!repMap[key]) repMap[key] = [];
+      repMap[key].push(r);
     });
-    return { map, names };
-  }, [reportes]);
 
-  const tiendas = useMemo(() =>
-    Object.keys(byTienda.map)
-      .sort((a, b) => byTienda.names[a].localeCompare(byTienda.names[b])),
-  [byTienda]);
+    return tiendasInv.map(tienda => ({
+      tienda,
+      productos: repMap[norm(tienda)] || [],
+      sinData: !repMap[norm(tienda)]
+    }));
+  }, [reportes, config]);
 
   return (
     <div>
       {tiendas.length === 0
         ? <div className="empty-state"><div className="empty-icon">🏪</div>Sin tiendas disponibles.</div>
-        : tiendas.map(k => <TiendaRow key={k} nombre={byTienda.names[k]} productos={byTienda.map[k]} />)
+        : tiendas.map(t => (
+            <div key={norm(t.tienda)} style={{position:'relative'}}>
+              {t.sinData && (
+                <span style={{
+                  fontSize:11, color:'#854F0B', background:'#FAEEDA',
+                  padding:'2px 8px', borderRadius:20, fontWeight:600,
+                  position:'absolute', right:12, top:12, zIndex:1
+                }}>Sin Data</span>
+              )}
+              <TiendaRow nombre={t.tienda} productos={t.productos}/>
+            </div>
+          ))
       }
     </div>
   );
