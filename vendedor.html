@@ -1792,7 +1792,6 @@ function App() {
 
       const invFiltrado = (cfg.inventario || [])
         .filter(r => norm(r.vendedor) === norm(s.nombre));
-      console.log('inventario filtrado count:', invFiltrado.length, 'vendedor:', s.nombre);
       setConfig({ ...cfg, inventario: invFiltrado });
 
     } catch (err) {
