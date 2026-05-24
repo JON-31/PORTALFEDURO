@@ -190,6 +190,58 @@
 </head>
 <body>
 <div id="root"></div>
+<script>
+var MACHETAZO_PRODUCTOS = [
+  {row:12,material:'10851349',codigo:'750617451441',descripcion:'PEDIGREE RAZAS PEQUEÑAS ETG 10/1KG',t:'CJ',u:10,p:39.50},
+  {row:13,material:'10851347',codigo:'750617451440',descripcion:'PEDIGREE PUPPY NUTRIDEFENSE ETG 10/1KG',t:'CJ',u:10,p:39.50},
+  {row:14,material:'10897017',codigo:'750617451439',descripcion:'PEDIGREE ADULTO ETG 10/1KG',t:'CJ',u:10,p:39.50},
+  {row:15,material:'10254381',codigo:'2310005104',descripcion:'PEDIGREE ADULTO 10BL/2KG.',t:'CJ',u:10,p:74.30},
+  {row:16,material:'10002142',codigo:'2310004104',descripcion:'PEDIGREE CACHORRO 10BL/2KG.',t:'CJ',u:10,p:74.30},
+  {row:17,material:'10022665',codigo:'70646001371',descripcion:'PEDIGREE RAZAS PEQUEÑAS 10BL/2KG.',t:'CJ',u:10,p:74.30},
+  {row:18,material:'10007176',codigo:'2310005103',descripcion:'PEDIGREE ADULTO 4/4KG.',t:'CJ',u:4,p:74.30},
+  {row:19,material:'10007174',codigo:'2310004103',descripcion:'PEDIGREE CACHORRO 4/4KG.',t:'CJ',u:4,p:74.30},
+  {row:20,material:'10022840',codigo:'70646023881',descripcion:'PEDIGREE RAZAS PEQUEÑAS 4/4KG.',t:'CJ',u:4,p:74.30},
+  {row:21,material:'10304181',codigo:'70646024486',descripcion:'PEDIGREE CACHORRO 7KG. SC/1',t:'CJ',u:1,p:74.30},
+  {row:22,material:'10767457',codigo:'750617451073',descripcion:'PEDIGREE POUCH CORDERO ADULTO 100GRS.',t:'CJ',u:24,p:39.50},
+  {row:23,material:'10552611',codigo:'70646024923',descripcion:'PEDIGREE POUCH POLLO ADULTO 100GRS.',t:'CJ',u:24,p:39.50},
+  {row:24,material:'10552597',codigo:'70646024927',descripcion:'PEDIGREE POUCH RES ADULTO 100GRS.',t:'CJ',u:24,p:39.50},
+  {row:25,material:'10552587',codigo:'70646024936',descripcion:'PEDIGREE POUCH POLLO CACHORRO 100GRS.',t:'CJ',u:24,p:39.50},
+  {row:26,material:'10552578',codigo:'70646024931',descripcion:'PEDIGREE POUCH RES CACHORRO 100GRS.',t:'CJ',u:24,p:39.50},
+  {row:27,material:'10767458',codigo:'750617450699',descripcion:'PEDIGREE POUCH CORDERO RAZAS PEQ. 100GRS.',t:'CJ',u:24,p:39.50},
+  {row:28,material:'10552591',codigo:'70646024928',descripcion:'PEDIGREE POUCH POLLO RAZAS PEQ. 100GRS.',t:'CJ',u:24,p:39.50},
+  {row:29,material:'10552603',codigo:'70646024948',descripcion:'PEDIGREE POUCH RES RAZAS PEQ. 100GRS.',t:'CJ',u:24,p:39.50},
+  {row:30,material:'10883240',codigo:'750617551508',descripcion:'PEDIGREE WET HIGH PROTEIN BEEF & CHICKEN 24/85G',t:'CJ',u:24,p:39.50},
+  {row:31,material:'10883241',codigo:'750617451509',descripcion:'PEDIGREE WET HIGH PROTEIN PORK & BEEF 24/85G',t:'CJ',u:24,p:39.50},
+  {row:32,material:'10883242',codigo:'750617451510',descripcion:'PEDIGREE WET HIGH PROTEIN CHICKEN & PORK 24/85G',t:'CJ',u:24,p:39.50},
+  {row:33,material:'10007053',codigo:'2310001527',descripcion:'PEDIGREE LATA CHOICE CUTS BEEF CJ12/375GRS.',t:'CJ',u:12,p:39.50},
+  {row:34,material:'10001783',codigo:'2310001301',descripcion:'PEDIGREE LATA CACHORRO CJ12/375GRS.',t:'CJ',u:12,p:39.50},
+  {row:35,material:'10002139',codigo:'210001004',descripcion:'PEDIGREE LATA CHOPPED BEEF CJ12/375GRS.',t:'CJ',u:12,p:39.50},
+  {row:36,material:'10002141',codigo:'2310001075',descripcion:'PEDIGREE LATA CHOPPED CHICKEN CJ12/375GRS.',t:'CJ',u:12,p:39.50},
+  {row:37,material:'10304183',codigo:'750617451523',descripcion:'Pedigree Biscrok Cachorro 12/100GR',t:'CJ',u:12,p:39.50},
+  {row:38,material:'10012131',codigo:'750617451524',descripcion:'Pedigree Biscrok Adulto 12/225G',t:'CJ',u:12,p:39.50},
+  {row:39,material:'10530530',codigo:'2310001401',descripcion:'CESAR BEEF CJ24/100GR',t:'CJ',u:24,p:39.50},
+  {row:40,material:'10656452',codigo:'2310001405',descripcion:'CESAR CHICKEN AND LIVER CJ24/100GR',t:'CJ',u:24,p:39.50},
+  {row:41,material:'10656485',codigo:'2310002607',descripcion:'CESAR CACHORRO CJ24/100GR',t:'CJ',u:24,p:39.50},
+  {row:42,material:'10656476',codigo:'5310005672',descripcion:'CESAR TOP SIRLOIN CJ24/100GR',t:'CJ',u:24,p:39.50},
+  {row:43,material:'10656458',codigo:'2310001407',descripcion:'CESAR TURKEY CJ24/100GR',t:'CJ',u:24,p:39.50},
+  {row:44,material:'10945845',codigo:'70646002937',descripcion:'WHISKAS CARNE ORIGINAL 5/3KG',t:'CJ',u:5,p:39.50},
+  {row:45,material:'10851346',codigo:'750617451478',descripcion:'WHISKAS CARNE ORIGINAL 12BL/500GRS.',t:'CJ',u:12,p:39.50},
+  {row:46,material:'10767459',codigo:'750617451360',descripcion:'WHISKAS GATITOS 12BL/1.4KG.',t:'CJ',u:12,p:39.50},
+  {row:47,material:'10022667',codigo:'70646002928',descripcion:'WHISKAS CARNE ORIGINAL 12BL/1.5KG.',t:'CJ',u:12,p:39.50},
+  {row:48,material:'10022834',codigo:'70646002932',descripcion:'WHISKAS PESCADO 12BL/1.5KG.',t:'CJ',u:12,p:39.50},
+  {row:49,material:'10022669',codigo:'70646002930',descripcion:'WHISKAS POLLO 12BL/1.5KG',t:'CJ',u:12,p:39.50},
+  {row:50,material:'10953843',codigo:'750617451480',descripcion:'WHISKAS MIX PROTEINAS SECO 12/1.5KG',t:'CJ',u:12,p:39.50},
+  {row:101,material:'10021042',codigo:'40000514510',descripcion:'CHOCOLATE MANI M&M 1.74OZ',t:'EX',u:48,p:46.56},
+  {row:102,material:'10021167',codigo:'40000004325',descripcion:'CHOCOLATE MANI KING M&M 3.27OZ',t:'EX',u:24,p:39.12},
+  {row:103,material:'10021037',codigo:'40000002376',descripcion:'CHOCOLATE MINI TUBO M&M 30.6GR',t:'EX',u:24,p:23.52},
+  {row:104,material:'10020907',codigo:'40000514480',descripcion:'CHOCOLATE M&M 1.69OZ',t:'EX',u:36,p:34.92},
+  {row:130,material:'10385410',codigo:'40000514251',descripcion:'CHOCOLATE SINGLE SNICKERS 1.86 OZ',t:'EX',u:48,p:47.04},
+  {row:131,material:'10015503',codigo:'40000002635',descripcion:'CHOCOLATE KING SIZE SNICKERS 3.29OZ',t:'EX',u:24,p:39.12},
+  {row:140,material:'10385411',codigo:'40000602040',descripcion:'CHOCOLATE MILKY WAY 1.84OZ',t:'EX',u:36,p:36.72},
+  {row:141,material:'10021169',codigo:'40000004356',descripcion:'TWIX CARAMEL SINGLE 1.79 OZ',t:'EX',u:36,p:34.92},
+  {row:219,material:'11036523',codigo:'22000002709',descripcion:'HUBBA BUBBA MAX 5PC ORIGINAL 8/18CT',t:'EX',u:18,p:13.50},
+];
+</script>
 <script type="text/babel">
 const { useState, useEffect, useRef, useMemo, useCallback } = React;
 
@@ -1164,6 +1216,8 @@ function TabIngresos({ tareas, config }) {
   const [openSug, setOpenSug] = useState(false);
   const [formInv, setFormInv] = useState({});
   const [formSug, setFormSug] = useState({});
+  const [sugQuery, setSugQuery] = useState('');
+  const [sugOpen, setSugOpen] = useState(false);
   const setI = (k, v) => setFormInv(p => ({ ...p, [k]: v }));
   const setS = (k, v) => setFormSug(p => ({ ...p, [k]: v }));
 
@@ -1332,13 +1386,68 @@ function TabIngresos({ tareas, config }) {
                   {tiendasMachetazo.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
-              <div className="ing-form-group">
+              <div className="ing-form-group" style={{position:'relative'}}>
                 <label className="ing-label">Producto</label>
-                <input className="ing-input" placeholder="Nombre del producto" value={formSug.producto||''} onChange={e=>setS('producto',e.target.value)}/>
+                <input className="ing-input"
+                  placeholder="Buscar por nombre o código…"
+                  value={sugQuery}
+                  onChange={e => { setSugQuery(e.target.value); setS('producto', e.target.value); setSugOpen(true); }}
+                  onFocus={() => setSugOpen(true)}
+                  onBlur={() => setTimeout(() => setSugOpen(false), 200)}
+                />
+                {sugOpen && sugQuery.length > 1 && (() => {
+                  const q = sugQuery.toLowerCase();
+                  const matches = (window.MACHETAZO_PRODUCTOS || []).filter(p =>
+                    p.descripcion.toLowerCase().includes(q) ||
+                    (p.codigo && p.codigo.includes(q)) ||
+                    (p.material && p.material.includes(q))
+                  ).slice(0, 8);
+                  if(!matches.length) return null;
+                  return (
+                    <div style={{
+                      position:'absolute',zIndex:100,top:'100%',left:0,right:0,
+                      background:'#fff',border:'1px solid var(--border)',borderRadius:8,
+                      boxShadow:'0 4px 16px rgba(0,0,0,0.12)',maxHeight:240,overflowY:'auto'
+                    }}>
+                      {matches.map((p,i) => (
+                        <div key={i}
+                          onMouseDown={() => {
+                            setS('producto', p.descripcion);
+                            setS('unidFact', p.u);
+                            setSugQuery(p.descripcion);
+                            setSugOpen(false);
+                          }}
+                          style={{padding:'8px 12px',cursor:'pointer',borderBottom:'1px solid var(--border)',fontSize:12}}
+                          onMouseEnter={e => e.currentTarget.style.background='#F0F7F4'}
+                          onMouseLeave={e => e.currentTarget.style.background='#fff'}
+                        >
+                          <div style={{fontWeight:600}}>{p.descripcion}</div>
+                          <div style={{color:'var(--muted)',fontSize:11}}>
+                            {p.codigo && `📊 ${p.codigo}`}
+                            {p.codigo && ` · `}
+                            📦 {p.u} uds/caja · ${p.p}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
               <div className="ing-form-group">
-                <label className="ing-label">Cantidad sugerida</label>
-                <input className="ing-input" type="number" placeholder="0" value={formSug.cantidad||''} onChange={e=>setS('cantidad',e.target.value)}/>
+                <label className="ing-label">Cantidad (cajas)</label>
+                <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                  <input className="ing-input" type="number" placeholder="0" style={{flex:1}}
+                    value={formSug.cantidad||''}
+                    onChange={e => setS('cantidad', e.target.value)}/>
+                  {formSug.unidFact && Number(formSug.cantidad) > 0 && (
+                    <div style={{fontSize:11,color:'var(--muted)',whiteSpace:'nowrap',background:'#F0F7F4',padding:'4px 8px',borderRadius:6}}>
+                      = {(Number(formSug.cantidad) * Number(formSug.unidFact)).toLocaleString()} uds
+                    </div>
+                  )}
+                </div>
+                {formSug.unidFact && (
+                  <div style={{fontSize:11,color:'var(--muted)',marginTop:4}}>📦 {formSug.unidFact} uds por caja</div>
+                )}
               </div>
               <div className="ing-form-group">
                 <label className="ing-label">Observación</label>
