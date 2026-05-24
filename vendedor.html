@@ -659,7 +659,6 @@ function WidgetTareas({ tareas, onUpdate }) {
   const [openId, setOpenId] = useState(null);
   const [busyId, setBusyId] = useState(null);
 
-  console.log('[widget] tareas estados:', (tareas||[]).map(t => t.estado + '|' + norm(t.estado)));
   const pendientes = (tareas || []).filter(t => norm(t.estado) !== 'COMPLETADA');
   const hechas     = (tareas || []).filter(t => norm(t.estado) === 'COMPLETADA');
 
@@ -681,10 +680,7 @@ function WidgetTareas({ tareas, onUpdate }) {
         ...extra
       }).eq('id', tarea.id);
       if(updErr) throw new Error(updErr.message || JSON.stringify(updErr));
-      console.log('[completar] update exitoso, tarea.id=', tarea.id);
-      console.log('[completar] tareas antes:', tareas.length, tareas.map(t=>t.id+':'+t.estado));
       const next = tareas.map(t => t.id === tarea.id ? { ...t, estado: 'completada' } : t);
-      console.log('[completar] next:', next.map(t=>t.id+':'+t.estado));
       if(onUpdate) onUpdate([...next]);
       setOpenId(null);
     } catch (e) {
@@ -1348,8 +1344,6 @@ function TabIngresos({ tareas, config }) {
       alert('Completa todos los campos requeridos'); return;
     }
     const s = JSON.parse(sessionStorage.getItem('mars_portal_session') || 'null') || {};
-    console.log('[guardarSugerido] tienda:', formSug.tienda, '| producto:', formSug.producto);
-    console.log('[guardarSugerido] tareas disponibles:', (tareas||[]).map(t => t.tipo+'|'+t.tienda+'|'+t.producto+'|'+t.estado));
     const tareaVer = (tareas || []).find(t =>
       ((t.tipo||'').toLowerCase() === 'verificacion' || (t.tipo||'').toLowerCase() === 'sugerido') &&
       norm(t.tienda) === norm(formSug.tienda) &&
@@ -1549,7 +1543,6 @@ function TabIngresos({ tareas, config }) {
                   onBlur={() => setTimeout(() => setSugOpen(false), 200)}
                 />
                 {sugOpen && sugQuery.length > 1 && (() => {
-                  console.log('[sugQuery]', sugQuery, 'CAT length:', (window.MACHETAZO_PRODUCTOS||[]).length);
                   const q = sugQuery.toLowerCase();
                   const matches = (window.MACHETAZO_PRODUCTOS || []).filter(p =>
                     p.descripcion.toLowerCase().includes(q) ||
