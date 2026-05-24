@@ -1338,9 +1338,30 @@ function renderVendedores(){
 
   // Filtros
   const fNombre = document.getElementById('filtro-vend');
+  const fGrupo = document.getElementById('filtro-vend-grupo');
   fNombre.oninput = () => {
     const q = fNombre.value.toLowerCase();
-    renderTablaVend(rows.filter(v => (v.vendedor||'').toLowerCase().includes(q)));
+    const g = fGrupo.value;
+    renderTablaVend(rows.filter(v => {
+      const matchNombre = (v.vendedor||'').toLowerCase().includes(q);
+      if(!g) return matchNombre;
+      if(g === 'Chocolate')  return matchNombre && (v.choc_venta||0) > 0;
+      if(g === 'Confection') return matchNombre && (v.conf_venta||0) > 0;
+      if(g === 'PetCare')    return matchNombre && (v.pet_venta||0) > 0;
+      return matchNombre;
+    }));
+  };
+  fGrupo.onchange = () => {
+    const g = fGrupo.value;
+    const q = fNombre.value.toLowerCase();
+    renderTablaVend(rows.filter(v => {
+      const matchNombre = (v.vendedor||'').toLowerCase().includes(q);
+      if(!g) return matchNombre;
+      if(g === 'Chocolate')  return matchNombre && (v.choc_venta||0) > 0;
+      if(g === 'Confection') return matchNombre && (v.conf_venta||0) > 0;
+      if(g === 'PetCare')    return matchNombre && (v.pet_venta||0) > 0;
+      return matchNombre;
+    }));
   };
 
   // Gráfico barras horizontales
