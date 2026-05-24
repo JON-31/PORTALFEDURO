@@ -1959,6 +1959,46 @@ function normStr(s) {
     .replace(/[ÁÀÄÂ]/g,'A').replace(/[ÉÈËÊ]/g,'E').replace(/[ÍÌÏÎ]/g,'I')
     .replace(/[ÓÒÖÔ]/g,'O').replace(/[ÚÙÜÛ]/g,'U').replace(/Ñ/g,'N');
 }
+function normTienda(s) {
+  return normStr(s)
+    .replace(/\s*-\s*/g, '-')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+function buscarVendedorXtra(tienda) {
+  var n = normTienda(tienda);
+  var found = null;
+  Object.keys(TIENDAS_VENDEDORES).forEach(function(k) {
+    if(normTienda(k) === n) found = TIENDAS_VENDEDORES[k];
+  });
+  if(found) return found;
+
+  var mCod = tienda.match(/\bT0*(\d+)\b/i);
+  if(mCod) {
+    var cod = mCod[1];
+    Object.keys(TIENDAS_VENDEDORES).forEach(function(k) {
+      var mK = k.match(/\bT0*(\d+)\b/i);
+      if(mK && mK[1] === cod) found = TIENDAS_VENDEDORES[k];
+    });
+  }
+  if(found) return found;
+
+  var STOP = ['XTRA','SUPER','TIENDA','THE','LOS','LAS','DEL','EL','LA'];
+  var palabras = normStr(tienda).split(/\W+/).filter(function(p) {
+    return p.length >= 4 && !STOP.includes(p);
+  });
+  if(palabras.length) {
+    Object.keys(TIENDAS_VENDEDORES).forEach(function(k) {
+      var kn = normStr(k);
+      if(palabras.some(function(p){ return kn.includes(p); })) {
+        found = TIENDAS_VENDEDORES[k];
+      }
+    });
+  }
+  if(found) return found;
+
+  return buscarVendedorPorTienda(tienda) || '';
+}
 function buscarVendedorPorTienda(tienda) {
   if (!tienda) return '';
   var t = normStr(tienda.trim());
@@ -3366,16 +3406,13 @@ async function adProcessFile(input) {
       if (cProducto < 0) missing.push('PRODUCTO');
       if (cInv < 0) missing.push('INVENTARIO');
       if (missing.length) { msgEl.textContent = '❌ Columnas no encontradas: ' + missing.join(', ') + '. Headers: ' + headers.join(' | '); msgEl.style.color = 'var(--red)'; return; }
-      // Lookup normalizado: case-insensitive + sin tildes. Fallback a buscarVendedorPorTienda() para formatos inesperados.
-      var tvNorm = {};
-      Object.keys(TIENDAS_VENDEDORES).forEach(function(k) { tvNorm[normStr(k)] = TIENDAS_VENDEDORES[k]; });
       for (var i = 1; i < rows.length; i++) {
         var row = rows[i];
         var tienda = String(row[cTienda]||'').trim();
         if (!tienda) continue;
         AD_RECORDS.push({
           cadena: 'xtra',
-          vendedor: tvNorm[normStr(tienda)] || buscarVendedorPorTienda(tienda) || '',
+          vendedor: buscarVendedorXtra(tienda),
           formato: cFormato>=0?String(row[cFormato]||'').trim():'',
           tienda: tienda,
           marca: cMarca>=0?String(row[cMarca]||'').trim():'',
