@@ -1205,7 +1205,7 @@ function TabIngresos({ tareas, config }) {
       tienda: formSug.tienda,
       cadena: 'machetazo',
       tipo: 'sugerido',
-      tipo_sugerido: formSug.tipo_sugerido || null,
+      tipo_sugerido: formSug.tipo || null,
       producto: formSug.producto,
       cantidad: Number(formSug.cantidad),
       observacion: formSug.observacion || null,
@@ -1220,7 +1220,7 @@ function TabIngresos({ tareas, config }) {
       codigo:          null,
       producto:        formSug.producto,
       marca:           'MARS',
-      tipo:            formSug.tipo_sugerido || '—',
+      tipo:            formSug.tipo || '—',
       tipo_pedido:     'Sugerido',
       cantidad:        Number(formSug.cantidad),
       monto_estimado:  0,
@@ -1295,6 +1295,26 @@ function TabIngresos({ tareas, config }) {
           </div>
           {openSug && (
             <div className="ingreso-body">
+              {(() => {
+                const tareasSug = (tareas || []).filter(t =>
+                  (t.tipo||'').toLowerCase() === 'sugerido' &&
+                  norm(t.estado) !== 'COMPLETADA'
+                );
+                if(!tareasSug.length) return null;
+                return (
+                  <div style={{marginBottom:16,padding:'10px 12px',background:'#F0F7F4',border:'1px solid #C8E6C9',borderRadius:8}}>
+                    <div style={{fontSize:12,fontWeight:700,color:'var(--verde)',marginBottom:8}}>📋 Tareas pendientes:</div>
+                    {tareasSug.map(t => (
+                      <div key={t.id} style={{fontSize:12,padding:'4px 0',borderBottom:'1px solid #C8E6C9'}}>
+                        <span style={{fontWeight:600}}>{t.tienda}</span>
+                        <span style={{color:'var(--muted)',margin:'0 6px'}}>—</span>
+                        <span>{t.producto}</span>
+                        {t.comentario && <div style={{color:'var(--muted)',fontSize:11,marginTop:2}}>💬 {t.comentario}</div>}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
               <div className="ing-form-group">
                 <label className="ing-label">Tipo de sugerido</label>
                 <select className="ing-input" value={formSug.tipo||''} onChange={e=>setS('tipo',e.target.value)}>
