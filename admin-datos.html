@@ -884,7 +884,30 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
         <button onclick="gtSubirTareas()" style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;width:100%">📋 Subir Tareas</button>
       </div>
+
+    <!-- Panel: Tareas existentes -->
+    <div class="card" style="margin-top:24px">
+      <div class="card-header" style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-weight:700;font-size:15px">📋 Tareas Asignadas</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select id="gt-filtro-estado" onchange="gtCargarTareas()" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--card2);color:var(--text)">
+            <option value="">Todos los estados</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="completada">Completada</option>
+          </select>
+          <select id="gt-filtro-vendedor" onchange="gtCargarTareas()" style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--card2);color:var(--text)">
+            <option value="">Todos los vendedores</option>
+          </select>
+          <button onclick="gtCargarTareas()" style="padding:4px 12px;background:var(--verde);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer">🔄 Actualizar</button>
+        </div>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div id="gt-tareas-lista" style="min-height:60px">
+          <div style="padding:24px;text-align:center;color:var(--muted);font-size:13px">Cargando tareas…</div>
+        </div>
+      </div>
     </div>
+    </div><!-- /view-gestionar-tareas -->
       <!-- CENTRO DE DESCARGAS -->
       <div class="view" id="view-centro-descargas">
         <div class="section-header">
@@ -4053,6 +4076,70 @@ async function gtInicializar() {
     msgEl.textContent = '⚠️ No hay data de inventario. Ve a Actualizar Data primero.';
     msgEl.style.color = '#FF8C00';
   }
+  gtCargarTareas();
+}
+async function gtCargarTareas() {
+  var estado   = (document.getElementById('gt-filtro-estado')   || {}).value || '';
+  var vendedor = (document.getElementById('gt-filtro-vendedor') || {}).value || '';
+  var container = document.getElementById('gt-tareas-lista');
+  if(!container) return;
+  container.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px">Cargando…</div>';
+
+  var ep = '/tareas?order=fecha_asignacion.desc&limit=200';
+  if(estado)   ep += '&estado=eq.' + estado;
+  if(vendedor) ep += '&vendedor_nombre=eq.' + encodeURIComponent(vendedor);
+
+  var data = await sbAdmin('GET', ep);
+  if(!Array.isArray(data)) data = [];
+
+  var selVend = document.getElementById('gt-filtro-vendedor');
+  if(selVend && selVend.options.length <= 1) {
+    var vends = [...new Set(data.map(function(t){ return t.vendedor_nombre; }).filter(Boolean))].sort();
+    vends.forEach(function(v) {
+      var opt = document.createElement('option');
+      opt.value = v; opt.textContent = v;
+      selVend.appendChild(opt);
+    });
+  }
+
+  if(!data.length) {
+    container.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px">No hay tareas</div>';
+    return;
+  }
+
+  var TIPO_LABEL = { inventario:'📦 Inventario', sugerido:'📋 Sugerido', verificacion:'✅ Verificación' };
+  var ESTADO_STYLE = { pendiente:'background:#FAEEDA;color:#854F0B', completada:'background:#EAF3DE;color:#3B6D11' };
+
+  container.innerHTML = '<div class="tbl-wrap"><table>' +
+    '<thead><tr>' +
+      '<th>Vendedor</th><th>Tienda</th><th>Producto</th><th>Tipo</th>' +
+      '<th>Inv. Sistema</th><th>Inv. Real</th><th>Cant. Sugerida</th>' +
+      '<th>Comentario Admin</th><th>Respuesta</th><th>Estado</th><th>Fecha</th><th></th>' +
+    '</tr></thead><tbody>' +
+    data.map(function(t) {
+      var tipoKey = (t.tipo || '').toLowerCase();
+      var estStyle = ESTADO_STYLE[t.estado] || '';
+      return '<tr>' +
+        '<td style="font-size:12px">' + (t.vendedor_nombre||'—') + '</td>' +
+        '<td style="font-size:12px">' + (t.tienda||'—') + '</td>' +
+        '<td style="font-size:12px">' + (t.producto||'—') + '</td>' +
+        '<td><span style="font-size:11px;font-weight:600">' + (TIPO_LABEL[tipoKey]||t.tipo||'—') + '</span></td>' +
+        '<td class="right mono" style="font-size:12px">' + (t.inventario_sistema!=null?t.inventario_sistema:'—') + '</td>' +
+        '<td class="right mono" style="font-size:12px">' + (t.inventario_real!=null?t.inventario_real:'—') + '</td>' +
+        '<td class="right mono" style="font-size:12px">' + (t.cantidad_sugerida!=null?t.cantidad_sugerida:'—') + '</td>' +
+        '<td style="font-size:11px;color:var(--muted);max-width:150px">' + (t.comentario||'—') + '</td>' +
+        '<td style="font-size:11px;max-width:150px">' + (t.respuesta_vendedor||'—') + '</td>' +
+        '<td><span style="padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;' + estStyle + '">' + (t.estado||'—') + '</span></td>' +
+        '<td style="font-size:11px;color:var(--muted)">' + (t.fecha_asignacion||'').substring(0,10) + '</td>' +
+        '<td><button onclick="gtEliminarTarea(' + t.id + ')" style="background:#FCEBEB;color:#A32D2D;border:none;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer;font-weight:600">🗑️</button></td>' +
+      '</tr>';
+    }).join('') +
+    '</tbody></table></div>';
+}
+async function gtEliminarTarea(id) {
+  if(!confirm('¿Eliminar esta tarea?')) return;
+  await sbAdmin('DELETE', '/tareas?id=eq.' + id);
+  gtCargarTareas();
 }
 </script>
 </body>
