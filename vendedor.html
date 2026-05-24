@@ -553,17 +553,35 @@ function WidgetTareas({ tareas: inicial }) {
   const pendientes = tareas.filter(t => norm(t.estado) !== 'completada');
   const hechas     = tareas.filter(t => norm(t.estado) === 'completada');
 
-  const completar = async (tarea, _vals) => {
+  const completar = async (tarea, vals) => {
     setBusyId(tarea.id);
     try {
+      const tipo = (tarea.tipo || '').toLowerCase();
+      const extra = {};
+      if(tipo === 'inventario'){
+        extra.inventario_real = Number(vals.cantidad) || null;
+        extra.comentario = vals.observacion || null;
+      } else if(tipo === 'sugerido'){
+        extra.cantidad_sugerida = Number(vals.cantidad) || null;
+        extra.comentario = vals.nota || null;
+      } else if(tipo === 'verificacion'){
+        extra.estado_exhibidor = vals.estado_exhibidor || null;
+        extra.comentario = vals.observacion || null;
+      } else {
+        extra.comentario = vals.observacion || null;
+      }
       await sbPortal.from('tareas').update({
         estado: 'completada',
         fecha_completada: new Date().toISOString(),
+        ...extra
       }).eq('id', tarea.id);
-      setTareas(prev => prev.map(t => t.id === tarea.id ? { ...t, estado: 'completada' } : t));
+      setTareas(prev => prev.map(t =>
+        t.id === tarea.id ? { ...t, estado: 'completada' } : t
+      ));
       setOpenId(null);
     } catch (e) {
       console.error('Error completando tarea:', e);
+      alert('Error al guardar: ' + (e.message || e));
     } finally {
       setBusyId(null);
     }
