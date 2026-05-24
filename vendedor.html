@@ -1171,7 +1171,7 @@ function TabIngresos({ tareas, config }) {
     if(!formInv.tienda || !formInv.producto || !formInv.cantidad) {
       alert('Completa todos los campos requeridos'); return;
     }
-    const s = getSession();
+    const s = JSON.parse(sessionStorage.getItem('mars_portal_session') || 'null') || {};
     const { error } = await sbPortal.from('ingresos').insert({
       vendedor_nombre: s.nombre,
       tienda: formInv.tienda,
@@ -1191,7 +1191,7 @@ function TabIngresos({ tareas, config }) {
     if(!formSug.tienda || !formSug.producto || !formSug.cantidad) {
       alert('Completa todos los campos requeridos'); return;
     }
-    const s = getSession();
+    const s = JSON.parse(sessionStorage.getItem('mars_portal_session') || 'null') || {};
     const tareaVer = (tareas || []).find(t =>
       ((t.tipo||'').toLowerCase() === 'verificacion' || (t.tipo||'').toLowerCase() === 'sugerido') &&
       norm(t.tienda) === norm(formSug.tienda) &&
