@@ -479,63 +479,37 @@ function FormTarea({ tarea, onDone, busy }) {
   const set = (k, v) => setVals(p => ({ ...p, [k]: v }));
   const tipo = (tarea.tipo || '').toLowerCase();
 
+  if(tipo === 'verificacion') {
+    return (
+      <div className="wt-tarea-panel">
+        <div style={{fontSize:12, color:'var(--muted)', fontStyle:'italic', padding:'8px 0'}}>
+          Esta tarea se completará automáticamente al registrar el sugerido.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="wt-tarea-panel">
       {tipo === 'inventario' && (
-        <>
-          <div className="wt-form-group">
-            <label className="wt-label">Producto</label>
-            <input className="wt-input" placeholder="Nombre del producto" value={vals.producto||''} onChange={e=>set('producto',e.target.value)}/>
-          </div>
-          <div className="wt-form-group">
-            <label className="wt-label">Cantidad</label>
-            <input className="wt-input" type="number" placeholder="0" value={vals.cantidad||''} onChange={e=>set('cantidad',e.target.value)}/>
-          </div>
-          <div className="wt-form-group">
-            <label className="wt-label">Observación</label>
-            <textarea className="wt-input" rows="2" placeholder="Opcional…" value={vals.observacion||''} onChange={e=>set('observacion',e.target.value)}/>
-          </div>
-        </>
-      )}
-      {tipo === 'sugerido' && (
-        <>
-          <div className="wt-form-group">
-            <label className="wt-label">Producto</label>
-            <input className="wt-input" placeholder="Nombre del producto" value={vals.producto||''} onChange={e=>set('producto',e.target.value)}/>
-          </div>
-          <div className="wt-form-group">
-            <label className="wt-label">Cantidad sugerida</label>
-            <input className="wt-input" type="number" placeholder="0" value={vals.cantidad||''} onChange={e=>set('cantidad',e.target.value)}/>
-          </div>
-          <div className="wt-form-group">
-            <label className="wt-label">Nota</label>
-            <textarea className="wt-input" rows="2" placeholder="Opcional…" value={vals.nota||''} onChange={e=>set('nota',e.target.value)}/>
-          </div>
-        </>
-      )}
-      {tipo === 'verificacion' && (
-        <>
-          <div className="wt-form-group">
-            <label className="wt-label">Estado del exhibidor</label>
-            <select className="wt-input" value={vals.estado_exhibidor||''} onChange={e=>set('estado_exhibidor',e.target.value)}>
-              <option value="">Seleccionar…</option>
-              <option value="bien">Bien</option>
-              <option value="regular">Regular</option>
-              <option value="mal">Mal</option>
-            </select>
-          </div>
-          <div className="wt-form-group">
-            <label className="wt-label">Observación</label>
-            <textarea className="wt-input" rows="2" placeholder="Describe el estado…" value={vals.observacion||''} onChange={e=>set('observacion',e.target.value)}/>
-          </div>
-        </>
-      )}
-      {!['inventario','sugerido','verificacion'].includes(tipo) && (
         <div className="wt-form-group">
-          <label className="wt-label">Observación</label>
-          <textarea className="wt-input" rows="2" placeholder="Opcional…" value={vals.observacion||''} onChange={e=>set('observacion',e.target.value)}/>
+          <label className="wt-label">Inventario Real</label>
+          <input className="wt-input" type="number" placeholder="0" value={vals.cantidad||''} onChange={e=>set('cantidad',e.target.value)}/>
         </div>
       )}
+      {tipo === 'sugerido' && (
+        <div className="wt-form-group">
+          <label className="wt-label">Cantidad Sugerida</label>
+          <input className="wt-input" type="number" placeholder="0" value={vals.cantidad||''} onChange={e=>set('cantidad',e.target.value)}/>
+        </div>
+      )}
+      <div className="wt-form-group">
+        <label className="wt-label">Comentario</label>
+        <textarea className="wt-input" rows="2"
+          placeholder={tarea.comentario || 'Escribe tu respuesta…'}
+          value={vals.respuesta_vendedor||''}
+          onChange={e=>set('respuesta_vendedor',e.target.value)}/>
+      </div>
       <button className="wt-btn-done" disabled={busy} onClick={() => onDone(tarea, vals)}>
         {busy ? 'Guardando…' : 'Listo — marcar como hecha'}
       </button>
@@ -543,7 +517,7 @@ function FormTarea({ tarea, onDone, busy }) {
   );
 }
 
-function WidgetTareas({ tareas: inicial }) {
+function WidgetTareas({ tareas: inicial, onComplete }) {
   const [tareas, setTareas] = useState(() => inicial || []);
   const [openId, setOpenId] = useState(null);
   const [busyId, setBusyId] = useState(null);
@@ -560,16 +534,17 @@ function WidgetTareas({ tareas: inicial }) {
       const extra = {};
       if(tipo === 'inventario'){
         extra.inventario_real = Number(vals.cantidad) || null;
-        extra.comentario = vals.observacion || null;
+        extra.comentario = vals.respuesta_vendedor || null;
       } else if(tipo === 'sugerido'){
         extra.cantidad_sugerida = Number(vals.cantidad) || null;
-        extra.comentario = vals.nota || null;
+        extra.comentario = vals.respuesta_vendedor || null;
       } else if(tipo === 'verificacion'){
         extra.estado_exhibidor = vals.estado_exhibidor || null;
-        extra.comentario = vals.observacion || null;
+        extra.comentario = vals.respuesta_vendedor || null;
       } else {
-        extra.comentario = vals.observacion || null;
+        extra.comentario = vals.respuesta_vendedor || null;
       }
+      extra.respuesta_vendedor = vals.respuesta_vendedor || null;
       const { error: updErr } = await sbPortal.from('tareas').update({
         estado: 'completada',
         fecha_completada: new Date().toISOString(),
@@ -580,6 +555,7 @@ function WidgetTareas({ tareas: inicial }) {
         t.id === tarea.id ? { ...t, estado: 'completada' } : t
       ));
       setOpenId(null);
+      if(onComplete) onComplete();
     } catch (e) {
       console.error('Error completando tarea:', e);
       alert('Error al guardar: ' + (e.message || e));
@@ -619,7 +595,10 @@ function WidgetTareas({ tareas: inicial }) {
                   <div className="wt-tarea-header" onClick={() => setOpenId(isOpen ? null : t.id)}>
                     <div style={{ minWidth: 0, flex: 1 }}>
                       <div className="wt-tarea-nombre">{t.tienda || t.nombre || '—'}</div>
-                      <div className="wt-tarea-desc">{t.descripcion || t.producto || t.tipo || ''}</div>
+                      <div className="wt-tarea-desc">
+                        {({'inventario':'📦 Inventario','sugerido':'📋 Sugerido','verificacion':'✅ Verificación'}[(t.tipo||'').toLowerCase()] || t.tipo || '')}
+                        {t.producto ? ` — ${t.producto}` : ''}
+                      </div>
                     </div>
                     <svg className={`chevron${isOpen?' open':''}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{flexShrink:0,marginLeft:8}}>
                       <polyline points="6 9 12 15 18 9"/>
@@ -724,6 +703,7 @@ function AlertTiendaAccordion({ tienda, count, prom, badgeTxt, badgeStyle, borde
 }
 
 function TabInicio({ tareas, config }) {
+  const [tareasVer, setTareasVer] = useState(0);
   const inv = config?.inventario || [];
 
   const { agotadosPorTienda, criticosPorTienda, atencionPorTienda,
@@ -775,7 +755,7 @@ function TabInicio({ tareas, config }) {
         </div>
       </div>
 
-      <WidgetTareas tareas={tareas}/>
+      <WidgetTareas tareas={tareas} onComplete={() => setTareasVer(v => v+1)} key={tareasVer}/>
 
       {agotadosPorTienda.length > 0 && (
         <div className="card">
@@ -1176,7 +1156,7 @@ function TabOfertas({ config }) {
 // =============================================
 // 11. TAB: Ingresos
 // =============================================
-function TabIngresos({ config }) {
+function TabIngresos({ tareas, config }) {
   const inv = config?.inventario || [];
   const tiendasDisponibles = useMemo(() =>
     [...new Set(inv.map(r => r.tienda).filter(Boolean))].sort(),
@@ -1192,6 +1172,60 @@ function TabIngresos({ config }) {
   const [formSug, setFormSug] = useState({});
   const setI = (k, v) => setFormInv(p => ({ ...p, [k]: v }));
   const setS = (k, v) => setFormSug(p => ({ ...p, [k]: v }));
+
+  const guardarIngreso = async () => {
+    if(!formInv.tienda || !formInv.producto || !formInv.cantidad) {
+      alert('Completa todos los campos requeridos'); return;
+    }
+    const s = getSession();
+    const { error } = await sbPortal.from('ingresos').insert({
+      vendedor_nombre: s.nombre,
+      tienda: formInv.tienda,
+      cadena: 'xtra',
+      tipo: 'inventario',
+      producto: formInv.producto,
+      cantidad: Number(formInv.cantidad),
+      observacion: formInv.observacion || null,
+      fecha_registro: new Date().toISOString()
+    });
+    if(error) { alert('Error: ' + error.message); return; }
+    alert('✅ Ingreso guardado');
+    setFormInv({});
+  };
+
+  const guardarSugerido = async () => {
+    if(!formSug.tienda || !formSug.producto || !formSug.cantidad) {
+      alert('Completa todos los campos requeridos'); return;
+    }
+    const s = getSession();
+    const tareaVer = (tareas || []).find(t =>
+      (t.tipo||'').toLowerCase() === 'verificacion' &&
+      norm(t.tienda) === norm(formSug.tienda) &&
+      norm(t.producto) === norm(formSug.producto) &&
+      norm(t.estado) !== 'completada'
+    );
+    const { error } = await sbPortal.from('ingresos').insert({
+      vendedor_nombre: s.nombre,
+      tienda: formSug.tienda,
+      cadena: 'machetazo',
+      tipo: 'sugerido',
+      tipo_sugerido: formSug.tipo_sugerido || null,
+      producto: formSug.producto,
+      cantidad: Number(formSug.cantidad),
+      observacion: formSug.observacion || null,
+      tarea_id: tareaVer ? tareaVer.id : null,
+      fecha_registro: new Date().toISOString()
+    });
+    if(error) { alert('Error: ' + error.message); return; }
+    if(tareaVer) {
+      await sbPortal.from('tareas').update({
+        estado: 'completada',
+        fecha_completada: new Date().toISOString()
+      }).eq('id', tareaVer.id);
+    }
+    alert('✅ Sugerido guardado');
+    setFormSug({});
+  };
 
   const titleStyle = { fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 15 };
   const subStyle   = { fontSize: 12, color: 'var(--muted)', marginTop: 3 };
@@ -1231,7 +1265,7 @@ function TabIngresos({ config }) {
               <label className="ing-label">Observación</label>
               <textarea className="ing-input" rows="2" placeholder="Opcional…" value={formInv.observacion||''} onChange={e=>setI('observacion',e.target.value)}/>
             </div>
-            <button className="ing-btn">Guardar</button>
+            <button className="ing-btn" onClick={guardarIngreso}>Guardar</button>
           </div>
         )}
       </div>
@@ -1280,7 +1314,7 @@ function TabIngresos({ config }) {
                 <label className="ing-label">Observación</label>
                 <textarea className="ing-input" rows="2" placeholder="Opcional…" value={formSug.observacion||''} onChange={e=>setS('observacion',e.target.value)}/>
               </div>
-              <button className="ing-btn">Guardar</button>
+              <button className="ing-btn" onClick={guardarSugerido}>Guardar</button>
             </div>
           )}
         </div>
