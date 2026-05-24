@@ -531,29 +531,25 @@ function WidgetTareas({ tareas: inicial, onUpdate }) {
     setBusyId(tarea.id);
     try {
       const tipo = (tarea.tipo || '').toLowerCase();
-      const extra = {};
+      const extra = { respuesta_vendedor: vals.respuesta_vendedor || null };
       if(tipo === 'inventario'){
         extra.inventario_real = Number(vals.cantidad) || null;
-        extra.comentario = vals.respuesta_vendedor || null;
       } else if(tipo === 'sugerido'){
         extra.cantidad_sugerida = Number(vals.cantidad) || null;
-        extra.comentario = vals.respuesta_vendedor || null;
       } else if(tipo === 'verificacion'){
         extra.estado_exhibidor = vals.estado_exhibidor || null;
-        extra.comentario = vals.respuesta_vendedor || null;
-      } else {
-        extra.comentario = vals.respuesta_vendedor || null;
       }
-      extra.respuesta_vendedor = vals.respuesta_vendedor || null;
       const { error: updErr } = await sbPortal.from('tareas').update({
         estado: 'completada',
         fecha_completada: new Date().toISOString(),
         ...extra
       }).eq('id', tarea.id);
       if(updErr) throw new Error(updErr.message || JSON.stringify(updErr));
-      const next = tareas.map(t => t.id === tarea.id ? { ...t, estado: 'completada' } : t);
-      setTareas(next);
-      if(onUpdate) onUpdate(next);
+      setTareas(prev => {
+        const next = prev.map(t => t.id === tarea.id ? { ...t, estado: 'completada' } : t);
+        if(onUpdate) onUpdate(next);
+        return next;
+      });
       setOpenId(null);
     } catch (e) {
       console.error('Error completando tarea:', e);
