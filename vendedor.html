@@ -1213,6 +1213,20 @@ function TabIngresos({ tareas, config }) {
       fecha_registro: new Date().toISOString()
     });
     if(error) { alert('Error: ' + error.message); return; }
+    await sbPortal.from('reportes').insert({
+      vendedor:        'MACHETAZO: ' + s.nombre,
+      tienda:          formSug.tienda,
+      barcode:         null,
+      codigo:          null,
+      producto:        formSug.producto,
+      marca:           'MARS',
+      tipo:            formSug.tipo_sugerido || '—',
+      tipo_pedido:     'Sugerido',
+      cantidad:        Number(formSug.cantidad),
+      monto_estimado:  0,
+      mes_vencimiento: null,
+      fecha_reporte:   new Date().toLocaleDateString('es-ES')
+    });
     if(tareaVer) {
       await sbPortal.from('tareas').update({
         estado: 'completada',
