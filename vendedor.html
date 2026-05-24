@@ -517,7 +517,7 @@ function FormTarea({ tarea, onDone, busy }) {
   );
 }
 
-function WidgetTareas({ tareas: inicial, onComplete }) {
+function WidgetTareas({ tareas: inicial, onUpdate }) {
   const [tareas, setTareas] = useState(() => inicial || []);
   const [openId, setOpenId] = useState(null);
   const [busyId, setBusyId] = useState(null);
@@ -551,11 +551,10 @@ function WidgetTareas({ tareas: inicial, onComplete }) {
         ...extra
       }).eq('id', tarea.id);
       if(updErr) throw new Error(updErr.message || JSON.stringify(updErr));
-      setTareas(prev => prev.map(t =>
-        t.id === tarea.id ? { ...t, estado: 'completada' } : t
-      ));
+      const next = tareas.map(t => t.id === tarea.id ? { ...t, estado: 'completada' } : t);
+      setTareas(next);
+      if(onUpdate) onUpdate(next);
       setOpenId(null);
-      if(onComplete) onComplete();
     } catch (e) {
       console.error('Error completando tarea:', e);
       alert('Error al guardar: ' + (e.message || e));
@@ -703,7 +702,7 @@ function AlertTiendaAccordion({ tienda, count, prom, badgeTxt, badgeStyle, borde
 }
 
 function TabInicio({ tareas, config }) {
-  const [tareasVer, setTareasVer] = useState(0);
+  const [tareasLocal, setTareasLocal] = useState(tareas);
   const inv = config?.inventario || [];
 
   const { agotadosPorTienda, criticosPorTienda, atencionPorTienda,
@@ -755,7 +754,7 @@ function TabInicio({ tareas, config }) {
         </div>
       </div>
 
-      <WidgetTareas tareas={tareas} onComplete={() => setTareasVer(v => v+1)} key={tareasVer}/>
+      <WidgetTareas tareas={tareasLocal} onUpdate={setTareasLocal}/>
 
       {agotadosPorTienda.length > 0 && (
         <div className="card">
