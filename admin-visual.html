@@ -1457,7 +1457,8 @@ function renderProductos(){
     prodMap[nombre].total += Number(r.inventario || 0);
     prodMap[nombre].tiendas.push({
       tienda: r.tienda || '—', vendedor: r.vendedor || '—',
-      inventario: Number(r.inventario || 0), cobertura: cob
+      inventario: Number(r.inventario || 0), cobertura: cob,
+      venta_promedio: Number(r.venta_promedio || 0)
     });
     if(cob === 0)      prodMap[nombre].agot++;
     else if(cob < 10)  prodMap[nombre].crit++;
@@ -1555,6 +1556,14 @@ function renderProductos(){
 function avCobBadge(cob){
   const s = 'padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;display:inline-block';
   if(cob === 0) return `<span style="${s};background:#FCEBEB;color:#A32D2D">Agotado</span>`;
+  if(cob < 10)  return `<span style="${s};background:#FCEBEB;color:#A32D2D">${cob}d</span>`;
+  if(cob < 20)  return `<span style="${s};background:#FAEEDA;color:#854F0B">${cob}d</span>`;
+  if(cob <= 40) return `<span style="${s};background:#EAF3DE;color:#3B6D11">${cob}d</span>`;
+  return `<span style="${s};background:#E6F1FB;color:#185FA5">${cob}d</span>`;
+}
+function avCobBadgeFull(cob){
+  const s = 'padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;display:inline-block';
+  if(cob === 0) return `<span style="${s};background:#FCEBEB;color:#A32D2D">Agotado</span>`;
   if(cob < 10)  return `<span style="${s};background:#FCEBEB;color:#A32D2D">${cob}d Crítico</span>`;
   if(cob < 20)  return `<span style="${s};background:#FAEEDA;color:#854F0B">${cob}d Atención</span>`;
   if(cob <= 40) return `<span style="${s};background:#EAF3DE;color:#3B6D11">${cob}d Óptimo</span>`;
@@ -1583,6 +1592,7 @@ function avToggleProd(idx){
           <th style="padding:6px 8px;text-align:left;color:var(--text-2);font-weight:600">Tienda</th>
           <th style="padding:6px 8px;text-align:left;color:var(--text-2);font-weight:600">Vendedor</th>
           <th style="padding:6px 8px;text-align:right;color:var(--text-2);font-weight:600">Inventario</th>
+          <th style="padding:6px 8px;text-align:right;color:var(--text-2);font-weight:600">Venta 1M</th>
           <th style="padding:6px 8px;text-align:right;color:var(--text-2);font-weight:600">Cobertura</th>
           <th style="padding:6px 8px;text-align:left;color:var(--text-2);font-weight:600">Estado</th>
           <th style="padding:6px 8px;text-align:center;color:var(--text-2);font-weight:600">Acción</th>
@@ -1593,8 +1603,9 @@ function avToggleProd(idx){
               <td style="padding:6px 8px;font-weight:500">${t.tienda}</td>
               <td style="padding:6px 8px;color:var(--text-2);font-size:11px">${t.vendedor}</td>
               <td style="padding:6px 8px;text-align:right;font-family:'DM Mono',monospace">${fmt(t.inventario)}</td>
+              <td style="padding:6px 8px;text-align:right;font-family:'DM Mono',monospace">${fmt(t.venta_promedio)}</td>
               <td style="padding:6px 8px;text-align:right;font-family:'DM Mono',monospace">${t.cobertura}d</td>
-              <td style="padding:6px 8px">${avCobBadge(t.cobertura)}</td>
+              <td style="padding:6px 8px">${avCobBadgeFull(t.cobertura)}</td>
               <td style="padding:6px 8px;text-align:center">
                 <button onclick="avToggleTarea(${idx},${ti})"
                   style="background:var(--verde);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-weight:600">
@@ -1603,7 +1614,7 @@ function avToggleProd(idx){
               </td>
             </tr>
             <tr id="av-tarea-${idx}-${ti}" style="display:none">
-              <td colspan="6" style="padding:10px 16px;background:#F0F7F4;border-bottom:1px solid var(--border)">
+              <td colspan="7" style="padding:10px 16px;background:#F0F7F4;border-bottom:1px solid var(--border)">
                 <div style="display:flex;gap:6px;margin-bottom:8px" id="av-tipos-${idx}-${ti}" data-tipo="inventario">
                   <button class="av-tipo" data-tipo="inventario" onclick="avSetTipo(${idx},${ti},'inventario')"
                     style="padding:4px 12px;border-radius:6px;border:1.5px solid var(--verde);background:var(--verde);color:#fff;font-size:11px;font-weight:600;cursor:pointer">
