@@ -1192,6 +1192,8 @@ function TabIngresos({ tareas, config }) {
       alert('Completa todos los campos requeridos'); return;
     }
     const s = JSON.parse(sessionStorage.getItem('mars_portal_session') || 'null') || {};
+    console.log('[guardarSugerido] tienda:', formSug.tienda, '| producto:', formSug.producto);
+    console.log('[guardarSugerido] tareas disponibles:', (tareas||[]).map(t => t.tipo+'|'+t.tienda+'|'+t.producto+'|'+t.estado));
     const tareaVer = (tareas || []).find(t =>
       ((t.tipo||'').toLowerCase() === 'verificacion' || (t.tipo||'').toLowerCase() === 'sugerido') &&
       norm(t.tienda) === norm(formSug.tienda) &&
