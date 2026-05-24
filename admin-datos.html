@@ -3622,8 +3622,8 @@ async function cdCargar(tipo) {
 
   var cols, labels;
   if (tipo === 'tareas') {
-    cols   = ['vendedor_nombre','tienda','producto','inventario_sistema','estado','fecha_asignacion'];
-    labels = ['Vendedor','Tienda','Producto','Inv. Sistema','Estado','Fecha'];
+    cols   = ['vendedor_nombre','tienda','producto','tipo','inventario_sistema','inventario_real','cantidad_sugerida','estado_exhibidor','comentario','estado','fecha_asignacion','fecha_completada'];
+    labels = ['Vendedor','Tienda','Producto','Tipo','Inv. Sistema','Inv. Real','Cant. Sugerida','Estado Exhibidor','Comentario','Estado','Fecha Asignación','Fecha Completada'];
   } else if (tipo === 'inventario') {
     cols   = ['vendedor','tienda','producto','cantidad','mes_vencimiento','monto_estimado'];
     labels = ['Vendedor','Tienda','Producto','Cantidad','Mes Vencimiento','Precio Total'];
@@ -3646,8 +3646,21 @@ async function cdDescargar(tipo) {
   if (!data || data.length === 0) { alert('No hay registros disponibles para descargar'); return; }
   var mappedData, headers, filename;
   if (tipo === 'tareas') {
-    headers = ['Vendedor','Tienda','Producto','Inv. Sistema','Inv. Real','Estado','Fecha'];
-    mappedData = data.map(function(r){ return { 'Vendedor':r.vendedor_nombre, 'Tienda':r.tienda, 'Producto':r.producto, 'Inv. Sistema':r.inventario_sistema, 'Inv. Real':r.inventario_real, 'Estado':r.estado, 'Fecha':r.fecha_asignacion }; });
+    headers = ['Vendedor','Tienda','Producto','Tipo','Inv. Sistema','Inv. Real','Cant. Sugerida','Estado Exhibidor','Comentario','Estado','Fecha Asignación','Fecha Completada'];
+    mappedData = data.map(function(r){ return {
+      'Vendedor':          r.vendedor_nombre,
+      'Tienda':            r.tienda,
+      'Producto':          r.producto,
+      'Tipo':              r.tipo || '—',
+      'Inv. Sistema':      r.inventario_sistema,
+      'Inv. Real':         r.inventario_real != null ? r.inventario_real : '—',
+      'Cant. Sugerida':    r.cantidad_sugerida != null ? r.cantidad_sugerida : '—',
+      'Estado Exhibidor':  r.estado_exhibidor || '—',
+      'Comentario':        r.comentario || '—',
+      'Estado':            r.estado,
+      'Fecha Asignación':  r.fecha_asignacion,
+      'Fecha Completada':  r.fecha_completada || '—'
+    }; });
     filename = 'tareas_' + new Date().toISOString().split('T')[0] + '.xlsx';
   } else if (tipo === 'inventario') {
     headers = ['Vendedor','Tienda','Producto','Cantidad','Mes Vencimiento','Precio Total'];
