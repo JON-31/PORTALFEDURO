@@ -1261,7 +1261,7 @@ function TabIngresos({ tareas, config }) {
       tipo: 'sugerido',
       tipo_sugerido: formSug.tipo || null,
       producto: formSug.producto,
-      cantidad: Number(formSug.cantidad),
+      cantidad: formSug.unidFact ? Number(formSug.cantidad) * Number(formSug.unidFact) : Number(formSug.cantidad),
       observacion: formSug.observacion || null,
       tarea_id: tareaVer ? tareaVer.id : null,
       fecha_registro: new Date().toISOString()
@@ -1270,13 +1270,13 @@ function TabIngresos({ tareas, config }) {
     await sbPortal.from('reportes').insert({
       vendedor:        'MACHETAZO: ' + s.nombre,
       tienda:          formSug.tienda,
-      barcode:         null,
-      codigo:          null,
+      barcode:         formSug.barcode || null,
+      codigo:          formSug.material || null,
       producto:        formSug.producto,
       marca:           'MARS',
       tipo:            formSug.tipo || '—',
       tipo_pedido:     'Sugerido',
-      cantidad:        Number(formSug.cantidad),
+      cantidad:        formSug.unidFact ? Number(formSug.cantidad) * Number(formSug.unidFact) : Number(formSug.cantidad),
       monto_estimado:  0,
       mes_vencimiento: null,
       fecha_reporte:   new Date().toLocaleDateString('es-ES')
@@ -1415,6 +1415,8 @@ function TabIngresos({ tareas, config }) {
                           onMouseDown={() => {
                             setS('producto', p.descripcion);
                             setS('unidFact', p.u);
+                            setS('barcode', p.codigo || null);
+                            setS('material', p.material || null);
                             setSugQuery(p.descripcion);
                             setSugOpen(false);
                           }}
