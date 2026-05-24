@@ -1440,22 +1440,41 @@ function renderTiendas(){
 function renderProductos(){
   const inv = DATA.inventario;
   if(!inv || !Array.isArray(inv)){
-    document.getElementById('productos-por-grupo').innerHTML = '<div class="empty-state"><div class="ico">📦</div><p>Sin datos de inventario</p></div>';
+    document.getElementById('productos-por-grupo').innerHTML =
+      '<div class="empty-state"><div class="ico">📦</div><p>Sin datos de inventario</p></div>';
     return;
   }
 
-  // Agrupar por producto
   const prodMap = {};
   inv.forEach(r => {
-    const p = r.producto || '—';
-    if(!prodMap[p]) prodMap[p] = { producto:p, grupo: getGrupo(p), total:0, tiendas:0, agot:0, crit:0 };
-    prodMap[p].total += Number(r.inventario||0);
-    prodMap[p].tiendas++;
-    if(Number(r.inventario||0) === 0) prodMap[p].agot++;
-    else if(Number(r.inventario||0) < 10) prodMap[p].crit++;
+    const nombre = r.producto || '—';
+    const cob = Number(r.cobertura || 0);
+    if(!prodMap[nombre]) prodMap[nombre] = {
+      producto: nombre, grupo: getGrupo(nombre),
+      total: 0, tiendas: [],
+      agot: 0, crit: 0, aten: 0, opt: 0, sob: 0
+    };
+    prodMap[nombre].total += Number(r.inventario || 0);
+    prodMap[nombre].tiendas.push({
+      tienda: r.tienda || '—', vendedor: r.vendedor || '—',
+      inventario: Number(r.inventario || 0), cobertura: cob
+    });
+    if(cob === 0)      prodMap[nombre].agot++;
+    else if(cob < 10)  prodMap[nombre].crit++;
+    else if(cob < 20)  prodMap[nombre].aten++;
+    else if(cob <= 40) prodMap[nombre].opt++;
+    else               prodMap[nombre].sob++;
   });
 
-  const prods = Object.values(prodMap);
+  window._avProds = Object.values(prodMap).map(p => ({
+    ...p,
+    cobProm: p.tiendas.length
+      ? Math.round(p.tiendas.reduce((a,t) => a + t.cobertura, 0) / p.tiendas.length)
+      : 0
+  }));
+  window._avOpenTienda = {};
+  const prods = window._avProds;
+
   document.getElementById('badge-prod-count').textContent = prods.length + ' SKUs';
   document.getElementById('kpi-sku').textContent = prods.length;
   document.getElementById('kpi-prod-agot').textContent = prods.filter(p=>p.agot>0).length;
@@ -1463,48 +1482,61 @@ function renderProductos(){
 
   function renderGrupos(lista){
     const container = document.getElementById('productos-por-grupo');
-    if(!lista.length){ container.innerHTML = '<div class="empty-state"><div class="ico">🔍</div><p>Sin resultados</p></div>'; return; }
-
+    if(!lista.length){
+      container.innerHTML = '<div class="empty-state"><div class="ico">🔍</div><p>Sin resultados</p></div>';
+      return;
+    }
     const porGrupo = {};
-    lista.forEach(p => {
-      if(!porGrupo[p.grupo]) porGrupo[p.grupo] = [];
-      porGrupo[p.grupo].push(p);
-    });
+    lista.forEach(p => { if(!porGrupo[p.grupo]) porGrupo[p.grupo]=[]; porGrupo[p.grupo].push(p); });
 
-    container.innerHTML = Object.entries(porGrupo).map(([g, items]) => `
-      <div class="card" style="margin-bottom:16px">
-        <div class="grupo-header">
-          <div class="grupo-dot" style="background:${GRUPO_DOTS[g]||'#888'}"></div>
-          ${g} <span style="color:var(--text-3);font-weight:400">(${items.length} SKUs)</span>
-        </div>
-        <div class="card-body" style="padding:0">
-          <div class="tbl-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Producto</th>
-                  <th class="right">Total Inventario</th>
-                  <th class="right">Tiendas</th>
-                  <th class="right">Agotados</th>
-                  <th class="right">Críticos</th>
-                  <th>Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${items.sort((a,b)=>b.agot-a.agot).map(p=>`
-                  <tr>
-                    <td style="font-weight:600">${p.producto}</td>
-                    <td class="right mono">${fmt(p.total)}</td>
-                    <td class="right mono">${p.tiendas}</td>
-                    <td class="right mono" style="${p.agot>0?'color:var(--red);font-weight:700':'color:var(--text-3)'}">${p.agot}</td>
-                    <td class="right mono" style="${p.crit>0?'color:var(--amber)':'color:var(--text-3)'}">${p.crit}</td>
-                    <td>${chipInv(p.agot>0?0:p.crit>0?5:99)}</td>
-                  </tr>`).join('')}
-              </tbody>
-            </table>
+    container.innerHTML = Object.entries(porGrupo).map(([g, items]) => {
+      const rows = items.sort((a,b)=>b.agot-a.agot).map(p => {
+        const idx = prods.indexOf(p);
+        return `
+          <tr class="av-prod-row" onclick="avToggleProd(${idx})" style="cursor:pointer">
+            <td style="width:24px;text-align:center;color:var(--text-3);font-size:11px" id="av-chev-${idx}">▶</td>
+            <td style="font-weight:600">${p.producto}</td>
+            <td class="right mono">${fmt(p.total)}</td>
+            <td class="right mono">${p.tiendas.length}</td>
+            <td class="right mono" style="${p.agot>0?'color:#A32D2D;font-weight:700':''}">${p.agot||'—'}</td>
+            <td class="right mono" style="${p.crit>0?'color:#A32D2D;':''}">${p.crit||'—'}</td>
+            <td class="right mono" style="${p.aten>0?'color:#854F0B;':''}">${p.aten||'—'}</td>
+            <td class="right mono" style="${p.opt>0?'color:#3B6D11;':''}">${p.opt||'—'}</td>
+            <td class="right mono" style="${p.sob>0?'color:#185FA5;':''}">${p.sob||'—'}</td>
+            <td>${avCobBadge(p.cobProm)}</td>
+          </tr>
+          <tr id="av-panel-${idx}" style="display:none">
+            <td colspan="10" style="padding:0;border-bottom:2px solid var(--border)">
+              <div id="av-panel-inner-${idx}"></div>
+            </td>
+          </tr>`;
+      }).join('');
+
+      return `
+        <div class="card" style="margin-bottom:16px">
+          <div class="grupo-header">
+            <div class="grupo-dot" style="background:${GRUPO_DOTS[g]||'#888'}"></div>
+            ${g} <span style="color:var(--text-3);font-weight:400">(${items.length} SKUs)</span>
           </div>
-        </div>
-      </div>`).join('');
+          <div class="card-body" style="padding:0">
+            <div class="tbl-wrap"><table>
+              <thead><tr>
+                <th style="width:24px"></th>
+                <th>Producto</th>
+                <th class="right">Total Inv</th>
+                <th class="right">Tiendas</th>
+                <th class="right" style="color:#A32D2D">🔴 Agotado</th>
+                <th class="right" style="color:#A32D2D">🟡 Crítico</th>
+                <th class="right" style="color:#854F0B">🟠 Atención</th>
+                <th class="right" style="color:#3B6D11">🟢 Óptimo</th>
+                <th class="right" style="color:#185FA5">🔵 Sobrestk</th>
+                <th>Cobertura</th>
+              </tr></thead>
+              <tbody>${rows}</tbody>
+            </table></div>
+          </div>
+        </div>`;
+    }).join('');
   }
 
   renderGrupos(prods);
@@ -1513,12 +1545,155 @@ function renderProductos(){
     const g = document.getElementById('filtro-prod-grupo').value;
     const q = document.getElementById('filtro-prod-nombre').value.toLowerCase();
     renderGrupos(prods.filter(p =>
-      (!g || p.grupo === g) &&
-      (!q || p.producto.toLowerCase().includes(q))
+      (!g || p.grupo === g) && (!q || p.producto.toLowerCase().includes(q))
     ));
   }
   document.getElementById('filtro-prod-grupo').onchange = applyFiltroProds;
-  document.getElementById('filtro-prod-nombre').oninput = applyFiltroProds;
+  document.getElementById('filtro-prod-nombre').oninput  = applyFiltroProds;
+}
+
+function avCobBadge(cob){
+  const s = 'padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;display:inline-block';
+  if(cob === 0) return `<span style="${s};background:#FCEBEB;color:#A32D2D">Agotado</span>`;
+  if(cob < 10)  return `<span style="${s};background:#FCEBEB;color:#A32D2D">${cob}d Crítico</span>`;
+  if(cob < 20)  return `<span style="${s};background:#FAEEDA;color:#854F0B">${cob}d Atención</span>`;
+  if(cob <= 40) return `<span style="${s};background:#EAF3DE;color:#3B6D11">${cob}d Óptimo</span>`;
+  return `<span style="${s};background:#E6F1FB;color:#185FA5">${cob}d Sobrestock</span>`;
+}
+
+function avToggleProd(idx){
+  const panel = document.getElementById('av-panel-'+idx);
+  const chev  = document.getElementById('av-chev-'+idx);
+  if(!panel) return;
+  const isOpen = panel.style.display !== 'none';
+  if(isOpen){
+    panel.style.display = 'none';
+    if(chev) chev.textContent = '▶';
+    window._avOpenTienda[idx] = null;
+    return;
+  }
+  panel.style.display = '';
+  if(chev) chev.textContent = '▼';
+  const p = window._avProds[idx];
+  const inner = document.getElementById('av-panel-inner-'+idx);
+  inner.innerHTML = `
+    <div style="padding:12px 16px;background:#F9FBFA;border-left:3px solid ${GRUPO_DOTS[p.grupo]||'#0F6E56'}">
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="border-bottom:1px solid var(--border)">
+          <th style="padding:6px 8px;text-align:left;color:var(--text-2);font-weight:600">Tienda</th>
+          <th style="padding:6px 8px;text-align:left;color:var(--text-2);font-weight:600">Vendedor</th>
+          <th style="padding:6px 8px;text-align:right;color:var(--text-2);font-weight:600">Inventario</th>
+          <th style="padding:6px 8px;text-align:right;color:var(--text-2);font-weight:600">Cobertura</th>
+          <th style="padding:6px 8px;text-align:left;color:var(--text-2);font-weight:600">Estado</th>
+          <th style="padding:6px 8px;text-align:center;color:var(--text-2);font-weight:600">Acción</th>
+        </tr></thead>
+        <tbody>
+          ${p.tiendas.map((t, ti) => `
+            <tr style="border-bottom:1px solid var(--border)">
+              <td style="padding:6px 8px;font-weight:500">${t.tienda}</td>
+              <td style="padding:6px 8px;color:var(--text-2);font-size:11px">${t.vendedor}</td>
+              <td style="padding:6px 8px;text-align:right;font-family:'DM Mono',monospace">${fmt(t.inventario)}</td>
+              <td style="padding:6px 8px;text-align:right;font-family:'DM Mono',monospace">${t.cobertura}d</td>
+              <td style="padding:6px 8px">${avCobBadge(t.cobertura)}</td>
+              <td style="padding:6px 8px;text-align:center">
+                <button onclick="avToggleTarea(${idx},${ti})"
+                  style="background:var(--verde);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-weight:600">
+                  ➕ Tarea
+                </button>
+              </td>
+            </tr>
+            <tr id="av-tarea-${idx}-${ti}" style="display:none">
+              <td colspan="6" style="padding:10px 16px;background:#F0F7F4;border-bottom:1px solid var(--border)">
+                <div style="display:flex;gap:6px;margin-bottom:8px" id="av-tipos-${idx}-${ti}" data-tipo="inventario">
+                  <button class="av-tipo" data-tipo="inventario" onclick="avSetTipo(${idx},${ti},'inventario')"
+                    style="padding:4px 12px;border-radius:6px;border:1.5px solid var(--verde);background:var(--verde);color:#fff;font-size:11px;font-weight:600;cursor:pointer">
+                    Inventario
+                  </button>
+                  <button class="av-tipo" data-tipo="sugerido" onclick="avSetTipo(${idx},${ti},'sugerido')"
+                    style="padding:4px 12px;border-radius:6px;border:1.5px solid var(--border);background:#fff;color:var(--text-2);font-size:11px;font-weight:600;cursor:pointer">
+                    Sugerido
+                  </button>
+                  <button class="av-tipo" data-tipo="verificacion" onclick="avSetTipo(${idx},${ti},'verificacion')"
+                    style="padding:4px 12px;border-radius:6px;border:1.5px solid var(--border);background:#fff;color:var(--text-2);font-size:11px;font-weight:600;cursor:pointer">
+                    Verificación
+                  </button>
+                </div>
+                <textarea id="av-comentario-${idx}-${ti}" placeholder="Comentario (opcional)…"
+                  style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;resize:vertical;min-height:56px;margin-bottom:8px;outline:none;box-sizing:border-box"></textarea>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <button onclick="avAsignarTarea(${idx},${ti})"
+                    style="background:var(--verde);color:#fff;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer">
+                    Asignar Tarea
+                  </button>
+                  <span id="av-msg-${idx}-${ti}" style="font-size:12px;font-weight:600"></span>
+                </div>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function avToggleTarea(idx, ti){
+  const row = document.getElementById('av-tarea-'+idx+'-'+ti);
+  if(!row) return;
+  const prev = window._avOpenTienda[idx];
+  if(prev != null && prev !== ti){
+    const prevRow = document.getElementById('av-tarea-'+idx+'-'+prev);
+    if(prevRow) prevRow.style.display = 'none';
+  }
+  const isOpen = row.style.display !== 'none';
+  row.style.display = isOpen ? 'none' : '';
+  window._avOpenTienda[idx] = isOpen ? null : ti;
+}
+
+function avSetTipo(idx, ti, tipo){
+  const c = document.getElementById('av-tipos-'+idx+'-'+ti);
+  if(!c) return;
+  c.dataset.tipo = tipo;
+  c.querySelectorAll('.av-tipo').forEach(btn => {
+    const on = btn.dataset.tipo === tipo;
+    btn.style.background  = on ? 'var(--verde)' : '#fff';
+    btn.style.color       = on ? '#fff' : 'var(--text-2)';
+    btn.style.borderColor = on ? 'var(--verde)' : 'var(--border)';
+  });
+}
+
+async function avAsignarTarea(idx, ti){
+  const p = window._avProds && window._avProds[idx];
+  if(!p) return;
+  const t = p.tiendas[ti];
+  if(!t) return;
+  const c    = document.getElementById('av-tipos-'+idx+'-'+ti);
+  const tipo = (c && c.dataset.tipo) || 'inventario';
+  const comentario = (document.getElementById('av-comentario-'+idx+'-'+ti)||{}).value || '';
+  const msgEl = document.getElementById('av-msg-'+idx+'-'+ti);
+  if(msgEl){ msgEl.textContent = 'Guardando…'; msgEl.style.color = 'var(--text-3)'; }
+  try {
+    const { error } = await sb.from('tareas').insert({
+      vendedor_nombre:    (t.vendedor||'—').toUpperCase(),
+      tienda:             t.tienda,
+      producto:           p.producto,
+      inventario_sistema: t.inventario,
+      estado:             'pendiente',
+      tipo:               tipo,
+      comentario:         comentario || null,
+      fecha_asignacion:   new Date().toISOString()
+    });
+    if(error) throw error;
+    if(msgEl){ msgEl.textContent = '✅ Tarea asignada'; msgEl.style.color = '#3B6D11'; }
+    setTimeout(() => {
+      const row = document.getElementById('av-tarea-'+idx+'-'+ti);
+      if(row) row.style.display = 'none';
+      window._avOpenTienda[idx] = null;
+      if(msgEl) msgEl.textContent = '';
+      const ta = document.getElementById('av-comentario-'+idx+'-'+ti);
+      if(ta) ta.value = '';
+    }, 2000);
+  } catch(e){
+    console.error(e);
+    if(msgEl){ msgEl.textContent = '❌ '+e.message; msgEl.style.color = '#A32D2D'; }
+  }
 }
 
 // ═══════════════════════════════════════
