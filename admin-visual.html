@@ -882,11 +882,12 @@ tbody td.right { text-align: right; }
                     <th>Grupo</th>
                     <th class="right">B8</th>
                     <th class="right">M8</th>
+                    <th class="right">En tiendas</th>
                     <th>Estado</th>
                   </tr>
                 </thead>
                 <tbody id="tbl-bodega-prod">
-                  <tr><td colspan="5" style="padding:20px;text-align:center;color:var(--text-3)">Cargando…</td></tr>
+                  <tr><td colspan="6" style="padding:20px;text-align:center;color:var(--text-3)">Cargando…</td></tr>
                 </tbody>
               </table>
             </div>
@@ -1881,17 +1882,17 @@ function renderBodega(){
             const hasTiendas = p.tiendas.length > 0;
             return `
             <tr style="cursor:${hasTiendas?'pointer':'default'}" onclick="${hasTiendas?`avToggleBod(${idx})`:''}">
-              <td style="font-weight:600">
-                ${hasTiendas ? `<span id="bod-chev-${idx}" style="font-size:10px;color:var(--text-3);margin-right:4px">▶</span>` : ''}
-                ${p.producto}
-              </td>
+              <td style="font-weight:600">${p.producto}</td>
               <td><span class="chip" style="background:${GRUPO_COLORES[p.grupo]||'#888'}22;color:${GRUPO_COLORES[p.grupo]||'#888'}">${p.grupo}</span></td>
               <td class="right mono">${fmt(p.b8)}</td>
               <td class="right mono">${p.m8 > 0 ? fmt(p.m8) : '—'}</td>
+              <td class="right mono">
+                ${hasTiendas ? `<span id="bod-chev-${idx}" style="font-size:10px;color:var(--text-3);margin-right:4px">▶</span>${p.tiendas.length}` : '—'}
+              </td>
               <td>${chipInv(p.b8 + p.m8)}</td>
             </tr>
             <tr id="bod-panel-${idx}" style="display:none">
-              <td colspan="5" style="padding:0;border-bottom:2px solid var(--border)">
+              <td colspan="6" style="padding:0;border-bottom:2px solid var(--border)">
                 <div style="padding:10px 16px;background:#F9FBFA">
                   <table style="width:100%;border-collapse:collapse;font-size:12px">
                     <thead><tr style="border-bottom:1px solid var(--border)">
@@ -1913,7 +1914,7 @@ function renderBodega(){
               </td>
             </tr>`;
           }).join('')
-        : `<tr><td colspan="5" style="padding:20px;text-align:center;color:var(--text-3)">Sin datos</td></tr>`;
+        : `<tr><td colspan="6" style="padding:20px;text-align:center;color:var(--text-3)">Sin datos</td></tr>`;
     }
     renderBodProd(prods);
     document.getElementById('filtro-bodega-grupo').onchange = function(){
