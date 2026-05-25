@@ -614,10 +614,12 @@ function RecomendadosCard({ config }) {
   });
 
   const conBodega = candidatos.filter(r => {
-    const prod = bodega.find(b =>
-      norm(b.descripcion || '').includes(norm(r.producto || '').substring(0, 8)) ||
-      norm(r.producto || '').includes(norm(b.descripcion || '').substring(0, 8))
-    );
+    const prod = r.barcode
+      ? bodega.find(b => b.codigoBarras === r.barcode)
+      : bodega.find(b =>
+          norm(b.descripcion || '').includes(norm(r.producto || '').substring(0, 8)) ||
+          norm(r.producto || '').includes(norm(b.descripcion || '').substring(0, 8))
+        );
     return prod ? (Number(prod.b8 || 0) > 0 || Number(prod.m8 || 0) > 0) : true;
   });
 
@@ -625,12 +627,18 @@ function RecomendadosCard({ config }) {
     const cadena = (r.cadena || '').toLowerCase();
     let catItem = null;
     if(cadena === 'xtra') {
-      catItem = (window.CAT_DATA || []).find(c =>
+      catItem = r.barcode
+        ? (window.CAT_DATA || []).find(c => c.b === r.barcode)
+        : null;
+      if(!catItem) catItem = (window.CAT_DATA || []).find(c =>
         norm(c.n || '').includes(norm(r.producto || '').substring(0, 10)) ||
         norm(r.producto || '').includes(norm(c.n || '').substring(0, 10))
       );
     } else {
-      catItem = (window.MACHETAZO_PRODUCTOS || []).find(c =>
+      catItem = r.barcode
+        ? (window.MACHETAZO_PRODUCTOS || []).find(c => c.material === r.barcode || c.codigo === r.barcode)
+        : null;
+      if(!catItem) catItem = (window.MACHETAZO_PRODUCTOS || []).find(c =>
         norm(c.descripcion || '').includes(norm(r.producto || '').substring(0, 10)) ||
         norm(r.producto || '').includes(norm(c.descripcion || '').substring(0, 10))
       );
@@ -639,7 +647,8 @@ function RecomendadosCard({ config }) {
     const tipo = catItem?.t || 'CJ';
     const cajasRec = Math.max(1, Math.ceil(Number(r.venta_promedio || 0) / u));
     const unidadesRec = cajasRec * u;
-    return { ...r, u, tipo, cajasRec, unidadesRec };
+    const precioTotal = catItem?.p ? cajasRec * catItem.p : null;
+    return { ...r, u, tipo, cajasRec, unidadesRec, precioTotal };
   });
 
   const sorted = conCatalogo.sort((a, b) => Number(b.venta_promedio) - Number(a.venta_promedio));
@@ -700,7 +709,8 @@ function RecomendadosCard({ config }) {
                     return (
                       <div key={i} style={{display:'grid',gridTemplateColumns:'1fr auto',gap:8,alignItems:'center',padding:'10px 0',borderBottom: i < prods.length-1 ? '1px solid var(--border)' : 'none'}}>
                         <div>
-                          <div style={{fontSize:12,fontWeight:600,color:'var(--text-1)',marginBottom:4}}>{p.producto}</div>
+                          <div style={{fontSize:12,fontWeight:600,color:'var(--text-1)',marginBottom:2}}>{p.producto}</div>
+                          {p.barcode && <div style={{fontSize:10,color:'var(--text-3)',marginBottom:3,fontFamily:'monospace'}}>{p.barcode}</div>}
                           <div style={{display:'flex',alignItems:'center',gap:6}}>
                             <span style={{fontSize:11,background:badge.bg,color:badge.color,padding:'1px 7px',borderRadius:20,fontWeight:600}}>{badge.label}</span>
                             <span style={{fontSize:11,color:'var(--text-3)'}}>Inv: {p.inventario} uds</span>
@@ -709,6 +719,7 @@ function RecomendadosCard({ config }) {
                         <div style={{textAlign:'right'}}>
                           <div style={{fontSize:13,fontWeight:600,color:'var(--text-1)'}}>{p.cajasRec} {p.tipo}</div>
                           <div style={{fontSize:11,color:'var(--text-3)'}}>{p.unidadesRec} unidades</div>
+                          {p.precioTotal && <div style={{fontSize:12,fontWeight:600,color:'#0F6E56',marginTop:2}}>${p.precioTotal.toLocaleString('es-PA',{minimumFractionDigits:2})}</div>}
                         </div>
                       </div>
                     );
