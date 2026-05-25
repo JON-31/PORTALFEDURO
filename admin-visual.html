@@ -875,13 +875,14 @@ tbody td.right { text-align: right; }
                   <tr>
                     <th>Producto</th>
                     <th>Grupo</th>
-                    <th class="right">Inv. Bodega</th>
-                    <th class="right">Disp. Total</th>
+                    <th class="right">B8 (Bodega)</th>
+                    <th class="right">M8 (Mars)</th>
+                    <th class="right">En tiendas</th>
                     <th>Estado</th>
                   </tr>
                 </thead>
                 <tbody id="tbl-bodega-prod">
-                  <tr><td colspan="5" style="padding:20px;text-align:center;color:var(--text-3)">Cargando…</td></tr>
+                  <tr><td colspan="6" style="padding:20px;text-align:center;color:var(--text-3)">Cargando…</td></tr>
                 </tbody>
               </table>
             </div>
@@ -1469,24 +1470,25 @@ function renderProductos(){
   const prodMap = {};
   inv.forEach(r => {
     const nombre = r.producto || '—';
+    const key = r.barcode || nombre;
     const cob = Number(r.cobertura || 0);
-    if(!prodMap[nombre]) prodMap[nombre] = {
+    if(!prodMap[key]) prodMap[key] = {
       producto: nombre, grupo: getGrupo(nombre),
       total: 0, tiendas: [],
       agot: 0, crit: 0, aten: 0, opt: 0, sob: 0
     };
-    prodMap[nombre].total += Number(r.inventario || 0);
-    prodMap[nombre].tiendas.push({
+    prodMap[key].total += Number(r.inventario || 0);
+    prodMap[key].tiendas.push({
       tienda: r.tienda || '—', vendedor: r.vendedor || '—',
       inventario: Number(r.inventario || 0), cobertura: cob,
       venta_promedio: Number(r.venta_promedio || 0),
       barcode: r.barcode || ''
     });
-    if(cob === 0)      prodMap[nombre].agot++;
-    else if(cob < 10)  prodMap[nombre].crit++;
-    else if(cob < 20)  prodMap[nombre].aten++;
-    else if(cob <= 40) prodMap[nombre].opt++;
-    else               prodMap[nombre].sob++;
+    if(cob === 0)      prodMap[key].agot++;
+    else if(cob < 10)  prodMap[key].crit++;
+    else if(cob < 20)  prodMap[key].aten++;
+    else if(cob <= 40) prodMap[key].opt++;
+    else               prodMap[key].sob++;
   });
 
   window._avProds = Object.values(prodMap).map(p => ({
@@ -1823,24 +1825,45 @@ function renderBodega(){
 
   // Por Producto
   if(bod && Array.isArray(bod)){
+    const invByBarcode = {};
+    if(inv && Array.isArray(inv)){
+      inv.forEach(r => {
+        if(!r.barcode) return;
+        if(!invByBarcode[r.barcode]) invByBarcode[r.barcode] = [];
+        invByBarcode[r.barcode].push(r);
+      });
+    }
     const prodMap = {};
     bod.forEach(r => {
       const p = r.descripcion||'—';
-      if(!prodMap[p]) prodMap[p] = { producto:p, grupo:getGrupo(p), bodega:0 };
-      prodMap[p].bodega += Number(r.b8||0);
+      if(!prodMap[p]) prodMap[p] = {
+        producto: p, grupo: getGrupo(p),
+        b8: 0, m8: 0,
+        codigoBarras: r.codigoBarras || '',
+        tiendas: invByBarcode[r.codigoBarras] || []
+      };
+      prodMap[p].b8 += Number(r.b8||0);
+      prodMap[p].m8 += Number(r.m8||0);
     });
     const prods = Object.values(prodMap).sort((a,b)=>a.producto.localeCompare(b.producto));
 
     function renderBodProd(lista){
       document.getElementById('tbl-bodega-prod').innerHTML = lista.length
-        ? lista.map(p=>`<tr>
-            <td style="font-weight:600">${p.producto}</td>
-            <td><span class="chip" style="background:${GRUPO_COLORES[p.grupo]||'#888'}22;color:${GRUPO_COLORES[p.grupo]||'#888'}">${p.grupo}</span></td>
-            <td class="right mono">${fmt(p.bodega)}</td>
-            <td class="right mono">${fmt(p.bodega)}</td>
-            <td>${chipInv(p.bodega)}</td>
-          </tr>`).join('')
-        : `<tr><td colspan="5" style="padding:20px;text-align:center;color:var(--text-3)">Sin datos</td></tr>`;
+        ? lista.map(p => {
+            const invSum = p.tiendas.reduce((a,r) => a + Number(r.inventario||0), 0);
+            const tiendaTxt = p.tiendas.length
+              ? `${fmt(invSum)} <span style="color:var(--text-3);font-size:10px">(${p.tiendas.length} tiendas)</span>`
+              : '<span style="color:var(--text-3)">—</span>';
+            return `<tr>
+              <td style="font-weight:600">${p.producto}</td>
+              <td><span class="chip" style="background:${GRUPO_COLORES[p.grupo]||'#888'}22;color:${GRUPO_COLORES[p.grupo]||'#888'}">${p.grupo}</span></td>
+              <td class="right mono">${fmt(p.b8)}</td>
+              <td class="right mono">${p.m8 > 0 ? fmt(p.m8) : '—'}</td>
+              <td class="right mono">${tiendaTxt}</td>
+              <td>${chipInv(p.b8 + p.m8)}</td>
+            </tr>`;
+          }).join('')
+        : `<tr><td colspan="6" style="padding:20px;text-align:center;color:var(--text-3)">Sin datos</td></tr>`;
     }
     renderBodProd(prods);
     document.getElementById('filtro-bodega-grupo').onchange = function(){
