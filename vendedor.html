@@ -618,7 +618,7 @@ function RecomendadosCard({ config }) {
       norm(b.descripcion || '').includes(norm(r.producto || '').substring(0, 8)) ||
       norm(r.producto || '').includes(norm(b.descripcion || '').substring(0, 8))
     );
-    return prod ? Number(prod.b8 || 0) > 0 : true;
+    return prod ? (Number(prod.b8 || 0) > 0 || Number(prod.m8 || 0) > 0) : true;
   });
 
   const conCatalogo = conBodega.map(r => {
@@ -646,11 +646,20 @@ function RecomendadosCard({ config }) {
   const porTienda = {};
   sorted.forEach(r => {
     if(!porTienda[r.tienda]) porTienda[r.tienda] = [];
-    if(porTienda[r.tienda].length < 10) porTienda[r.tienda].push(r);
+    if(porTienda[r.tienda].length < 20) porTienda[r.tienda].push(r);
   });
   const tiendas = Object.keys(porTienda);
 
   if(!tiendas.length) return null;
+
+  const sesion = JSON.parse(sessionStorage.getItem('mars_portal_session') || '{}');
+  const vr = config?.ventas_resumen;
+  const miVendedor = vr
+    ? Object.entries(vr).find(([k]) => norm(k) === norm(sesion.nombre || ''))?.[1]
+    : null;
+  const faltaMeta = miVendedor
+    ? Math.max(0, (miVendedor.cuota || 0) - (miVendedor.acumulado || 0))
+    : null;
 
   const estadoBadge = cob => {
     if(cob === 0) return { label: 'Agotado', bg: '#FCEBEB', color: '#A32D2D' };
@@ -664,6 +673,11 @@ function RecomendadosCard({ config }) {
     <div style={{margin:'16px 0'}}>
       <div style={{fontSize:13,fontWeight:500,color:'var(--text-1)',marginBottom:8}}>
         📦 Recomendados para tu meta
+        {faltaMeta > 0 && (
+          <span style={{fontSize:12,color:'#A32D2D',fontWeight:600,marginLeft:8}}>
+            · Falta ${faltaMeta.toLocaleString('es-PA',{minimumFractionDigits:2})}
+          </span>
+        )}
       </div>
       <div style={{maxHeight:420,overflowY:'auto',display:'flex',flexDirection:'column',gap:8}}>
         {tiendas.map(tienda => {
