@@ -603,6 +603,112 @@ function VentasResumenCard({ config }) {
   );
 }
 
+function RecomendadosCard({ config }) {
+  const inv = config?.inventario || [];
+  const bodega = config?.inventario_bodega || [];
+
+  const candidatos = inv.filter(r => {
+    const cob = Number(r.cobertura || 0);
+    const venta = Number(r.venta_promedio || 0);
+    return venta > 0 && (cob === 0 || (cob > 0 && cob < 20));
+  });
+
+  const conBodega = candidatos.filter(r => {
+    const prod = bodega.find(b =>
+      norm(b.descripcion || '').includes(norm(r.producto || '').substring(0, 8)) ||
+      norm(r.producto || '').includes(norm(b.descripcion || '').substring(0, 8))
+    );
+    return prod ? Number(prod.b8 || 0) > 0 : true;
+  });
+
+  const conCatalogo = conBodega.map(r => {
+    const cadena = (r.cadena || '').toLowerCase();
+    let catItem = null;
+    if(cadena === 'xtra') {
+      catItem = (window.CAT_DATA || []).find(c =>
+        norm(c.n || '').includes(norm(r.producto || '').substring(0, 10)) ||
+        norm(r.producto || '').includes(norm(c.n || '').substring(0, 10))
+      );
+    } else {
+      catItem = (window.MACHETAZO_PRODUCTOS || []).find(c =>
+        norm(c.descripcion || '').includes(norm(r.producto || '').substring(0, 10)) ||
+        norm(r.producto || '').includes(norm(c.descripcion || '').substring(0, 10))
+      );
+    }
+    const u = catItem?.u || 1;
+    const tipo = catItem?.t || 'CJ';
+    const cajasRec = Math.max(1, Math.ceil(Number(r.venta_promedio || 0) / u));
+    const unidadesRec = cajasRec * u;
+    return { ...r, u, tipo, cajasRec, unidadesRec };
+  });
+
+  const sorted = conCatalogo.sort((a, b) => Number(b.venta_promedio) - Number(a.venta_promedio));
+  const porTienda = {};
+  sorted.forEach(r => {
+    if(!porTienda[r.tienda]) porTienda[r.tienda] = [];
+    if(porTienda[r.tienda].length < 10) porTienda[r.tienda].push(r);
+  });
+  const tiendas = Object.keys(porTienda);
+
+  if(!tiendas.length) return null;
+
+  const estadoBadge = cob => {
+    if(cob === 0) return { label: 'Agotado', bg: '#FCEBEB', color: '#A32D2D' };
+    if(cob < 10)  return { label: 'Crítico',  bg: '#FCEBEB', color: '#A32D2D' };
+    return { label: 'Atención', bg: '#FAEEDA', color: '#854F0B' };
+  };
+
+  const [openTienda, setOpenTienda] = React.useState(null);
+
+  return (
+    <div style={{margin:'16px 0'}}>
+      <div style={{fontSize:13,fontWeight:500,color:'var(--text-1)',marginBottom:8}}>
+        📦 Recomendados para tu meta
+      </div>
+      <div style={{maxHeight:420,overflowY:'auto',display:'flex',flexDirection:'column',gap:8}}>
+        {tiendas.map(tienda => {
+          const prods = porTienda[tienda];
+          const isOpen = openTienda === tienda;
+          return (
+            <div key={tienda} style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:12,overflow:'hidden'}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 14px',cursor:'pointer'}}
+                onClick={() => setOpenTienda(isOpen ? null : tienda)}>
+                <div>
+                  <div style={{fontSize:14,fontWeight:600,color:'var(--text-1)'}}>{tienda}</div>
+                  <div style={{fontSize:12,color:'var(--text-3)'}}>{prods.length} producto{prods.length !== 1 ? 's' : ''} recomendado{prods.length !== 1 ? 's' : ''}</div>
+                </div>
+                <span style={{fontSize:16,color:'var(--text-3)'}}>{isOpen ? '▲' : '▼'}</span>
+              </div>
+              {isOpen && (
+                <div style={{borderTop:'1px solid var(--border)',padding:'8px 14px',display:'flex',flexDirection:'column',gap:0}}>
+                  {prods.map((p, i) => {
+                    const badge = estadoBadge(Number(p.cobertura || 0));
+                    return (
+                      <div key={i} style={{display:'grid',gridTemplateColumns:'1fr auto',gap:8,alignItems:'center',padding:'10px 0',borderBottom: i < prods.length-1 ? '1px solid var(--border)' : 'none'}}>
+                        <div>
+                          <div style={{fontSize:12,fontWeight:600,color:'var(--text-1)',marginBottom:4}}>{p.producto}</div>
+                          <div style={{display:'flex',alignItems:'center',gap:6}}>
+                            <span style={{fontSize:11,background:badge.bg,color:badge.color,padding:'1px 7px',borderRadius:20,fontWeight:600}}>{badge.label}</span>
+                            <span style={{fontSize:11,color:'var(--text-3)'}}>Inv: {p.inventario} uds</span>
+                          </div>
+                        </div>
+                        <div style={{textAlign:'right'}}>
+                          <div style={{fontSize:13,fontWeight:600,color:'var(--text-1)'}}>{p.cajasRec} {p.tipo}</div>
+                          <div style={{fontSize:11,color:'var(--text-3)'}}>{p.unidadesRec} unidades</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 const IcoCheck = () => (
   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
     <polyline points="2 6 5 9 10 3"/>
@@ -861,6 +967,8 @@ function TabInicio({ tareas, onUpdateTareas, config }) {
       <Carousel slides={config.slides} />
 
       <VentasResumenCard config={config}/>
+
+      <RecomendadosCard config={config}/>
 
       <div className="stats-grid">
         <div className="stat-card">
