@@ -1838,7 +1838,7 @@ function App() {
   const sesion = (() => {
     try {
       const s = JSON.parse(sessionStorage.getItem(SESSION_KEY));
-      if (!s || s.rol !== 'vendedor') { window.location.href = 'index.html'; return null; }
+      if (!s || s.expires_at <= Date.now() || s.rol !== 'vendedor') { window.location.href = 'index.html'; return null; }
       return s;
     } catch { window.location.href = 'index.html'; return null; }
   })();

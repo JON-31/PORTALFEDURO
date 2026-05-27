@@ -65,7 +65,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text)
 // Session check
 (function() {
   var s = JSON.parse(sessionStorage.getItem('mars_portal_session') || 'null');
-  if (!s || s.rol !== 'auditoria') { window.location.href = 'index.html'; }
+  if (!s || s.expires_at <= Date.now() || s.rol !== 'auditoria') { window.location.href = 'index.html'; }
 })();
 </script>
 
