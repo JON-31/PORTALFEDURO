@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="config.js"></script>
 <script src="shared.js"></script>
 <style>
 :root {
@@ -1015,10 +1016,7 @@ tbody td.right { text-align: right; }
 // ═══════════════════════════════════════
 //  SUPABASE
 // ═══════════════════════════════════════
-const sb = supabase.createClient(
-  'https://npatcmgjqxpjxhbcqsqv.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wYXRjbWdqcXhwanhoYmNxc3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyOTEzNDUsImV4cCI6MjA5Mjg2NzM0NX0.uDyUMvouWcPlbNOiPClNYezkKIE9ICAEpWZxklUdGZg'
-);
+const sb = supabase.createClient(SB_URL, ANON_KEY);
 
 // ═══════════════════════════════════════
 //  GRUPOS

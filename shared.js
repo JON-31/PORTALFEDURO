@@ -1,8 +1,11 @@
 // ── SUPABASE CONFIG ──
-// Lee desde config.js (window.SUPABASE_*) si está cargado; si no, usa fallback hardcodeado.
-// IMPORTANTE: cargar <script src="config.js"> ANTES de <script src="shared.js"> en cada HTML.
-var SB_URL   = window.SUPABASE_URL      || 'https://npatcmgjqxpjxhbcqsqv.supabase.co';
-var ANON_KEY = window.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wYXRjbWdqcXhwanhoYmNxc3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyOTEzNDUsImV4cCI6MjA5Mjg2NzM0NX0.uDyUMvouWcPlbNOiPClNYezkKIE9ICAEpWZxklUdGZg';
+// Las credenciales deben estar en config.js, cargado ANTES que este script.
+if (!window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) {
+  document.body.innerHTML = '<div style="font-family:sans-serif;padding:40px;color:#c00"><h2>Error de configuración</h2><p>config.js no encontrado o vacío.<br>Copia <b>config.example.js</b> como <b>config.js</b> y completa las credenciales.</p></div>';
+  throw new Error('Faltan credenciales en config.js');
+}
+var SB_URL   = window.SUPABASE_URL;
+var ANON_KEY = window.SUPABASE_ANON_KEY;
 var SURL = SB_URL;    // alias para secciones type="text/babel"
 var SKEY = ANON_KEY;  // alias para secciones type="text/babel"
 
