@@ -1,6 +1,7 @@
 # Nunca subir credenciales o secrets
 .env
 .env.local
+config.js
 config.secret.js
 supabase.secret.js
 
