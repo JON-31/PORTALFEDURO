@@ -16,15 +16,15 @@ function getSession() {
 
 function saveSession(rol, nombre, username, access_token, refresh_token, expires_in) {
   sessionStorage.setItem('mars_portal_session', JSON.stringify({
-    rol: rol,
-    nombre: nombre,
-    username: username,
-    access_token: access_token || null,
+    rol:           rol,
+    nombre:        nombre,
+    username:      username,
+    access_token:  access_token  || null,
     refresh_token: refresh_token || null,
-    ts: Date.now(),
-    expires_at: access_token
-      ? Date.now() + ((expires_in || 3600) * 1000)
-      : Date.now() + (24 * 60 * 60 * 1000)
+    ts:            Date.now(),
+    // Todos los roles reciben JWT desde Supabase Auth.
+    // expires_in viene en segundos; fallback a 1h si no se provee.
+    expires_at:    Date.now() + ((expires_in || 3600) * 1000)
   }));
 }
 

@@ -64,6 +64,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--black); color:var(--te
   line-height: 1.1;
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script src="shared.js"></script>
 </head>
@@ -100,6 +101,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--black); color:var(--te
   </nav>
 <script>
 var PORTALS = { vendedor:'vendedor.html', admin:'admin-datos.html', 'admin-visual':'admin-visual.html', auditoria:'auditoria.html' };
+var sbClient = supabase.createClient(SB_URL, ANON_KEY);
 
 // Auto-redirect if already logged in
 (function() {
@@ -112,53 +114,70 @@ var PORTALS = { vendedor:'vendedor.html', admin:'admin-datos.html', 'admin-visua
 async function doLogin() {
   var username = (document.getElementById('login-username').value || '').trim().toLowerCase();
   var password = (document.getElementById('login-password').value || '').trim();
-  var btn = document.getElementById('login-btn');
-  var errEl = document.getElementById('login-error');
-  errEl.style.display = 'none';
-  if (!username || !password) {
-    errEl.textContent = '⛔ Ingresa usuario y contraseña';
-    errEl.style.display = 'block'; return;
+  var btn      = document.getElementById('login-btn');
+  var errEl    = document.getElementById('login-error');
+
+  function showError(msg) {
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
+    btn.textContent = 'Entrar'; btn.disabled = false;
   }
+
+  errEl.style.display = 'none';
+  if (!username || !password) { showError('⛔ Ingresa usuario y contraseña'); return; }
 
   btn.textContent = 'Verificando...'; btn.disabled = true;
   try {
-    var res = await fetch(
-      SB_URL + '/rest/v1/usuarios?username=eq.' + encodeURIComponent(username)
-             + '&password=eq.' + encodeURIComponent(password)
-             + '&select=username,nombre,rol&limit=1',
-      { headers: { 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + ANON_KEY } }
-    );
-    var data = await res.json();
-    if (!data || !data.length) {
-      errEl.textContent = '⛔ Usuario o contraseña incorrectos';
-      errEl.style.display = 'block';
-      btn.textContent = 'Entrar'; btn.disabled = false; return;
+    // ── 1. Autenticar con Supabase Auth ──
+    var email = username + '@marsxtra.pa';
+    var { data: authData, error: authError } = await sbClient.auth.signInWithPassword({ email, password });
+
+    if (authError) {
+      // Error de credenciales vs error de red
+      if (authError.status === 400 || authError.status === 422) {
+        showError('⛔ Usuario o contraseña incorrectos');
+      } else {
+        showError('⛔ Error de conexión (' + authError.status + '). Intenta de nuevo.');
+      }
+      return;
     }
-    var user = data[0];
-    var destino = PORTALS[user.rol];
-    if (!destino) {
-      errEl.textContent = '⛔ Rol no reconocido';
-      errEl.style.display = 'block';
-      btn.textContent = 'Entrar'; btn.disabled = false; return;
+
+    var authUser    = authData.user;
+    var authSession = authData.session;
+
+    // ── 2. Obtener rol y nombre desde user_metadata ──
+    var rol    = (authUser.user_metadata && authUser.user_metadata.rol)    || null;
+    var nombre = (authUser.user_metadata && authUser.user_metadata.nombre) || null;
+
+    // ── 3. Fallback: consultar tabla usuarios si falta metadata ──
+    if (!rol || !nombre) {
+      var res = await fetch(
+        SB_URL + '/rest/v1/usuarios?username=eq.' + encodeURIComponent(username) + '&select=nombre,rol&limit=1',
+        { headers: { 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + authSession.access_token } }
+      );
+      if (res.ok) {
+        var userData = await res.json();
+        if (userData && userData.length) {
+          rol    = rol    || userData[0].rol;
+          nombre = nombre || userData[0].nombre;
+        }
+      }
     }
-    if (user.rol === 'vendedor') {
-      var authRes = await fetch(SB_URL + '/auth/v1/token?grant_type=password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY },
-        body: JSON.stringify({ email: username + '@marsxtra.pa', password: password })
-      });
-      var authData = await authRes.json();
-      saveSession(user.rol, user.nombre, username, authData.access_token || null, authData.refresh_token || null, authData.expires_in || null);
-    } else {
-      saveSession(user.rol, user.nombre, username, null, null, null);
+
+    // ── 4. Validar rol ──
+    if (!rol || !PORTALS[rol]) {
+      showError('⛔ Rol no reconocido. Contacta al administrador.');
+      return;
     }
-    window.location.href = destino;
+
+    // ── 5. Guardar sesión y redirigir ──
+    saveSession(rol, nombre || username, username, authSession.access_token, authSession.refresh_token, authSession.expires_in);
+    window.location.href = PORTALS[rol];
+
   } catch(e) {
-    errEl.textContent = '⛔ Error de conexión. Intenta de nuevo.';
-    errEl.style.display = 'block';
-    console.error(e);
+    showError('⛔ Error inesperado. Intenta de nuevo.');
+    console.error('[doLogin]', e);
   }
-  btn.textContent = 'Entrar'; btn.disabled = false;
 }
 
 
