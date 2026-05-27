@@ -477,6 +477,9 @@ tbody td.right { text-align: right; }
 </style>
 </head>
 <body>
+<script>
+(function(){var s=JSON.parse(sessionStorage.getItem('mars_portal_session')||'null');if(!s||s.expires_at<=Date.now()||(s.rol!=='admin-visual'&&s.rol!=='admin')){window.location.href='index.html';}})();
+</script>
 
 <!-- SIDEBAR -->
 <aside id="sidebar">
