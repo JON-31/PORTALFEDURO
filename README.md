@@ -900,8 +900,8 @@ tbody tr:last-child td { border-bottom: none; }
 </div>
 <script>
 async function sbGetV(ep) {
-  var r = await fetch('https://npatcmgjqxpjxhbcqsqv.supabase.co/rest/v1' + ep, {
-    headers: { 'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wYXRjbWdqcXhwanhoYmNxc3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyOTEzNDUsImV4cCI6MjA5Mjg2NzM0NX0.uDyUMvouWcPlbNOiPClNYezkKIE9ICAEpWZxklUdGZg', 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wYXRjbWdqcXhwanhoYmNxc3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyOTEzNDUsImV4cCI6MjA5Mjg2NzM0NX0.uDyUMvouWcPlbNOiPClNYezkKIE9ICAEpWZxklUdGZg' }
+  var r = await fetch('https://tu-proyecto.supabase.co/rest/v1' + ep, {
+    headers: { 'Authorization': 'Bearer tu-anon-key-aqui', 'apikey': 'tu-anon-key-aqui' }
   });
   var t = await r.text(); return t ? JSON.parse(t) : [];
 }
@@ -1275,8 +1275,8 @@ async function cargarBodegaVendedor() {
 <script type="text/babel">
 const {useState,useEffect,useMemo,useCallback}=React;
 
-const SURL='https://npatcmgjqxpjxhbcqsqv.supabase.co';
-const SKEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wYXRjbWdqcXhwanhoYmNxc3F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyOTEzNDUsImV4cCI6MjA5Mjg2NzM0NX0.uDyUMvouWcPlbNOiPClNYezkKIE9ICAEpWZxklUdGZg';
+const SURL='https://tu-proyecto.supabase.co';
+const SKEY='tu-anon-key-aqui';
 
 const sb=async(method,endpoint,data=null)=>{
   const h={'Content-Type':'application/json','Authorization':'Bearer '+SKEY,'apikey':SKEY,'Prefer':'return=representation'};
