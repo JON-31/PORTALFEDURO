@@ -551,7 +551,7 @@ function grupoPorTienda(items) {
 // VENTAS RESUMEN CARD
 // =============================================
 function VentasResumenCard({ config }) {
-  const sesion = JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}');
+  const sesion = getSession() || {};
   const resumen = config?.ventas_resumen;
   const normNombre = norm(sesion.nombre || '');
   const vendedor = resumen
@@ -663,7 +663,7 @@ function RecomendadosCard({ config }) {
 
   if(!tiendas.length) return null;
 
-  const sesion = JSON.parse(sessionStorage.getItem('mars_portal_session') || '{}');
+  const sesion = getSession() || {};
   const vr = config?.ventas_resumen;
   const miVendedor = vr
     ? Object.entries(vr).find(([k]) => norm(k) === norm(sesion.nombre || ''))?.[1]
@@ -1012,7 +1012,7 @@ function TabInicio({ tareas, onUpdateTareas, config }) {
         </div>
         <div className="stat-card">
           <div className="stat-value" style={{ color: '#0F6E56' }}>{(() => {
-            const sesion = JSON.parse(sessionStorage.getItem('mars_portal_session') || '{}');
+            const sesion = getSession() || {};
             const md = config?.md_vendedores || {};
             const key = Object.keys(md).find(k => norm(k) === norm(sesion.nombre || ''));
             return key != null ? md[key] + '%' : '—';
@@ -1165,7 +1165,7 @@ function TiendaRow({ nombre, productos }) {
 function TabTiendas({ reportes, config }) {
   const tiendas = useMemo(() => {
     const inv = config?.inventario || [];
-    const sesion = JSON.parse(sessionStorage.getItem('mars_portal_session') || '{}');
+    const sesion = getSession() || {};
     const normNombre = norm(sesion.nombre || '');
 
     const tiendasInv = [...new Set(
@@ -1305,7 +1305,7 @@ function DonutChart({ pct, color }) {
 const MARCA_PALETTE = ['#0F6E56','#854F0B','#185FA5','#A32D2D','#3B6D11','#6B7280','#7C3AED'];
 
 function TabVentas({ config }) {
-  const sesion   = JSON.parse(sessionStorage.getItem(SESSION_KEY) || '{}');
+  const sesion   = getSession() || {};
   const inv      = config?.inventario || [];
   const resumen  = config?.ventas_resumen;
   const vd       = resumen
@@ -1473,7 +1473,7 @@ function TabIngresos({ tareas, config }) {
     if(!formInv.tienda || !formInv.producto || !formInv.cantidad) {
       alert('Completa todos los campos requeridos'); return;
     }
-    const s = JSON.parse(sessionStorage.getItem('mars_portal_session') || 'null') || {};
+    const s = getSession() || {};
     const { error } = await sbPortal.from('ingresos').insert({
       vendedor_nombre: s.nombre,
       tienda: formInv.tienda,
@@ -1509,7 +1509,7 @@ function TabIngresos({ tareas, config }) {
     if(!formSug.tienda || !formSug.producto || !formSug.cantidad) {
       alert('Completa todos los campos requeridos'); return;
     }
-    const s = JSON.parse(sessionStorage.getItem('mars_portal_session') || 'null') || {};
+    const s = getSession() || {};
     const tareaVer = (tareas || []).find(t =>
       ((t.tipo||'').toLowerCase() === 'verificacion' || (t.tipo||'').toLowerCase() === 'sugerido') &&
       norm(t.tienda) === norm(formSug.tienda) &&
@@ -1838,17 +1838,19 @@ const TAB_TITLES = {
 function App() {
   const sesion = (() => {
     try {
-      const s = JSON.parse(sessionStorage.getItem(SESSION_KEY));
+      const s = getSession();
       if (!s || s.expires_at <= Date.now() || s.rol !== 'vendedor') { window.location.href = 'index.html'; return null; }
       return s;
     } catch { window.location.href = 'index.html'; return null; }
   })();
 
-  const [loading,  setLoading]  = useState(true);
-  const [tab,      setTab]      = useState('inicio');
-  const [reportes, setReportes] = useState([]);
-  const [tareas,   setTareas]   = useState([]);
-  const [config,   setConfig]   = useState({});
+  const [loading,   setLoading]   = useState(true);
+  const [tab,       setTab]       = useState('inicio');
+  const [reportes,  setReportes]  = useState([]);
+  const [tareas,    setTareas]    = useState([]);
+  const [config,    setConfig]    = useState({});
+  const [loadError, setLoadError] = useState(null);
+  const [repsMsg,   setRepsMsg]   = useState(null);
 
   useEffect(() => {
     if (sesion) refreshSession().then(() => loadData(sesion));
@@ -1861,15 +1863,19 @@ function App() {
       const { data: misTareas } = await sbPortal.from('tareas').select('*').eq('vendedor_nombre', s.nombre);
       setTareas(misTareas || []);
 
-      // 2. Reportes: cargar todos con paginación (RLS puede cortar limit simple)
+      // 2. Reportes: filtrado server-side + paginación con tope de iteraciones
       let allReps = [];
       let from = 0;
-      const pageSize = 1000;
+      const pageSize = 200;
       let repsError = null;
-      while (true) {
+      const maxIterations = 10;
+      let iterations = 0;
+      while (iterations < maxIterations) {
+        iterations++;
         const { data, error } = await sbPortal
           .from('reportes')
           .select('*')
+          .in('vendedor', [s.nombre, 'MACHETAZO: ' + s.nombre])
           .range(from, from + pageSize - 1);
         if (error) { repsError = error; break; }
         if (!data || data.length === 0) break;
@@ -1881,6 +1887,8 @@ function App() {
 
       if (repsError) {
         console.error('reportes error:', repsError);
+        setRepsMsg('No se pudieron cargar los reportes de inventario. Algunos datos pueden no estar disponibles.');
+        setReportes([]);
       } else {
         const normNombre = norm(s.nombre);
 
@@ -1915,7 +1923,8 @@ function App() {
       // 4. Configuracion
       const { data: cfgData } = await sbPortal
         .from('configuracion')
-        .select('*');
+        .select('clave,valor')
+        .in('clave', ['inventario','ofertas','inventario_bodega','slides','ventas_resumen','md_vendedores']);
 
       const cfg = {};
       (cfgData || []).forEach(row => {
@@ -1930,6 +1939,7 @@ function App() {
 
     } catch (err) {
       console.error('Error cargando datos:', err);
+      setLoadError('Error al cargar datos. Verifica tu conexión e intenta recargar la página.');
     } finally {
       setLoading(false);
     }
@@ -1950,6 +1960,18 @@ function App() {
 
   if (!sesion) return null;
 
+  if (loadError) return (
+    <div className="loading-screen" style={{ flexDirection: 'column', gap: 16, padding: 32, textAlign: 'center' }}>
+      <div style={{ fontSize: 40 }}>⚠️</div>
+      <div style={{ fontSize: 16, fontWeight: 700, color: '#CC0000' }}>Error al cargar</div>
+      <div style={{ fontSize: 14, color: '#6B7280', maxWidth: 320 }}>{loadError}</div>
+      <button onClick={() => { setLoadError(null); loadData(sesion); }} style={{
+        marginTop: 8, background: '#CC0000', color: '#fff', border: 'none',
+        borderRadius: 8, padding: '10px 24px', fontSize: 14, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif'
+      }}>Reintentar</button>
+    </div>
+  );
+
   const tabProps = { reportes, tareas, onUpdateTareas: setTareas, config };
   const nombre1 = (sesion.nombre || '').split(' ')[0];
 
@@ -1969,6 +1991,11 @@ function App() {
 
       {/* Contenido */}
       <div className="main-content">
+        {repsMsg && (
+          <div style={{ margin: '12px 16px 0', padding: '10px 14px', background: '#FFF3CD', border: '1px solid #FFEAA7', borderRadius: 8, fontSize: 13, color: '#856404', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span>⚠️</span><span>{repsMsg}</span>
+          </div>
+        )}
         {tab === 'inicio'  && <TabInicio  {...tabProps}/>}
         {tab === 'tiendas' && <TabTiendas {...tabProps}/>}
         {tab === 'bodega'  && <TabBodega  {...tabProps}/>}
