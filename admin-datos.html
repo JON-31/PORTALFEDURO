@@ -1903,6 +1903,10 @@ function normTienda(s) {
     .trim();
 }
 function buscarVendedorXtra(tienda) {
+  // Estrategia 0: quitar prefijo "Xtra " y buscar match directo en el diccionario
+  var sinPrefijo = tienda.replace(/^xtra\s+/i, '').trim();
+  if (TIENDAS_VENDEDORES[sinPrefijo]) return TIENDAS_VENDEDORES[sinPrefijo];
+
   var n = normTienda(tienda);
   var found = null;
   Object.keys(TIENDAS_VENDEDORES).forEach(function(k) {
