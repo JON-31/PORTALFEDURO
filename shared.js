@@ -56,7 +56,8 @@ async function refreshSession() {
 
 // ── SUPABASE HELPERS ──
 async function sbGet(endpoint) {
-  var token = window.MARS_TOKEN || ANON_KEY;
+  var s = getSession();
+  var token = (s && s.access_token) ? s.access_token : ANON_KEY;
   const r = await fetch(SB_URL + '/rest/v1' + endpoint, {
     headers: { 'Authorization': 'Bearer ' + token, 'apikey': ANON_KEY }
   });
@@ -66,7 +67,8 @@ async function sbGet(endpoint) {
 }
 
 async function sbUpsert(table, data) {
-  var token = window.MARS_TOKEN || ANON_KEY;
+  var s = getSession();
+  var token = (s && s.access_token) ? s.access_token : ANON_KEY;
   const r = await fetch(SB_URL + '/rest/v1/' + table + '?on_conflict=clave', {
     method: 'POST',
     headers: { 'Authorization': 'Bearer ' + token, 'apikey': ANON_KEY,
