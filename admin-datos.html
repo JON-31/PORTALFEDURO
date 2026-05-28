@@ -3135,7 +3135,8 @@ async function guardarMdVendedores() {
   setTimeout(function(){ if(msg) msg.textContent=''; }, 3000);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+  await refreshSession();
   var s = JSON.parse(sessionStorage.getItem('mars_portal_session')||'{}');
   var nombre = s.nombre || 'ADMIN';
   var el = document.getElementById('admin-sidebar-user');

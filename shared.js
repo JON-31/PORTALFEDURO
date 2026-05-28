@@ -32,7 +32,29 @@ function clearSession() {
   sessionStorage.removeItem('mars_portal_session');
 }
 
-// ── SUPABASE HELPERS (admin) ──
+// Renueva el access_token si quedan menos de 5 minutos de sesión.
+// Llámala al inicio de cada portal antes de cargar datos.
+async function refreshSession() {
+  var s = getSession();
+  if (!s || !s.refresh_token) return;
+  if (s.expires_at - Date.now() > 5 * 60 * 1000) return;
+  try {
+    var r = await fetch(SB_URL + '/auth/v1/token?grant_type=refresh_token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY },
+      body: JSON.stringify({ refresh_token: s.refresh_token })
+    });
+    if (!r.ok) { console.error('[refreshSession] HTTP', r.status, await r.text()); return; }
+    var data = await r.json();
+    if (data.access_token) {
+      saveSession(s.rol, s.nombre, s.username, data.access_token, data.refresh_token || s.refresh_token, data.expires_in);
+    }
+  } catch(e) {
+    console.error('[refreshSession]', e);
+  }
+}
+
+// ── SUPABASE HELPERS ──
 async function sbGet(endpoint) {
   var token = window.MARS_TOKEN || ANON_KEY;
   const r = await fetch(SB_URL + '/rest/v1' + endpoint, {
@@ -54,10 +76,11 @@ async function sbUpsert(table, data) {
   if (!r.ok) { const err = await r.text(); throw new Error('Supabase ' + r.status + ': ' + err.substring(0, 200)); }
 }
 
+// Usa siempre el JWT de la sesión activa. Lanza error si no hay sesión.
 async function sbAdmin(method, ep, body) {
-  var s = getSession() || {};
-  var token = (s.access_token && s.expires_at && s.expires_at > Date.now()) ? s.access_token : ANON_KEY;
-  var opts = { method: method, headers: { 'Authorization': 'Bearer ' + token, 'apikey': ANON_KEY, 'Content-Type': 'application/json', 'Prefer': method === 'POST' ? 'return=representation' : 'return=minimal' } };
+  var s = getSession();
+  if (!s || !s.access_token) throw new Error('[sbAdmin] Sesión inválida o expirada. Vuelve a iniciar sesión.');
+  var opts = { method: method, headers: { 'Authorization': 'Bearer ' + s.access_token, 'apikey': ANON_KEY, 'Content-Type': 'application/json', 'Prefer': method === 'POST' ? 'return=representation' : 'return=minimal' } };
   if (body) opts.body = JSON.stringify(body);
   var r = await fetch(SB_URL + '/rest/v1' + ep, opts);
   var t = await r.text();

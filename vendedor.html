@@ -1850,7 +1850,7 @@ function App() {
   const [config,   setConfig]   = useState({});
 
   useEffect(() => {
-    if (sesion) loadData(sesion);
+    if (sesion) refreshSession().then(() => loadData(sesion));
   }, []);
 
   const loadData = async s => {
