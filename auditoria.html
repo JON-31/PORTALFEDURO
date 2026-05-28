@@ -120,8 +120,17 @@ function showView(name, el) {
   if (el) el.classList.add('active');
   closeSidebar();
 }
-function cerrarSesion() {
-  sessionStorage.removeItem('mars_portal_session');
+async function cerrarSesion() {
+  var s = getSession();
+  if (s && s.access_token) {
+    try {
+      await fetch(SB_URL + '/auth/v1/logout', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + s.access_token, 'apikey': ANON_KEY }
+      });
+    } catch(e) { /* no bloquear el logout si falla la red */ }
+  }
+  clearSession();
   window.location.href = 'index.html';
 }
 // TODO: Módulo de Auditoría — funcionalidades pendientes:

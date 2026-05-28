@@ -1857,10 +1857,9 @@ function App() {
   const loadData = async s => {
     setLoading(true);
     try {
-      // 1. Tareas del vendedor (filtro client-side con norm)
-      const { data: allTareas } = await sbPortal.from('tareas').select('*');
-      const misTareas = (allTareas || []).filter(t => norm(t.vendedor_nombre) === norm(s.nombre));
-      setTareas(misTareas);
+      // 1. Tareas del vendedor — filtrado server-side por vendedor_nombre
+      const { data: misTareas } = await sbPortal.from('tareas').select('*').eq('vendedor_nombre', s.nombre);
+      setTareas(misTareas || []);
 
       // 2. Reportes: cargar todos con paginación (RLS puede cortar limit simple)
       let allReps = [];
@@ -1936,8 +1935,9 @@ function App() {
     }
   };
 
-  const logout = () => {
-    sessionStorage.removeItem(SESSION_KEY);
+  const logout = async () => {
+    try { await sbPortal.auth.signOut(); } catch(e) {}
+    clearSession();
     window.location.href = 'index.html';
   };
 

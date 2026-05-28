@@ -500,7 +500,7 @@ tbody td.right { text-align: right; }
   </nav>
   <div class="footer-bar" style="display:flex;align-items:center;justify-content:space-between">
     <span>v2.0</span>
-    <button onclick="sessionStorage.removeItem('mars_portal_session');window.location.href='index.html'" style="background:rgba(255,255,255,0.15);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;font-weight:600">Salir</button>
+    <button onclick="cerrarSesionAV()" style="background:rgba(255,255,255,0.15);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;font-weight:600">Salir</button>
   </div>
 </aside>
 <div id="overlay"></div>
@@ -1052,6 +1052,12 @@ let DATA = {
 };
 
 let chartsInstancias = {};
+
+async function cerrarSesionAV() {
+  try { await sb.auth.signOut(); } catch(e) {}
+  clearSession();
+  window.location.href = 'index.html';
+}
 
 // ═══════════════════════════════════════
 //  INIT
