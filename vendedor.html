@@ -695,7 +695,7 @@ function RecomendadosCard({ config }) {
           </span>
         )}
       </div>
-      <div style={{maxHeight:220,overflowY:'auto',scrollBehavior:'smooth',display:'flex',flexDirection:'column',gap:8}}>
+      <div style={{display:'flex',flexDirection:'column',gap:8}}>
         {tiendas.map(tienda => {
           const prods = porTienda[tienda];
           const isOpen = openTienda === tienda;
@@ -710,7 +710,7 @@ function RecomendadosCard({ config }) {
                 <span style={{fontSize:16,color:'var(--text-3)'}}>{isOpen ? '▲' : '▼'}</span>
               </div>
               {isOpen && (
-                <div style={{borderTop:'1px solid var(--border)',padding:'8px 14px',display:'flex',flexDirection:'column',gap:0}}>
+                <div style={{borderTop:'1px solid var(--border)',padding:'8px 14px',display:'flex',flexDirection:'column',gap:0,maxHeight:200,overflowY:'auto',scrollBehavior:'smooth'}}>
                   {prods.map((p, i) => {
                     const badge = estadoBadge(Number(p.cobertura || 0));
                     return (
