@@ -105,6 +105,12 @@ var sbClient = supabase.createClient(SB_URL, ANON_KEY);
 
 // Auto-redirect if already logged in
 (function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('logout') === 'true') {
+    sbClient.auth.signOut();
+    sessionStorage.removeItem('mars_portal_session');
+    history.replaceState({}, '', window.location.pathname);
+  }
   var s = JSON.parse(sessionStorage.getItem('mars_portal_session') || 'null');
   if (s && s.rol && s.expires_at > Date.now()) {
     window.location.href = PORTALS[s.rol] || 'index.html';
