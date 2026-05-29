@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -1048,7 +1048,8 @@ let DATA = {
   ventas_resumen: null,    // configuracion clave ventas_resumen
   inventario: null,        // configuracion clave inventario
   inventario_bodega: null, // configuracion clave inventario_bodega
-  ofertas: null,           // configuracion clave ofertas
+  ofertas:           null, // configuracion clave ofertas
+  historico_ventas:  null, // configuracion clave historico_ventas
   tareas: [],              // tabla tareas
   usuarios: []             // tabla usuarios
 };
@@ -1183,6 +1184,7 @@ async function loadData(){
         if(row.clave === 'inventario')        DATA.inventario        = v;
         if(row.clave === 'inventario_bodega') DATA.inventario_bodega = v;
         if(row.clave === 'ofertas')           DATA.ofertas           = v;
+        if(row.clave === 'historico_ventas')  DATA.historico_ventas  = v;
       });
     }
     // INC-4: renombrado de DATA.ingresos → DATA.tareas (era un nombre engañoso)
@@ -1849,26 +1851,43 @@ function renderVentas(){
     </tr>`;
   }).join('');
 
-  // Gráfico tendencia (placeholder con datos actuales)
+  // Gráfico tendencia — lee historico_ventas de configuracion
   destroyChart('chart-tendencia');
   const ctxT = document.getElementById('chart-tendencia').getContext('2d');
-  const mesLabel = new Date().toLocaleString('es-PA',{month:'short'}).toUpperCase();
-  chartsInstancias['chart-tendencia'] = new Chart(ctxT,{
-    type:'line',
-    data:{
-      labels:[mesLabel],
-      datasets:[
-        { label:'Chocolate', data:[t.totChocV], borderColor:'#7B4B2A', backgroundColor:'rgba(123,75,42,0.1)', fill:true, tension:0.4 },
-        { label:'Confection', data:[t.totConfV], borderColor:'#D4A843', backgroundColor:'rgba(212,168,67,0.1)', fill:true, tension:0.4 },
-        { label:'PetCare', data:[t.totPetV], borderColor:'#3b7dd8', backgroundColor:'rgba(59,125,216,0.1)', fill:true, tension:0.4 }
-      ]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{position:'top'} },
-      scales:{ y:{ticks:{font:{family:'DM Mono'}}} }
-    }
-  });
+  const historico = DATA.historico_ventas || {};
+  const hEntradas = Object.values(historico);
+  if (!hEntradas.length) {
+    ctxT.canvas.parentNode.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-3);font-size:14px;text-align:center;padding:16px;">' +
+      'Sin datos históricos aún<br><span style="font-size:12px;opacity:0.7">Sube un Excel en Admin Datos para comenzar</span></div>';
+  } else {
+    const hMeses   = [...new Set(hEntradas.map(e => e.mes))].sort();
+    const hCadenas = [...new Set(hEntradas.map(e => e.cadena))];
+    const COLORES_H = { xtra:'#1D3D8F', machetazo:'#CC0000', rey:'#2E7D32', ricamar:'#7B4B2A' };
+    const hDatasets = hCadenas.map(function(c) {
+      const hex = (COLORES_H[c] || '#D4A843').replace('#','');
+      const r = parseInt(hex.slice(0,2),16), g = parseInt(hex.slice(2,4),16), b = parseInt(hex.slice(4,6),16);
+      return {
+        label: c.charAt(0).toUpperCase() + c.slice(1),
+        data: hMeses.map(function(m) {
+          const e = hEntradas.find(function(x){ return x.mes === m && x.cadena === c; });
+          return e ? e.total_inventario : null;
+        }),
+        borderColor: '#' + hex,
+        backgroundColor: 'rgba('+r+','+g+','+b+',0.08)',
+        fill: true, tension: 0.4, spanGaps: true, pointRadius: 4, pointHoverRadius: 6
+      };
+    });
+    chartsInstancias['chart-tendencia'] = new Chart(ctxT, {
+      type: 'line',
+      data: { labels: hMeses, datasets: hDatasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'top' } },
+        scales: { y: { ticks: { font: { family: 'DM Mono' }, callback: function(v){ return v.toLocaleString('es-PA'); } } } }
+      }
+    });
+  }
 }
 
 // ═══════════════════════════════════════

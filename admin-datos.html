@@ -901,6 +901,17 @@ tbody tr:last-child td { border-bottom: none; }
             </div>
           </div>
 
+          <!-- Histórico de Ventas -->
+          <div style="background:var(--card);border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,0.06);overflow:hidden;border:1px solid var(--border)">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;flex-wrap:wrap;gap:10px">
+              <div>
+                <div style="font-weight:700;font-size:15px">📈 Histórico de Ventas</div>
+                <div style="font-size:13px;color:var(--muted);margin-top:2px">Resumen mensual por cadena — guardado automáticamente al subir Excel</div>
+              </div>
+              <button onclick="cdExportarHistorico(this)" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer">📥 Exportar Histórico Excel</button>
+            </div>
+          </div>
+
         </div>
       </div>
   </div>
@@ -2768,6 +2779,37 @@ async function adSubirLotes() {
   // Remove old records for this cadena only, keep all others
   var otherRecords = existingData.filter(function(r) { return r.cadena !== cadenaActual; });
   var mergedRecords = otherRecords.concat(AD_RECORDS);
+  // ── Snapshot histórico mensual ──
+  try {
+    var hRes = await sbGet('/configuracion?clave=eq.historico_ventas&select=valor');
+    var historico = {};
+    if (hRes && hRes.length > 0) {
+      try { historico = JSON.parse(hRes[0].valor || '{}'); } catch(eP) { historico = {}; }
+    }
+    var ahora = new Date();
+    var mesKey = ahora.getFullYear() + '-' + String(ahora.getMonth() + 1).padStart(2, '0');
+    var hKey = mesKey + '-' + cadenaActual;
+    var tiendas_unicas   = new Set(AD_RECORDS.map(function(r) { return r.tienda; }));
+    var productos_unicos = new Set(AD_RECORDS.map(function(r) { return r.producto; }));
+    var total_inv    = AD_RECORDS.reduce(function(s, r) { return s + Number(r.inventario    || 0); }, 0);
+    var venta_total  = AD_RECORDS.reduce(function(s, r) { return s + Number(r.venta_promedio|| 0); }, 0);
+    var cob_sum      = AD_RECORDS.reduce(function(s, r) { return s + Number(r.cobertura     || 0); }, 0);
+    historico[hKey] = {
+      mes:                mesKey,
+      cadena:             cadenaActual,
+      total_inventario:   Math.round(total_inv),
+      tiendas:            tiendas_unicas.size,
+      venta_total:        Math.round(venta_total * 100) / 100,
+      productos_unicos:   productos_unicos.size,
+      cobertura_promedio: AD_RECORDS.length ? Math.round(cob_sum / AD_RECORDS.length * 10) / 10 : 0,
+      registros:          AD_RECORDS.length,
+      actualizado:        ahora.toISOString()
+    };
+    await sbUpsert('configuracion', { clave: 'historico_ventas', valor: JSON.stringify(historico) });
+  } catch(eH) {
+    console.warn('Histórico no guardado:', eH.message);
+    progLabel.textContent = '⚠️ Inventario guardado. No se pudo actualizar el histórico.';
+  }
   progLabel.textContent = 'Guardando ' + AD_RECORDS.length + ' registros (' + cadenaActual + ')...'; progBar.style.width = '60%';
   try {
     await sbUpsert('configuracion', {clave: 'inventario', valor: JSON.stringify(mergedRecords)});
@@ -2973,6 +3015,45 @@ async function cdEliminar(tipo) {
   document.getElementById('cd-delete-' + tipo).style.display = 'none';
   alert('✅ Data eliminada');
   cdCargar(tipo);
+}
+async function cdExportarHistorico(btn) {
+  var originalText = btn.textContent;
+  btn.disabled = true; btn.textContent = '⏳ Cargando...';
+  try {
+    var hRes = await sbGet('/configuracion?clave=eq.historico_ventas&select=valor');
+    var historico = {};
+    if (hRes && hRes.length > 0) {
+      try { historico = JSON.parse(hRes[0].valor || '{}'); } catch(e) {}
+    }
+    var entradas = Object.values(historico);
+    if (!entradas.length) {
+      alert('No hay datos históricos aún. Sube un Excel primero para generar el histórico.');
+      btn.disabled = false; btn.textContent = originalText; return;
+    }
+    entradas.sort(function(a, b) { return a.mes < b.mes ? -1 : a.mes > b.mes ? 1 : 0; });
+    var rows = entradas.map(function(e) {
+      return {
+        'Mes':                e.mes || '',
+        'Cadena':             (e.cadena || '').charAt(0).toUpperCase() + (e.cadena || '').slice(1),
+        'Total Inventario':   e.total_inventario   || 0,
+        'Tiendas':            e.tiendas            || 0,
+        'Venta Total':        e.venta_total        || 0,
+        'Productos Únicos':   e.productos_unicos   || 0,
+        'Cobertura Promedio': e.cobertura_promedio || 0,
+        'Registros':          e.registros          || 0,
+        'Actualizado':        e.actualizado ? e.actualizado.substring(0, 10) : ''
+      };
+    });
+    var headers = ['Mes','Cadena','Total Inventario','Tiendas','Venta Total','Productos Únicos','Cobertura Promedio','Registros','Actualizado'];
+    var ws = XLSX.utils.json_to_sheet(rows, { header: headers });
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Histórico');
+    XLSX.writeFile(wb, 'historico_ventas_PORTALFEDURO.xlsx');
+    btn.disabled = false; btn.textContent = originalText;
+  } catch(e) {
+    alert('Error al exportar: ' + e.message);
+    btn.disabled = false; btn.textContent = originalText;
+  }
 }
 
 </script>
