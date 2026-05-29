@@ -695,12 +695,12 @@ function RecomendadosCard({ config }) {
           </span>
         )}
       </div>
-      <div style={{maxHeight:420,overflowY:'auto',display:'flex',flexDirection:'column',gap:8}}>
+      <div style={{maxHeight:220,overflowY:'auto',scrollBehavior:'smooth',display:'flex',flexDirection:'column',gap:8}}>
         {tiendas.map(tienda => {
           const prods = porTienda[tienda];
           const isOpen = openTienda === tienda;
           return (
-            <div key={tienda} style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:12,overflow:'hidden'}}>
+            <div key={tienda} style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:12,overflow:'clip'}}>
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'12px 14px',cursor:'pointer'}}
                 onClick={() => setOpenTienda(isOpen ? null : tienda)}>
                 <div>
