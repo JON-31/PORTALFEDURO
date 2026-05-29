@@ -1018,6 +1018,8 @@ tbody td.right { text-align: right; }
 <script>
 // ═══════════════════════════════════════
 //  SUPABASE
+// INC-3: Cliente Supabase JS SDK (sesión gestionada por shared.js).
+// Todas las queries usan este cliente — no usa sbAdmin/sbGet/sbUpsert.
 // ═══════════════════════════════════════
 const sb = supabase.createClient(SB_URL, ANON_KEY);
 
@@ -1047,7 +1049,7 @@ let DATA = {
   inventario: null,        // configuracion clave inventario
   inventario_bodega: null, // configuracion clave inventario_bodega
   ofertas: null,           // configuracion clave ofertas
-  ingresos: [],            // tabla tareas tipo ingreso
+  tareas: [],              // tabla tareas
   usuarios: []             // tabla usuarios
 };
 
@@ -1131,16 +1133,36 @@ async function loadData(){
   const btn = document.getElementById('sync-btn');
   btn.classList.add('loading');
   btn.textContent = '⟳ Cargando…';
-  try {
-    const [cfg, tareas, usuarios] = await Promise.all([
-      sb.from('configuracion').select('clave,valor'),
-      sb.from('tareas').select('*').order('fecha_asignacion', {ascending:false}),
-      sb.from('usuarios').select('nombre,rol')
-    ]);
 
+  // ERR-7: Promise.allSettled identifica qué fuente falló en lugar de abortar todo
+  const [cfgR, tareasR, usuariosR] = await Promise.allSettled([
+    sb.from('configuracion').select('clave,valor'),
+    sb.from('tareas').select('*').order('fecha_asignacion', {ascending:false}),
+    sb.from('usuarios').select('nombre,rol')
+  ]);
+
+  const failed = [
+    cfgR.status      === 'rejected' && 'configuración',
+    tareasR.status   === 'rejected' && 'tareas',
+    usuariosR.status === 'rejected' && 'usuarios',
+  ].filter(Boolean);
+  if(failed.length){ console.error('loadData errors:', cfgR, tareasR, usuariosR); toast('Error cargando: ' + failed.join(', '), true); }
+
+  const cfg      = cfgR.status      === 'fulfilled' ? cfgR.value      : {data:null};
+  const tareas   = tareasR.status   === 'fulfilled' ? tareasR.value   : {data:null};
+  const usuarios = usuariosR.status === 'fulfilled' ? usuariosR.value : {data:null};
+
+  try {
     if(cfg.data){
       cfg.data.forEach(row => {
-        const v = typeof row.valor === 'string' ? JSON.parse(row.valor) : row.valor;
+        // ERR-2: JSON.parse envuelto en try/catch — JSON inválido muestra alerta con la clave
+        let v;
+        try {
+          v = typeof row.valor === 'string' ? JSON.parse(row.valor) : row.valor;
+        } catch(jsonErr) {
+          toast(`JSON inválido en configuración clave "${row.clave}"`, true);
+          return;
+        }
         if(row.clave === 'ventas_resumen'){
           if(v && !Array.isArray(v)){
             DATA.ventas_resumen = Object.entries(v).map(([nombre, d]) => {
@@ -1163,17 +1185,18 @@ async function loadData(){
         if(row.clave === 'ofertas')           DATA.ofertas           = v;
       });
     }
-    DATA.ingresos = tareas.data || [];
+    // INC-4: renombrado de DATA.ingresos → DATA.tareas (era un nombre engañoso)
+    DATA.tareas   = tareas.data   || [];
     DATA.usuarios = usuarios.data || [];
 
     const now = new Date().toLocaleTimeString('es-PA', {hour:'2-digit',minute:'2-digit'});
     document.getElementById('last-sync').textContent = 'Sync ' + now;
 
     renderAll();
-    toast('Datos actualizados ✓');
+    if(!failed.length) toast('Datos actualizados ✓');
   } catch(e){
     console.error(e);
-    toast('Error al cargar datos: '+e.message, true);
+    toast('Error procesando datos: '+e.message, true);
   }
   btn.classList.remove('loading');
   btn.textContent = '⟳ Actualizar';
@@ -1992,7 +2015,7 @@ function renderBodega(){
 // ═══════════════════════════════════════
 function renderOfertas(){
   const ofertas = DATA.ofertas;
-  const ingresos = DATA.ingresos || [];
+  const tareas = DATA.tareas || [];
 
   // Cards de ofertas
   const grid = document.getElementById('ofertas-grid');
@@ -2040,7 +2063,7 @@ function renderOfertas(){
   }
 
   // Sugeridos Machetazo (tareas de tipo ingreso/sugerido)
-  const sugeridos = ingresos.filter(t => t.estado === 'ingreso' || t.tipo_sugerido);
+  const sugeridos = tareas.filter(t => t.estado === 'ingreso' || t.tipo_sugerido);
   document.getElementById('badge-sugeridos-count').textContent = sugeridos.length + ' registros';
   const tbody = document.getElementById('tbl-ingresos');
   tbody.innerHTML = sugeridos.length

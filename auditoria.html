@@ -68,7 +68,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text)
   if (!s || s.expires_at <= Date.now() || s.rol !== 'auditoria') { window.location.href = 'index.html'; }
 })();
 </script>
-<script>refreshSession();</script>
+<!-- ERR-5: refreshSession se llama con await en DOMContentLoaded (ver abajo) -->
 
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 <aside class="sidebar" id="sidebar">
@@ -133,41 +133,19 @@ async function cerrarSesion() {
   clearSession();
   window.location.href = 'index.html';
 }
-// TODO: Módulo de Auditoría — funcionalidades pendientes:
-//
-// 1. LECTURA DE TAREAS
-//    - Consultar tabla "tareas" via sbAdmin() (ya disponible en shared.js)
-//    - Filtrar por vendedor_nombre, tienda, estado, rango de fechas
-//
-// 2. COMPARATIVA INVENTARIO
-//    - Mostrar inventario_sistema vs inventario_real por tarea completada
-//    - Calcular diferencia y % de variación
-//    - Resaltar discrepancias mayores al umbral configurable
-//
-// 3. HISTORIAL DE CAMBIOS
-//    - Listar tareas completadas ordenadas por fecha_completada DESC
-//    - Agrupar por vendedor y por tienda
-//
-// 4. EXPORTACIÓN
-//    - Botón "Exportar a Excel" usando SheetJS (ya en CDN en otros archivos)
-//    - Exportar resultado filtrado como .xlsx
-//
-// 5. NAVEGACIÓN ADICIONAL
-//    - Agregar nav-items al sidebar cuando se implementen los módulos
-//    - showView() ya está listo para manejar múltiples vistas
-//
-// 6. LIMPIEZA PENDIENTE
-//    - cerrarSesion() usa localStorage.removeItem directamente;
-//      reemplazar por clearSession() de shared.js cuando se refactorice
-//
-// Init
-(function() {
+// INC-3: Este portal usa sbAdmin/sbGet/sbUpsert de shared.js (raw fetch con JWT).
+// No carga el Supabase JS SDK — las llamadas REST se hacen directamente via fetch.
+// El logout usa fetch a /auth/v1/logout en lugar de client.auth.signOut().
+
+// Init: refreshSession se awaita antes de mostrar datos de sesión en el sidebar.
+document.addEventListener('DOMContentLoaded', async function() {
+  await refreshSession();
   var s = JSON.parse(sessionStorage.getItem('mars_portal_session') || 'null');
   var nombre = s ? (s.nombre || 'AUDITORIA') : '';
   document.getElementById('sidebar-user').textContent = nombre;
   document.getElementById('topbar-user').textContent = nombre;
   document.getElementById('footer-date').textContent = new Date().toLocaleDateString('es-PA',{day:'2-digit',month:'short',year:'numeric'});
-})();
+});
 </script>
 </body>
 </html>

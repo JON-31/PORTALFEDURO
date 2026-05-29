@@ -1914,6 +1914,8 @@ function buscarVendedorXtra(tienda) {
 
   return buscarVendedorPorTienda(tienda) || '';
 }
+// INC-2: Duplicada en vendedor.html — esta versión usa normStr() para normalizar y busca
+// en MACHETAZO_TIENDAS + códigos T###. La de vendedor.html hace lookup directo en TIENDAS_VENDEDORES.
 function buscarVendedorPorTienda(tienda) {
   if (!tienda) return '';
   var t = normStr(tienda.trim());
@@ -2041,14 +2043,17 @@ async function cargarBodegaData() {
 <script type="text/babel">
 const {useState,useEffect,useMemo,useCallback}=React;
 
+// INC-3: Este bloque babel usa el helper `sb` (raw fetch con JWT, sin SDK).
+// Las funciones fuera del bloque babel usan sbAdmin/sbGet/sbUpsert de shared.js.
 const sb=async(method,endpoint,data=null)=>{
   var s=getSession();
   var token=(s&&s.access_token)?s.access_token:ANON_KEY;
   const h={'Content-Type':'application/json','Authorization':`Bearer ${token}`,'apikey':ANON_KEY,'Prefer':'return=representation'};
   const o={method,headers:h};
   if(data)o.body=JSON.stringify(data);
-  try{const r=await fetch(`${SURL}/rest/v1${endpoint}`,o);const t=await r.text();return t?JSON.parse(t):[];}
-  catch(e){console.error(e);return null;}
+  // ERR-6: retorna [] en lugar de null para evitar TypeError en callers que iteren el resultado
+  try{const r=await fetch(`${SB_URL}/rest/v1${endpoint}`,o);const t=await r.text();return t?JSON.parse(t):[];}
+  catch(e){console.error(e);return [];}
 };
 
 const AUDITORES=['Carlos Gomez','Eliecer Hidalgo','Margarita Hernández','Faustina'];
@@ -2616,7 +2621,6 @@ async function adProcessFile(input) {
     if (rows.length < 2) { msgEl.textContent = '❌ El archivo esta vacio o sin datos'; msgEl.style.color = 'var(--red)'; return; }
     var normalize = function(h){ return String(h).trim().toUpperCase().replace(/[ÁÀÄÂ]/g,'A').replace(/[ÉÈËÊ]/g,'E').replace(/[ÍÌÏÎ]/g,'I').replace(/[ÓÒÖÔ]/g,'O').replace(/[ÚÙÜÛ]/g,'U').replace(/Ñ/g,'N'); };
     var headers = rows[0].map(normalize);
-    console.log('Headers detectados:', headers);
 
     // fi: exact match against list; fiSub: fallback substring match
     var fi = function(names){ return headers.findIndex(function(h){ return names.indexOf(h) !== -1; }); };
@@ -2636,7 +2640,6 @@ async function adProcessFile(input) {
       var cInv      = fiAny(['INVENTARIO','INV','STOCK'],['INVENTARIO','STOCK','INV']);
       var cVenta    = fiAny(['VENTA UNIDADES PROMEDIO (3M)','VENTA UNIDADES PROMEDIO','VENTA PROMEDIO','VTA PROMEDIO','VENTA UND PROMEDIO','VENTA UNID PROMEDIO','VTA UND PROM'],['VENTA','VTA']);
       var cCob      = fiAny(['COBERTURA','COB','DIAS COBERTURA','DIAS COB'],['COBERTURA','COB']);
-      console.log('Xtra col indices — tienda:'+cTienda+' prod:'+cProducto+' inv:'+cInv+' venta:'+cVenta+' cob:'+cCob);
       var missing = [];
       if (cTienda < 0) missing.push('TIENDA');
       if (cProducto < 0) missing.push('PRODUCTO');
@@ -2668,7 +2671,6 @@ async function adProcessFile(input) {
       var cInv      = fiAny(['INVENTARIO','INV','STOCK'],['INVENTARIO','STOCK','INV']);
       var cVenta    = fiAny(['VENTA PROMEDIO','VENTA UNIDADES PROMEDIO','VTA PROMEDIO','VENTA UND PROMEDIO'],['VENTA','VTA']);
       var cCob      = fiAny(['COBERTURA','COB','DIAS COBERTURA'],['COBERTURA','COB']);
-      console.log('Machetazo col indices — tienda:'+cTienda+' desc:'+cDesc+' inv:'+cInv+' venta:'+cVenta+' cob:'+cCob);
       var missing = [];
       if (cTienda < 0) missing.push('TIENDA');
       if (cDesc < 0) missing.push('DESCRIPCION');
@@ -2724,6 +2726,16 @@ async function adProcessFile(input) {
     msgEl.textContent = '';
   } catch(e) { msgEl.textContent = '❌ Error leyendo archivo: ' + e.message; msgEl.style.color = 'var(--red)'; }
 }
+// PERF-4: Cache de inventario — evita doble lectura cuando adSubirLotes y adLimpiarCadena
+// se llaman en la misma sesión de usuario. Se invalida después de cada escritura.
+var _invCache = null;
+async function _getInvRes() {
+  if (_invCache !== null) return _invCache;
+  _invCache = await sbGet('/configuracion?clave=eq.inventario&select=valor');
+  return _invCache;
+}
+function _invalidateInvCache() { _invCache = null; }
+
 async function adSubirLotes() {
   if (AD_RECORDS.length === 0) return;
   var msgEl = document.getElementById('ad-msg');
@@ -2733,11 +2745,11 @@ async function adSubirLotes() {
   var progLabel = document.getElementById('ad-progress-label');
   btn.disabled = true; progContainer.style.display = 'block'; msgEl.textContent = '';
   var cadenaActual = document.getElementById('ad-cadena').value;
-  // Read existing data to preserve other cadenas
+  // Read existing data to preserve other cadenas (cached — see _getInvRes)
   progLabel.textContent = 'Leyendo datos existentes...'; progBar.style.width = '20%';
   var existingRes;
   try {
-    existingRes = await sbGet('/configuracion?clave=eq.inventario&select=valor');
+    existingRes = await _getInvRes();
   } catch(e) {
     progBar.style.width = '100%'; btn.disabled = false;
     msgEl.textContent = '❌ Error leyendo inventario existente. Operación cancelada para evitar pérdida de datos.';
@@ -2759,6 +2771,7 @@ async function adSubirLotes() {
   progLabel.textContent = 'Guardando ' + AD_RECORDS.length + ' registros (' + cadenaActual + ')...'; progBar.style.width = '60%';
   try {
     await sbUpsert('configuracion', {clave: 'inventario', valor: JSON.stringify(mergedRecords)});
+    _invalidateInvCache();
     progBar.style.width = '100%'; btn.disabled = false;
     progLabel.textContent = '✅ ' + AD_RECORDS.length + ' registros de ' + cadenaActual + ' guardados. ' + otherRecords.length + ' de otras cadenas preservados.';
     msgEl.textContent = '✅ Completado. ' + AD_RECORDS.length + ' registros subidos a Supabase.';
@@ -2775,7 +2788,7 @@ async function adLimpiarCadena() {
   msgEl.textContent = 'Limpiando datos de ' + cadenaActual + '...'; msgEl.style.color = 'var(--muted)';
   var existingRes;
   try {
-    existingRes = await sbGet('/configuracion?clave=eq.inventario&select=valor');
+    existingRes = await _getInvRes();
   } catch(e) {
     msgEl.textContent = '❌ Error leyendo inventario existente. Operación cancelada para evitar pérdida de datos.';
     msgEl.style.color = 'var(--red)'; return;
@@ -2793,6 +2806,7 @@ async function adLimpiarCadena() {
   var removed = existingData.length - filtered.length;
   try {
     await sbUpsert('configuracion', {clave: 'inventario', valor: JSON.stringify(filtered)});
+    _invalidateInvCache();
     msgEl.textContent = '✅ ' + removed + ' registros de ' + cadenaActual + ' eliminados. ' + filtered.length + ' registros de otras cadenas intactos.';
     msgEl.style.color = 'var(--green)';
   } catch(e) {
@@ -2941,7 +2955,6 @@ async function cdEliminarFila(tipo, id, subtipo) {
   if(!confirm('¿Eliminar este registro?')) return;
   if(!id) { alert('Sin ID — no se puede eliminar'); return; }
   var ep = tipo === 'tareas' ? '/tareas?id=eq.' + id : '/reportes?id=eq.' + id;
-  console.log('[cdEliminarFila] tipo='+tipo+' id='+id+' endpoint='+ep);
   var res = await sbAdmin('DELETE', ep);
   if(res && res.error) { alert('Error al eliminar: ' + (res.error.message || JSON.stringify(res.error))); return; }
   CD_DATA[tipo] = null;

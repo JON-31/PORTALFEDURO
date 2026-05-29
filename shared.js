@@ -6,8 +6,6 @@ if (!window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) {
 }
 var SB_URL   = window.SUPABASE_URL;
 var ANON_KEY = window.SUPABASE_ANON_KEY;
-var SURL = SB_URL;    // alias para secciones type="text/babel"
-var SKEY = ANON_KEY;  // alias para secciones type="text/babel"
 
 // ── SESIÓN ──
 function getSession() {

@@ -334,6 +334,8 @@ const { useState, useEffect, useRef, useMemo, useCallback } = React;
 // =============================================
 // 1. CONSTANTES Y CLIENTES SUPABASE
 // =============================================
+// INC-3: Cliente Supabase JS SDK — gestiona auth (tokens, sesión) y queries React.
+// Las llamadas REST no pasan por sbAdmin/sbGet/sbUpsert de shared.js.
 const PORTAL_URL  = window.SUPABASE_URL;
 const PORTAL_KEY  = window.SUPABASE_ANON_KEY;
 const sbPortal    = supabase.createClient(PORTAL_URL, PORTAL_KEY);
@@ -460,6 +462,9 @@ function buscarVendedorMachetazo(tienda) {
   return '';
 }
 
+// INC-2: Duplicada en admin-datos.html — esta versión hace lookup directo en TIENDAS_VENDEDORES
+// sin normalizar, y como fallback llama a buscarVendedorMachetazo(). La de admin-datos.html
+// usa normStr() y busca en MACHETAZO_TIENDAS con estrategias de substring y código T###.
 function buscarVendedorPorTienda(tienda) {
   if (!tienda) return '';
   const t = tienda.trim();
