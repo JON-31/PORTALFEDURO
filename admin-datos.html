@@ -573,6 +573,7 @@ tbody tr:last-child td { border-bottom: none; }
           </table>
         </div>
         <button class="btn-green" onclick="guardarVentasResumen()" style="margin-top:14px">Guardar</button>
+        <button onclick="abrirCerrarMes()" style="margin-top:14px;margin-left:10px;background:var(--red);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer">🔒 Cerrar Mes</button>
         <div id="inicio-ventas-msg" style="margin-top:8px;font-size:13px;font-weight:600"></div>
       </div>
 
@@ -3263,7 +3264,128 @@ document.addEventListener('DOMContentLoaded', async function() {
   setTimeout(init, 100);
 });
 
+// ═══════════════════════════════════════
+//  MÓDULO: CERRAR MES
+// ═══════════════════════════════════════
+var _cmYaExiste = false;
+
+function abrirCerrarMes() {
+  var now = new Date();
+  var mesVal  = String(now.getMonth() + 1).padStart(2, '0');
+  var anioVal = String(now.getFullYear());
+  var selMes  = document.getElementById('cm-mes');
+  var selAnio = document.getElementById('cm-anio');
+  if (selMes) selMes.value = mesVal;
+  if (selAnio) {
+    for (var i = 0; i < selAnio.options.length; i++) {
+      if (selAnio.options[i].value === anioVal) { selAnio.options[i].selected = true; break; }
+    }
+  }
+  _cmYaExiste = false;
+  document.getElementById('cm-aviso').style.display = 'none';
+  document.getElementById('cm-msg').textContent = '';
+  document.getElementById('cm-msg').style.color = '';
+  var btn = document.getElementById('cm-btn-confirmar');
+  if (btn) { btn.textContent = 'Confirmar cierre'; btn.disabled = false; }
+  document.getElementById('modal-cerrar-mes').style.display = 'flex';
+}
+
+function cerrarModalCerrarMes() {
+  document.getElementById('modal-cerrar-mes').style.display = 'none';
+}
+
+async function confirmarCerrarMes() {
+  var mes       = document.getElementById('cm-mes').value;
+  var anio      = document.getElementById('cm-anio').value;
+  var mesCierre = anio + '-' + mes;
+  var aviso     = document.getElementById('cm-aviso');
+  var msgEl     = document.getElementById('cm-msg');
+  var btn       = document.getElementById('cm-btn-confirmar');
+
+  if (!_cmYaExiste) {
+    try {
+      var existe = await sbAdmin('GET', '/ventas_snapshots?mes_cierre=eq.' + mesCierre + '&mes_cerrado=eq.true&select=id&limit=1');
+      if (existe && existe.length) {
+        _cmYaExiste = true;
+        aviso.textContent = '⚠️ Ya existe un cierre para ' + mesCierre + '. Presiona "Confirmar cierre" de nuevo para sobrescribir.';
+        aviso.style.display = '';
+        return;
+      }
+    } catch(e) {
+      console.error('[cerrarMes] verificar existencia:', e);
+    }
+  }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Cerrando…';
+  aviso.style.display = 'none';
+  msgEl.textContent = '';
+
+  try {
+    var resVR = await sbGet('/configuracion?clave=eq.ventas_resumen&select=valor');
+    if (!resVR || !resVR.length || !resVR[0].valor)
+      throw new Error('No hay datos en ventas_resumen');
+
+    var vrData = JSON.parse(resVR[0].valor);
+    var rows = Object.keys(vrData).map(function(v) {
+      var d = vrData[v] || {};
+      return {
+        fecha_hora:  new Date().toISOString(),
+        mes_cierre:  mesCierre,
+        mes_cerrado: true,
+        vendedor:    v,
+        choc_venta:  d.choc_venta  || d.chocolate       || 0,
+        choc_cuota:  d.choc_cuota  || d.cuota_chocolate  || 0,
+        conf_venta:  d.conf_venta  || d.confiteria       || 0,
+        conf_cuota:  d.conf_cuota  || d.cuota_confiteria || 0,
+        pet_venta:   d.pet_venta   || d.mascotas         || 0,
+        pet_cuota:   d.pet_cuota   || d.cuota_mascotas   || 0
+      };
+    });
+
+    if (!rows.length) throw new Error('No hay vendedores en ventas_resumen');
+
+    await sbAdmin('POST', '/ventas_snapshots', rows);
+    msgEl.textContent = '✅ Mes ' + mesCierre + ' cerrado — ' + rows.length + ' vendedores guardados.';
+    msgEl.style.color = '#1D9E75';
+    btn.textContent = 'Confirmar cierre';
+    setTimeout(cerrarModalCerrarMes, 2500);
+  } catch(e) {
+    msgEl.textContent = '❌ Error: ' + e.message;
+    msgEl.style.color = 'var(--red)';
+    btn.disabled = false;
+    btn.textContent = 'Confirmar cierre';
+  }
+}
 
 </script>
+
+<!-- MODAL: CERRAR MES -->
+<div id="modal-cerrar-mes" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 32px;max-width:380px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.4)">
+    <div style="font-size:17px;font-weight:700;margin-bottom:6px">🔒 Cerrar Mes</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:18px">Selecciona el mes a cerrar. Se guardará un snapshot definitivo en ventas_snapshots con <code>mes_cerrado = true</code>.</div>
+    <div style="display:flex;gap:10px;margin-bottom:18px">
+      <select id="cm-mes" style="flex:1;font-size:13px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);outline:none">
+        <option value="01">Enero</option><option value="02">Febrero</option>
+        <option value="03">Marzo</option><option value="04">Abril</option>
+        <option value="05">Mayo</option><option value="06">Junio</option>
+        <option value="07">Julio</option><option value="08">Agosto</option>
+        <option value="09">Septiembre</option><option value="10">Octubre</option>
+        <option value="11">Noviembre</option><option value="12">Diciembre</option>
+      </select>
+      <select id="cm-anio" style="width:90px;font-size:13px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);outline:none">
+        <option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option>
+      </select>
+    </div>
+    <div id="cm-aviso" style="display:none;background:rgba(226,75,74,0.1);border:1px solid var(--red);border-radius:8px;padding:10px 14px;font-size:12.5px;color:var(--red);margin-bottom:14px"></div>
+    <div id="cm-msg" style="font-size:13px;font-weight:600;min-height:20px;margin-bottom:14px"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button onclick="cerrarModalCerrarMes()" style="background:var(--card);color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer">Cancelar</button>
+      <button id="cm-btn-confirmar" onclick="confirmarCerrarMes()" style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer">Confirmar cierre</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
