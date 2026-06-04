@@ -3193,6 +3193,30 @@ async function guardarVentasResumen() {
     payload[v] = Object.assign({}, window._iniVentasData[v]||{}, {mes: mes});
   });
   try {
+    try {
+      var snapshotRes = await sbGet('/configuracion?clave=eq.ventas_resumen&select=valor');
+      if (snapshotRes && snapshotRes.length && snapshotRes[0].valor) {
+        var snapshotData = JSON.parse(snapshotRes[0].valor);
+        var snapshotRows = Object.keys(snapshotData).map(function(v) {
+          var d = snapshotData[v] || {};
+          return {
+            fecha_hora:  new Date().toISOString(),
+            mes_cierre:  null,
+            mes_cerrado: false,
+            vendedor:    v,
+            choc_venta:  d.choc_venta  || 0,
+            choc_cuota:  d.choc_cuota  || 0,
+            conf_venta:  d.conf_venta  || 0,
+            conf_cuota:  d.conf_cuota  || 0,
+            pet_venta:   d.pet_venta   || 0,
+            pet_cuota:   d.pet_cuota   || 0
+          };
+        });
+        if (snapshotRows.length) await sbAdmin('POST', '/ventas_snapshots', snapshotRows);
+      }
+    } catch(snapshotErr) {
+      console.error('[snapshot ventas_resumen]', snapshotErr);
+    }
     await sbUpsert('configuracion', {clave:'ventas_resumen', valor: JSON.stringify(payload)});
     if (msg) { msg.textContent = '✅ Ventas guardadas.'; msg.style.color = '#1D9E75'; }
   } catch(e) {
