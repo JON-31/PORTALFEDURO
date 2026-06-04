@@ -553,6 +553,29 @@ function grupoPorTienda(items) {
 
 // ── Ícono SVG checkmark para círculo verde ──
 // =============================================
+// DELTA CHIP
+// =============================================
+function DeltaChip({ d }) {
+  const abs = Math.abs(Math.round(d || 0));
+  const fmt = '$' + abs.toLocaleString();
+  if (d > 0) return (
+    <span style={{ background: '#EAF3DE', color: '#3B6D11', fontWeight: 700, fontSize: 11, padding: '2px 8px', borderRadius: 20, whiteSpace: 'nowrap' }}>
+      ↑ +{fmt} vs ayer
+    </span>
+  );
+  if (d < 0) return (
+    <span style={{ background: '#FCEBEB', color: '#A32D2D', fontWeight: 700, fontSize: 11, padding: '2px 8px', borderRadius: 20, whiteSpace: 'nowrap' }}>
+      ↓ -{fmt} vs ayer
+    </span>
+  );
+  return (
+    <span style={{ background: '#F3F4F6', color: '#6B7280', fontWeight: 600, fontSize: 11, padding: '2px 8px', borderRadius: 20, whiteSpace: 'nowrap' }}>
+      Sin cambios
+    </span>
+  );
+}
+
+// =============================================
 // VENTAS RESUMEN CARD
 // =============================================
 function VentasResumenCard({ config }) {
@@ -579,6 +602,31 @@ function VentasResumenCard({ config }) {
   const faltaColor = !vendedor ? '#6B7280' : falta <= 0 ? '#3B6D11' : '#A32D2D';
   const faltaTxt   = !vendedor ? '$0' : falta <= 0 ? '¡Meta alcanzada!' : `-$${falta.toLocaleString()}`;
   const $ = n => `$${n.toLocaleString()}`;
+  const [delta, setDelta] = useState(null);
+  useEffect(() => {
+    if (!sesion.nombre) return;
+    sbPortal
+      .from('ventas_snapshots')
+      .select('choc_venta,conf_venta,pet_venta')
+      .eq('vendedor', sesion.nombre)
+      .eq('mes_cerrado', false)
+      .order('fecha_hora', { ascending: false })
+      .limit(2)
+      .then(({ data }) => {
+        if (data && data.length >= 2) {
+          const a = data[0], b = data[1];
+          setDelta({
+            total: ((a.choc_venta||0)+(a.conf_venta||0)+(a.pet_venta||0)) - ((b.choc_venta||0)+(b.conf_venta||0)+(b.pet_venta||0)),
+            choc:  (a.choc_venta||0) - (b.choc_venta||0),
+            conf:  (a.conf_venta||0) - (b.conf_venta||0),
+            pet:   (a.pet_venta ||0) - (b.pet_venta ||0),
+          });
+        } else {
+          setDelta({ sin_datos: true });
+        }
+      })
+      .catch(e => console.error('[delta ventas]', e));
+  }, [sesion.nombre]);
 
   return (
     <div className="ventas-card">
@@ -586,6 +634,7 @@ function VentasResumenCard({ config }) {
       <div className="venta-principal">
         <div>
           <div className="venta-monto">{$(acum)}</div>
+          {delta && <div style={{ marginTop: 4 }}><DeltaChip d={delta.sin_datos ? 0 : delta.total} /></div>}
           <div className="venta-sub">de {$(cuota)} de cuota</div>
         </div>
         <span className={badgeCls} style={badgeStyle}>{pct}%</span>
@@ -599,9 +648,9 @@ function VentasResumenCard({ config }) {
           <div className="venta-progress-fill" style={{ width: `${w}%`, background: fillColor }}/>
         </div>
       </div>
-      <div className="venta-fila"><span className="venta-fila-label">Chocolate</span><span className="venta-fila-val">{$(chocolate)}</span></div>
-      <div className="venta-fila"><span className="venta-fila-label">Confitería</span><span className="venta-fila-val">{$(confiteria)}</span></div>
-      <div className="venta-fila"><span className="venta-fila-label">Mascotas</span><span className="venta-fila-val">{$(mascotas)}</span></div>
+      <div className="venta-fila"><span className="venta-fila-label">Chocolate</span><span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span className="venta-fila-val">{$(chocolate)}</span>{delta && <DeltaChip d={delta.sin_datos ? 0 : delta.choc} />}</span></div>
+      <div className="venta-fila"><span className="venta-fila-label">Confitería</span><span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span className="venta-fila-val">{$(confiteria)}</span>{delta && <DeltaChip d={delta.sin_datos ? 0 : delta.conf} />}</span></div>
+      <div className="venta-fila"><span className="venta-fila-label">Mascotas</span><span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span className="venta-fila-val">{$(mascotas)}</span>{delta && <DeltaChip d={delta.sin_datos ? 0 : delta.pet} />}</span></div>
       <div className="venta-fila">
         <span className="venta-fila-label" style={{ fontWeight: 500, color: '#1a1a1a' }}>Falta para la meta</span>
         <span className="venta-falta" style={{ color: faltaColor }}>{faltaTxt}</span>
@@ -1328,6 +1377,31 @@ function TabVentas({ config }) {
   const badgeBg   = pct >= 100 ? '#EAF3DE' : pct >= 75 ? '#FAEEDA' : '#FCEBEB';
   const badgeClr  = pct >= 100 ? '#3B6D11' : pct >= 75 ? '#854F0B' : '#A32D2D';
   const $         = n => `$${Number(n).toLocaleString()}`;
+  const [delta, setDelta] = useState(null);
+  useEffect(() => {
+    if (!sesion.nombre) return;
+    sbPortal
+      .from('ventas_snapshots')
+      .select('choc_venta,conf_venta,pet_venta')
+      .eq('vendedor', sesion.nombre)
+      .eq('mes_cerrado', false)
+      .order('fecha_hora', { ascending: false })
+      .limit(2)
+      .then(({ data }) => {
+        if (data && data.length >= 2) {
+          const a = data[0], b = data[1];
+          setDelta({
+            total: ((a.choc_venta||0)+(a.conf_venta||0)+(a.pet_venta||0)) - ((b.choc_venta||0)+(b.conf_venta||0)+(b.pet_venta||0)),
+            choc:  (a.choc_venta||0) - (b.choc_venta||0),
+            conf:  (a.conf_venta||0) - (b.conf_venta||0),
+            pet:   (a.pet_venta ||0) - (b.pet_venta ||0),
+          });
+        } else {
+          setDelta({ sin_datos: true });
+        }
+      })
+      .catch(e => console.error('[delta ventas]', e));
+  }, [sesion.nombre]);
 
   const porTienda = useMemo(() => {
     const map = {};
@@ -1350,6 +1424,7 @@ function TabVentas({ config }) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
           <div>
             <div style={{ fontSize: 30, fontWeight: 800, fontFamily: "'Syne', sans-serif", lineHeight: 1 }}>{$(acum)}</div>
+            {delta && <div style={{ marginTop: 6 }}><DeltaChip d={delta.sin_datos ? 0 : delta.total} /></div>}
             <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 4 }}>de {$(cuota)} de cuota</div>
           </div>
           <span style={{ background: badgeBg, color: badgeClr, fontWeight: 700, fontSize: 14, padding: '4px 10px', borderRadius: 20 }}>{pct}%</span>
@@ -1367,14 +1442,17 @@ function TabVentas({ config }) {
       <div style={cardStyle}>
         <div style={secLabel}>POR SEGMENTO</div>
         {[
-          { label: 'Chocolate',  color: '#1D9E75', val: chocolate  },
-          { label: 'Confección', color: '#EF9F27', val: confiteria },
-          { label: 'PetCare',    color: '#378ADD', val: mascotas   },
-        ].map(({ label, color, val }, i, arr) => (
+          { label: 'Chocolate',  color: '#1D9E75', val: chocolate,  dKey: 'choc' },
+          { label: 'Confección', color: '#EF9F27', val: confiteria, dKey: 'conf' },
+          { label: 'PetCare',    color: '#378ADD', val: mascotas,   dKey: 'pet'  },
+        ].map(({ label, color, val, dKey }, i, arr) => (
           <div key={label} style={{ ...rowStyle, borderBottom: i === arr.length - 1 ? 'none' : '1px solid var(--border)' }}>
             <div style={{ width: 10, height: 10, borderRadius: '50%', background: color, flexShrink: 0, marginRight: 10 }}/>
             <span style={{ flex: 1, fontWeight: 500, fontSize: 14 }}>{label}</span>
-            <span style={{ fontWeight: 700, fontSize: 14 }}>{$(val)}</span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontWeight: 700, fontSize: 14 }}>{$(val)}</span>
+              {delta && <DeltaChip d={delta.sin_datos ? 0 : delta[dKey]} />}
+            </span>
           </div>
         ))}
       </div>
