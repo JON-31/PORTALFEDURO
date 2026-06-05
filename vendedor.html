@@ -1040,7 +1040,7 @@ function FormTarea({ tarea, onDone, busy }) {
   );
 }
 
-function WidgetTareas({ tareas, onUpdate }) {
+function WidgetTareas({ tareas, onUpdate, onSetTab, onConteoTarea }) {
   const [openId, setOpenId] = useState(null);
   const [busyId, setBusyId] = useState(null);
 
@@ -1101,6 +1101,38 @@ function WidgetTareas({ tareas, onUpdate }) {
               ¡Todas completadas!
             </div>
           : pendientes.map(t => {
+              if ((t.tipo||'').toLowerCase() === 'conteo_fisico') {
+                let prods = [];
+                try { prods = JSON.parse(t.producto || '[]'); } catch(_) {}
+                const EC = {'Crítico':'#A32D2D','Atención':'#854F0B','Óptimo':'#3B6D11','SobreStock':'#185FA5','Agotado':'#6B7280'};
+                const EB = {'Crítico':'#FCEBEB','Atención':'#FEF3C7','Óptimo':'#EAF3DE','SobreStock':'#EBF3FF','Agotado':'#F3F4F6'};
+                return (
+                  <div key={t.id} className="wt-tarea-row">
+                    <div style={{padding:'12px 14px'}}>
+                      <div style={{display:'flex',alignItems:'flex-start',gap:8,marginBottom:6}}>
+                        <span style={{fontSize:20,lineHeight:1}}>📋</span>
+                        <div>
+                          <div className="wt-tarea-nombre">Verificar inventario en tienda</div>
+                          <div className="wt-tarea-desc">{t.tienda||'—'}</div>
+                        </div>
+                      </div>
+                      {prods.length > 0 && (
+                        <div style={{display:'flex',flexWrap:'wrap',gap:4,marginBottom:8}}>
+                          {prods.map((p,i) => (
+                            <span key={i} style={{background:EB[p.estado]||'#F3F4F6',color:EC[p.estado]||'#6B7280',fontSize:10,fontWeight:700,padding:'2px 8px',borderRadius:20}}>
+                              {p.descripcion||p.producto||p.barcode||'—'} · {p.estado||'—'}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <button onClick={()=>{if(onConteoTarea)onConteoTarea(t);if(onSetTab)onSetTab('ingresos');}}
+                        style={{width:'100%',background:'#1D9E75',color:'#fff',border:'none',borderRadius:8,padding:'9px 0',fontSize:13,fontWeight:700,cursor:'pointer'}}>
+                        Ir a registrar conteo →
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
               const isOpen = openId === t.id;
               return (
                 <div key={t.id} className="wt-tarea-row">
@@ -1214,7 +1246,7 @@ function AlertTiendaAccordion({ tienda, count, prom, badgeTxt, badgeStyle, borde
   );
 }
 
-function TabInicio({ tareas, onUpdateTareas, config }) {
+function TabInicio({ tareas, onUpdateTareas, config, onSetTab, onConteoTarea }) {
   const inv = config?.inventario || [];
 
   const { agotadosPorTienda, criticosPorTienda, atencionPorTienda,
@@ -1273,7 +1305,7 @@ function TabInicio({ tareas, onUpdateTareas, config }) {
         </div>
       </div>
 
-      <WidgetTareas tareas={tareas} onUpdate={onUpdateTareas}/>
+      <WidgetTareas tareas={tareas} onUpdate={onUpdateTareas} onSetTab={onSetTab} onConteoTarea={onConteoTarea}/>
 
       {agotadosPorTienda.length > 0 && (
         <div className="card">
@@ -1741,7 +1773,7 @@ function TabOfertas({ config }) {
 // =============================================
 // 11. TAB: Ingresos
 // =============================================
-function TabIngresos({ tareas, config }) {
+function TabIngresos({ tareas, config, conteoTarea, onConteoTarea, onUpdateTareas }) {
   const inv = config?.inventario || [];
   const tiendasDisponibles = useMemo(() =>
     [...new Set(inv.map(r => r.tienda).filter(Boolean))].sort(),
@@ -1753,6 +1785,56 @@ function TabIngresos({ tareas, config }) {
 
   const [openInv, setOpenInv] = useState(false);
   const [openSug, setOpenSug] = useState(false);
+  const [conteos,    setConteos]    = useState({});
+  const [saveMsg,    setSaveMsg]    = useState('');
+  const [saving,     setSaving]     = useState(false);
+  const [conteoDone, setConteoDone] = useState(false);
+
+  useEffect(() => { setConteos({}); setSaveMsg(''); setConteoDone(false); }, [conteoTarea?.id]);
+
+  const detectarCadena = (tienda) => {
+    const m = inv.find(r => (r.tienda||'').toUpperCase() === (tienda||'').toUpperCase());
+    return m ? (m.cadena || '') : '';
+  };
+
+  const guardarConteo = async () => {
+    if (!conteoTarea) return;
+    let prods = [];
+    try { prods = JSON.parse(conteoTarea.producto || '[]'); } catch(_) {}
+    const s = getSession() || {};
+    const cadena = detectarCadena(conteoTarea.tienda);
+    const ajustes = prods
+      .filter(p => conteos[p.barcode] !== undefined && conteos[p.barcode] !== '')
+      .map(p => ({
+        vendedor:             s.nombre,
+        tienda:               conteoTarea.tienda,
+        cadena,
+        codigo_producto:      p.barcode || '',
+        descripcion_producto: p.descripcion || p.producto || '',
+        inventario_sistema:   p.inventario_sistema || 0,
+        inventario_fisico:    Number(conteos[p.barcode]),
+        estado_producto:      p.estado || '',
+        activo:               true,
+        fecha_conteo:         new Date().toISOString()
+      }));
+    if (!ajustes.length) { alert('Ingresa al menos un conteo.'); return; }
+    setSaving(true);
+    try {
+      const { error: ajErr } = await sbPortal.from('inventario_ajustes').upsert(ajustes);
+      if (ajErr) throw new Error(ajErr.message);
+      const { error: updErr } = await sbPortal.from('tareas').update({
+        estado: 'COMPLETADA',
+        fecha_completada: new Date().toISOString()
+      }).eq('id', conteoTarea.id);
+      if (updErr) throw new Error(updErr.message);
+      setConteoDone(true);
+      setSaveMsg('✅ ' + ajustes.length + ' ajuste' + (ajustes.length !== 1 ? 's' : '') + ' guardado' + (ajustes.length !== 1 ? 's' : '') + '. Tarea completada.');
+    } catch(e) {
+      setSaveMsg('❌ Error: ' + e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
   const [formInv, setFormInv] = useState({});
   const [formSug, setFormSug] = useState({});
   const [sugQuery, setSugQuery] = useState('');
@@ -1849,8 +1931,74 @@ function TabIngresos({ tareas, config }) {
   const titleStyle = { fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 15 };
   const subStyle   = { fontSize: 12, color: 'var(--muted)', marginTop: 3 };
 
+  const _EC = {'Crítico':'#A32D2D','Atención':'#854F0B','Óptimo':'#3B6D11','SobreStock':'#185FA5','Agotado':'#6B7280'};
+  const _EB = {'Crítico':'#FCEBEB','Atención':'#FEF3C7','Óptimo':'#EAF3DE','SobreStock':'#EBF3FF','Agotado':'#F3F4F6'};
+
   return (
     <div>
+      {/* ── Panel Conteo Físico ── */}
+      {conteoTarea && (() => {
+        let prods = [];
+        try { prods = JSON.parse(conteoTarea.producto || '[]'); } catch(_) {}
+        return (
+          <div style={{background:'var(--card)',border:'2px solid #1D9E75',borderRadius:12,overflow:'hidden',marginBottom:14}}>
+            <div style={{background:'#1D9E75',padding:'12px 16px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <div>
+                <div style={{color:'#fff',fontWeight:700,fontFamily:"'Syne',sans-serif",fontSize:15}}>📋 Conteo Físico</div>
+                <div style={{color:'rgba(255,255,255,0.85)',fontSize:12,marginTop:2}}>{conteoTarea.tienda}</div>
+              </div>
+              <button onClick={()=>{if(onConteoTarea)onConteoTarea(null);}}
+                style={{background:'rgba(255,255,255,0.2)',color:'#fff',border:'none',borderRadius:6,padding:'4px 10px',fontSize:12,fontWeight:600,cursor:'pointer'}}>✕ Cerrar</button>
+            </div>
+            {conteoDone ? (
+              <div style={{padding:'24px 16px',textAlign:'center'}}>
+                <div style={{fontSize:36,marginBottom:8}}>✅</div>
+                <div style={{fontWeight:700,color:'#1D9E75',fontSize:14}}>{saveMsg}</div>
+                <button onClick={()=>{if(onConteoTarea)onConteoTarea(null);}}
+                  style={{marginTop:14,background:'#1D9E75',color:'#fff',border:'none',borderRadius:8,padding:'9px 24px',fontSize:13,fontWeight:700,cursor:'pointer'}}>
+                  Cerrar
+                </button>
+              </div>
+            ) : (
+              <div style={{padding:'14px 16px'}}>
+                {prods.map((p, i) => {
+                  const fis  = conteos[p.barcode];
+                  const diff = (fis !== undefined && fis !== '') ? Number(fis) - (p.inventario_sistema||0) : null;
+                  return (
+                    <div key={i} style={{padding:'10px 0',borderBottom: i < prods.length-1 ? '1px solid var(--border)' : 'none'}}>
+                      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
+                        <div style={{flex:1,minWidth:0,marginRight:8}}>
+                          <div style={{fontWeight:600,fontSize:13,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.descripcion||p.producto||p.barcode||'—'}</div>
+                          {p.barcode && <div style={{fontSize:11,color:'var(--muted)',fontFamily:'monospace'}}>{p.barcode}</div>}
+                        </div>
+                        <span style={{background:_EB[p.estado]||'#F3F4F6',color:_EC[p.estado]||'#6B7280',fontSize:10,fontWeight:700,padding:'2px 8px',borderRadius:20,flexShrink:0}}>{p.estado||'—'}</span>
+                      </div>
+                      <div style={{display:'flex',alignItems:'center',gap:8}}>
+                        <div style={{fontSize:11,color:'var(--muted)',minWidth:70}}>Sis: <strong>{p.inventario_sistema||0}</strong></div>
+                        <input type="number" min="0" placeholder="Físico"
+                          value={conteos[p.barcode] !== undefined ? conteos[p.barcode] : ''}
+                          onChange={e => setConteos(prev => ({...prev, [p.barcode]: e.target.value}))}
+                          style={{flex:1,background:'var(--card)',border:'1px solid var(--border)',borderRadius:6,padding:'6px 8px',fontSize:13,color:'var(--text)',outline:'none'}}/>
+                        {diff !== null && (
+                          <div style={{fontSize:12,fontWeight:700,color: diff >= 0 ? '#1D9E75' : '#A32D2D',minWidth:46,textAlign:'right'}}>
+                            {diff >= 0 ? '+' : ''}{diff}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+                {saveMsg && <div style={{marginTop:10,fontSize:13,color:'var(--red)',fontWeight:600}}>{saveMsg}</div>}
+                <button onClick={guardarConteo} disabled={saving}
+                  style={{marginTop:14,width:'100%',background:saving?'#ccc':'#1D9E75',color:'#fff',border:'none',borderRadius:8,padding:'11px 0',fontSize:14,fontWeight:700,cursor:saving?'not-allowed':'pointer'}}>
+                  {saving ? '⏳ Guardando…' : '💾 Guardar conteo · Marcar tarea completada'}
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
       {/* Registrar Inventario */}
       <div className="ingreso-card">
         <div className="ingreso-hdr" onClick={() => setOpenInv(o => !o)}>
@@ -2265,7 +2413,8 @@ function App() {
     </div>
   );
 
-  const tabProps = { reportes, tareas, onUpdateTareas: setTareas, config };
+  const [conteoTarea, setConteoTarea] = useState(null);
+  const tabProps = { reportes, tareas, onUpdateTareas: setTareas, config, onSetTab: setTab, conteoTarea, onConteoTarea: setConteoTarea };
   const nombre1 = (sesion.nombre || '').split(' ')[0];
 
   return (
