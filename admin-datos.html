@@ -2896,6 +2896,39 @@ async function adSubirLotes() {
   try {
     await sbUpsert('configuracion', {clave: 'inventario', valor: JSON.stringify(mergedRecords)});
     _invalidateInvCache();
+
+    // ── Aplicar ajustes de inventario_ajustes (activo=true) ──
+    try {
+      var ajRes = await sbAdmin('GET', '/inventario_ajustes?activo=eq.true&select=tienda,codigo_producto,inventario_sistema,inventario_fisico');
+      if (ajRes && ajRes.length) {
+        var _hasAj = false;
+        var adjustedRecords = mergedRecords.map(function(prod) {
+          var t  = (prod.tienda   || '').toUpperCase().trim();
+          var bc = (prod.barcode  || '').trim();
+          var aj = ajRes.find(function(a) {
+            return (a.tienda || '').toUpperCase().trim() === t &&
+                   (a.codigo_producto || '').trim() === bc;
+          });
+          if (aj) {
+            var diff = (aj.inventario_fisico || 0) - (aj.inventario_sistema || 0);
+            _hasAj = true;
+            return Object.assign({}, prod, {
+              inventario_ajustado: (prod.inventario || 0) + diff,
+              tiene_ajuste: true,
+              diferencia_ficticia: diff
+            });
+          }
+          return prod;
+        });
+        if (_hasAj) {
+          await sbUpsert('configuracion', {clave: 'inventario', valor: JSON.stringify(adjustedRecords)});
+          _invalidateInvCache();
+        }
+      }
+    } catch(eAj) {
+      console.error('[ajustes inventario]', eAj);
+    }
+
     progBar.style.width = '100%'; btn.disabled = false;
     progLabel.textContent = '✅ ' + AD_RECORDS.length + ' registros de ' + cadenaActual + ' guardados. ' + otherRecords.length + ' de otras cadenas preservados.';
     msgEl.textContent = '✅ Completado. ' + AD_RECORDS.length + ' registros subidos a Supabase.';
