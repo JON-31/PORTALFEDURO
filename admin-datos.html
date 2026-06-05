@@ -508,6 +508,11 @@ tbody tr:last-child td { border-bottom: none; }
       <span class="nav-icon">📤</span> Actualizar Data
     </div>
 
+    <div class="nav-section-label">Tareas</div>
+    <div class="nav-item" onclick="showView('tareas', this)">
+      <span class="nav-icon">✅</span> Crear Tarea
+    </div>
+
   </nav>
 </aside>
 
@@ -917,6 +922,79 @@ tbody tr:last-child td { border-bottom: none; }
         </div>
       </div>
 
+      <!-- ═══════════════ TAREAS — CONTEO FÍSICO ═══════════════ -->
+      <div class="view" id="view-tareas">
+        <div class="section-header">
+          <div class="section-title">✅ Crear Tarea</div>
+        </div>
+
+        <!-- Selector de tipo -->
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px">
+          <div style="font-weight:700;font-size:14px;margin-bottom:12px">Tipo de tarea</div>
+          <select id="ct-tipo" onchange="ctTipoChange()" style="width:100%;max-width:320px;font-size:13px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);outline:none">
+            <option value="">— Seleccionar tipo —</option>
+            <option value="conteo_fisico">Conteo Físico</option>
+          </select>
+        </div>
+
+        <!-- Panel Conteo Físico -->
+        <div id="ct-panel-conteo" style="display:none">
+
+          <!-- Selector tienda -->
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px">
+            <div style="font-weight:700;font-size:14px;margin-bottom:12px">📍 Tienda</div>
+            <select id="ct-tienda" onchange="ctTiendaChange()" style="width:100%;font-size:13px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);outline:none">
+              <option value="">— Seleccionar tienda —</option>
+            </select>
+            <div id="ct-vendedor-info" style="margin-top:10px;font-size:13px;color:var(--muted)"></div>
+          </div>
+
+          <!-- Filtros de estado -->
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px">
+            <div style="font-weight:700;font-size:14px;margin-bottom:12px">🔍 Filtrar por estado</div>
+            <div style="display:flex;gap:20px;flex-wrap:wrap">
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+                <input type="checkbox" id="ct-f-critico" checked onchange="ctFiltrarProductos()" style="width:15px;height:15px;accent-color:var(--red)">
+                <span style="color:var(--red);font-weight:600">Crítico</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+                <input type="checkbox" id="ct-f-atencion" checked onchange="ctFiltrarProductos()" style="width:15px;height:15px;accent-color:#EF9F27">
+                <span style="color:#EF9F27;font-weight:600">Atención</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+                <input type="checkbox" id="ct-f-optimo" onchange="ctFiltrarProductos()" style="width:15px;height:15px;accent-color:var(--green)">
+                <span style="color:var(--green);font-weight:600">Óptimo</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px">
+                <input type="checkbox" id="ct-f-sobrestock" onchange="ctFiltrarProductos()" style="width:15px;height:15px;accent-color:var(--blue)">
+                <span style="color:var(--blue);font-weight:600">SobreStock</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Lista de productos -->
+          <div id="ct-productos-panel" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--border)">
+              <div style="font-weight:700;font-size:14px">📦 Productos</div>
+              <div style="display:flex;gap:8px">
+                <button onclick="ctSeleccionarTodos(true)" style="font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);cursor:pointer">Todos</button>
+                <button onclick="ctSeleccionarTodos(false)" style="font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--muted);cursor:pointer">Ninguno</button>
+                <span id="ct-count-badge" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:rgba(29,158,117,0.1);color:var(--green)">0 seleccionados</span>
+              </div>
+            </div>
+            <div id="ct-productos-lista" style="max-height:340px;overflow-y:auto"></div>
+          </div>
+
+          <!-- Mensaje / botón crear -->
+          <div id="ct-empty-msg" style="display:none;font-size:13px;color:var(--muted);padding:16px;text-align:center">No hay productos que coincidan con los filtros seleccionados.</div>
+          <div id="ct-crear-wrap" style="display:none">
+            <button onclick="ctCrearTarea()" style="background:var(--green);color:#fff;border:none;border-radius:8px;padding:11px 26px;font-size:14px;font-weight:700;cursor:pointer">✅ Crear tarea de conteo</button>
+            <div id="ct-msg" style="margin-top:10px;font-size:13px;font-weight:600"></div>
+          </div>
+
+        </div>
+      </div>
+
 
   </div>
 </div>
@@ -1091,7 +1169,7 @@ function showView(name, el) {
   document.getElementById('view-' + name).classList.add('active');
   el.classList.add('active');
   closeSidebar();
-  const titles = { inicio: 'Inicio', dashboard: 'Dashboard', vendedores: 'Vendedores', tiendas: 'Tiendas', inventario: 'Inventario por Cadena', bodega: 'Bodega', auditoria: 'Auditoría de Productos', ofertas: 'Ofertas Vigentes', ingreso: 'Ingresos', admin: 'Administrador', 'actualizar-data': 'Actualizar Data', 'gestionar-ofertas': 'Ofertas', 'centro-descargas': 'Ingresos' };
+  const titles = { inicio: 'Inicio', dashboard: 'Dashboard', vendedores: 'Vendedores', tiendas: 'Tiendas', inventario: 'Inventario por Cadena', bodega: 'Bodega', auditoria: 'Auditoría de Productos', ofertas: 'Ofertas Vigentes', ingreso: 'Ingresos', admin: 'Administrador', 'actualizar-data': 'Actualizar Data', 'gestionar-ofertas': 'Ofertas', 'centro-descargas': 'Ingresos', tareas: 'Crear Tarea' };
   document.getElementById('topbar-title').textContent = titles[name] || name;
   if (name === 'vendedores') renderVendedorProfile();
   if (name === 'tiendas') renderTiendaView();
@@ -3262,6 +3340,208 @@ document.addEventListener('DOMContentLoaded', async function() {
   if (el) el.textContent = nombre;
   iniciarViewInicio();
   setTimeout(init, 100);
+});
+
+// ═══════════════════════════════════════
+//  MÓDULO: CONTEO FÍSICO (TAREAS)
+// ═══════════════════════════════════════
+var _ctInvCache = null;   // cache inventario Supabase para esta sesión de vista
+var _ctProductos = [];    // productos de la tienda seleccionada (todos los estados)
+var _ctFiltrados = [];    // productos tras aplicar filtros de estado
+
+function ctEstado(cobertura) {
+  if (cobertura === 0)   return 'Agotado';
+  if (cobertura > 180)   return 'SobreStock';
+  if (cobertura > 60)    return 'Crítico';
+  if (cobertura > 30)    return 'Atención';
+  return 'Óptimo';
+}
+
+function ctEstadoColor(estado) {
+  var map = { Agotado: '#888', Crítico: 'var(--red)', Atención: '#EF9F27', Óptimo: 'var(--green)', SobreStock: 'var(--blue)' };
+  return map[estado] || 'var(--muted)';
+}
+
+function ctTipoChange() {
+  var tipo = document.getElementById('ct-tipo').value;
+  document.getElementById('ct-panel-conteo').style.display = tipo === 'conteo_fisico' ? '' : 'none';
+  if (tipo === 'conteo_fisico') ctInicializarTiendas();
+}
+
+async function ctInicializarTiendas() {
+  var sel = document.getElementById('ct-tienda');
+  if (sel.options.length > 1) return; // ya poblado
+  TIENDAS.forEach(function(t) {
+    var opt = document.createElement('option');
+    opt.value = t; opt.textContent = t;
+    sel.appendChild(opt);
+  });
+}
+
+async function ctTiendaChange() {
+  var tienda = document.getElementById('ct-tienda').value;
+  var vendorEl = document.getElementById('ct-vendedor-info');
+  var panel = document.getElementById('ct-productos-panel');
+  var emptyMsg = document.getElementById('ct-empty-msg');
+  var crearWrap = document.getElementById('ct-crear-wrap');
+
+  panel.style.display = 'none';
+  emptyMsg.style.display = 'none';
+  crearWrap.style.display = 'none';
+  document.getElementById('ct-productos-lista').innerHTML = '';
+  _ctProductos = [];
+
+  if (!tienda) { vendorEl.textContent = ''; return; }
+
+  var vendedor = TIENDAS_VENDEDORES[tienda] || 'Sin asignar';
+  vendorEl.innerHTML = '👤 Vendedor asignado: <strong>' + vendedor + '</strong>';
+
+  // Cargar inventario de Supabase (con cache)
+  if (!_ctInvCache) {
+    vendorEl.innerHTML += ' — <span style="color:var(--muted)">Cargando inventario…</span>';
+    try {
+      var res = await sbGet('/configuracion?clave=eq.inventario&select=valor');
+      _ctInvCache = (res && res.length && res[0].valor) ? JSON.parse(res[0].valor) : [];
+    } catch(e) {
+      console.error('[cteo]', e);
+      _ctInvCache = [];
+    }
+    vendorEl.innerHTML = '👤 Vendedor asignado: <strong>' + vendedor + '</strong>';
+  }
+
+  // Filtrar por tienda (comparación case-insensitive)
+  var tNorm = tienda.toUpperCase();
+  _ctProductos = (_ctInvCache || []).filter(function(r) {
+    return (r.tienda || '').toUpperCase() === tNorm;
+  });
+
+  ctFiltrarProductos();
+}
+
+function ctFiltrarProductos() {
+  var chkCritico    = document.getElementById('ct-f-critico').checked;
+  var chkAtencion   = document.getElementById('ct-f-atencion').checked;
+  var chkOptimo     = document.getElementById('ct-f-optimo').checked;
+  var chkSobrestock = document.getElementById('ct-f-sobrestock').checked;
+
+  _ctFiltrados = _ctProductos.filter(function(p) {
+    var est = ctEstado(p.cobertura || 0);
+    if (est === 'Crítico'    && chkCritico)    return true;
+    if (est === 'Atención'   && chkAtencion)   return true;
+    if (est === 'Óptimo'     && chkOptimo)     return true;
+    if (est === 'SobreStock' && chkSobrestock) return true;
+    if (est === 'Agotado'    && chkCritico)    return true; // Agotado incluido con Crítico
+    return false;
+  });
+
+  var panel    = document.getElementById('ct-productos-panel');
+  var emptyMsg = document.getElementById('ct-empty-msg');
+  var crearWrap = document.getElementById('ct-crear-wrap');
+  var lista    = document.getElementById('ct-productos-lista');
+
+  if (!document.getElementById('ct-tienda').value) return;
+
+  if (_ctFiltrados.length === 0) {
+    panel.style.display = 'none';
+    emptyMsg.style.display = '';
+    crearWrap.style.display = 'none';
+    return;
+  }
+
+  emptyMsg.style.display = 'none';
+  panel.style.display = '';
+  crearWrap.style.display = '';
+
+  lista.innerHTML = _ctFiltrados.map(function(p, idx) {
+    var est   = ctEstado(p.cobertura || 0);
+    var color = ctEstadoColor(est);
+    return '<label style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);cursor:pointer;font-size:13px">'
+      + '<input type="checkbox" class="ct-prod-chk" data-idx="' + idx + '" checked onchange="ctActualizarConteo()" style="width:15px;height:15px;flex-shrink:0;accent-color:var(--green)">'
+      + '<div style="flex:1;min-width:0">'
+      + '<div style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (p.producto || '—') + '</div>'
+      + '<div style="color:var(--muted);font-size:11px;margin-top:2px">' + (p.marca || '') + (p.barcode ? ' · ' + p.barcode : '') + '</div>'
+      + '</div>'
+      + '<div style="text-align:right;flex-shrink:0">'
+      + '<div style="font-size:11px;font-weight:700;color:' + color + ';background:rgba(0,0,0,0.04);padding:2px 8px;border-radius:10px">' + est + '</div>'
+      + '<div style="font-size:11px;color:var(--muted);margin-top:2px">Inv: ' + (p.inventario || 0) + ' · Cob: ' + (p.cobertura || 0) + 'd</div>'
+      + '</div>'
+      + '</label>';
+  }).join('');
+
+  ctActualizarConteo();
+}
+
+function ctActualizarConteo() {
+  var chks = document.querySelectorAll('.ct-prod-chk:checked');
+  var badge = document.getElementById('ct-count-badge');
+  if (badge) badge.textContent = chks.length + ' seleccionado' + (chks.length !== 1 ? 's' : '');
+}
+
+function ctSeleccionarTodos(marcar) {
+  document.querySelectorAll('.ct-prod-chk').forEach(function(c) { c.checked = marcar; });
+  ctActualizarConteo();
+}
+
+async function ctCrearTarea() {
+  var tienda  = document.getElementById('ct-tienda').value;
+  var msg     = document.getElementById('ct-msg');
+  var btn     = document.querySelector('[onclick="ctCrearTarea()"]');
+
+  if (!tienda) { alert('Selecciona una tienda.'); return; }
+
+  var seleccionados = [];
+  document.querySelectorAll('.ct-prod-chk:checked').forEach(function(chk) {
+    var idx = parseInt(chk.dataset.idx);
+    var p   = _ctFiltrados[idx];
+    if (p) seleccionados.push({
+      barcode:            p.barcode   || '',
+      producto:           p.producto  || '',
+      estado:             ctEstado(p.cobertura || 0),
+      inventario_sistema: p.inventario || 0
+    });
+  });
+
+  if (!seleccionados.length) { alert('Selecciona al menos un producto.'); return; }
+
+  var vendedor = TIENDAS_VENDEDORES[tienda] || '';
+  btn.disabled = true; btn.textContent = '⏳ Creando…';
+  msg.textContent = '';
+
+  try {
+    await sbAdmin('POST', '/tareas', {
+      vendedor_nombre:    vendedor,
+      tienda:             tienda,
+      tipo:               'conteo_fisico',
+      producto:           JSON.stringify(seleccionados),
+      estado:             'PENDIENTE',
+      fecha_asignacion:   new Date().toISOString()
+    });
+    msg.textContent = '✅ Tarea creada para ' + tienda + ' (' + seleccionados.length + ' productos)';
+    msg.style.color = 'var(--green)';
+    // Reset
+    document.getElementById('ct-tienda').value = '';
+    document.getElementById('ct-vendedor-info').textContent = '';
+    document.getElementById('ct-productos-panel').style.display = 'none';
+    document.getElementById('ct-crear-wrap').style.display = 'none';
+    _ctProductos = []; _ctFiltrados = [];
+    setTimeout(function() { if (msg) msg.textContent = ''; }, 4000);
+  } catch(e) {
+    msg.textContent = '❌ Error: ' + e.message;
+    msg.style.color = 'var(--red)';
+  }
+
+  btn.disabled = false; btn.textContent = '✅ Crear tarea de conteo';
+}
+
+// Invalidar cache al cambiar de vista
+document.addEventListener('DOMContentLoaded', function() {
+  var origShowView = window.showView;
+  if (origShowView) {
+    window.showView = function(name, el) {
+      if (name !== 'tareas') _ctInvCache = null;
+      return origShowView(name, el);
+    };
+  }
 });
 
 // ═══════════════════════════════════════
