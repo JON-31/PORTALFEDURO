@@ -478,42 +478,22 @@ tbody td.right { text-align: right; }
 /* ── SNAPSHOTS ── */
 /* ── Vista Tiendas ── */
 
-/* Filtros sticky — background blanco explícito, z-index sobre el thead */
-#view-tiendas .filtros {
+#ti-sticky-bar {
   position: sticky;
   top: 0;
-  z-index: 10;
-  background: #fff;
+  z-index: 20;
+  background: var(--bg, #fff);
   padding: 10px 0 8px;
-  margin-bottom: 0;
-  border-bottom: 2px solid var(--verde-mid);
-  box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
 }
 
-/* Contenedor puramente visual — SIN overflow de ningún tipo.
-   Cualquier overflow (auto, hidden, scroll, clip) convierte el elemento
-   en un scroll-container y hace que sticky del thead lo referencie a él
-   en lugar de a #content. Sin overflow, el thead stickea correctamente.
-   El scroll horizontal lo provee #content: cuando overflow-y:auto está
-   declarado, overflow-x se coerce a auto por spec, así que #content
-   maneja ambos ejes. */
-.ti-card-outer {
-  background: var(--surface);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  margin-bottom: 20px;
-}
-
-/* Thead sticky: referencia #content (scroll-container real) porque
-   .ti-card-outer no tiene overflow → no es scroll-container.
-   top = altura del filtros bar: 10px pad-top + 32px input + 8px pad-bottom + 1px border = 51px.
-   background #fff explícito para que tape el contenido que pasa por detrás. */
 .tbl-tiendas-main thead th {
   position: sticky;
-  top: var(--ti-filtros-h, 52px);
-  z-index: 5;
+  top: 53px;
+  z-index: 10;
   background: #fff;
+  white-space: nowrap;
 }
 
 /* Fila clickable */
@@ -940,19 +920,21 @@ tbody td.right { text-align: right; }
         <span class="badge" id="badge-tiendas-count">—</span>
       </div>
 
-      <div class="filtros">
-        <input type="text" id="filtro-tienda" placeholder="🔍 Buscar tienda…">
-        <select id="filtro-tienda-cadena">
-          <option value="">Todas las cadenas</option>
-          <option value="machetazo">Machetazo</option>
-          <option value="xtra">Xtra</option>
-        </select>
-        <select id="filtro-tienda-vend">
-          <option value="">Todos los vendedores</option>
-        </select>
+      <div id="ti-sticky-bar">
+        <div class="filtros">
+          <input type="text" id="filtro-tienda" placeholder="🔍 Buscar tienda…">
+          <select id="filtro-tienda-cadena">
+            <option value="">Todas las cadenas</option>
+            <option value="machetazo">Machetazo</option>
+            <option value="xtra">Xtra</option>
+          </select>
+          <select id="filtro-tienda-vend">
+            <option value="">Todos los vendedores</option>
+          </select>
+        </div>
       </div>
 
-      <div class="ti-card-outer">
+      <div style="overflow-x: auto;">
         <table class="tbl-tiendas-main">
           <thead>
             <tr>
