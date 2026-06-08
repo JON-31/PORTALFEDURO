@@ -1014,25 +1014,25 @@ tbody td.right { text-align: right; }
             <div class="snap-cadena-card">
               <div class="snap-cadena-card-name">🛒 XTRA</div>
               <div class="snap-cadena-card-venta" id="snc-xtra-venta">—</div>
-              <div class="snap-cadena-card-row"><span>Delta vs mes ant.</span><span id="snc-xtra-delta">—</span></div>
+              <div class="snap-cadena-card-row"><span>Cuota</span><span id="snc-xtra-delta">—</span></div>
               <div class="snap-cadena-card-row"><span>Prom. diario</span><span id="snc-xtra-prom">—</span></div>
-              <div class="snap-cadena-card-row"><span>% MD</span><span id="snc-xtra-md">—</span></div>
+              <div class="snap-cadena-card-row"><span>% Cuota</span><span id="snc-xtra-md">—</span></div>
               <div class="snap-cadena-card-row"><span>Tiendas</span><span>39</span></div>
             </div>
             <div class="snap-cadena-card">
               <div class="snap-cadena-card-name">🔴 Machetazo</div>
               <div class="snap-cadena-card-venta" id="snc-mach-venta">—</div>
-              <div class="snap-cadena-card-row"><span>Delta vs mes ant.</span><span id="snc-mach-delta">—</span></div>
+              <div class="snap-cadena-card-row"><span>Cuota</span><span id="snc-mach-delta">—</span></div>
               <div class="snap-cadena-card-row"><span>Prom. diario</span><span id="snc-mach-prom">—</span></div>
-              <div class="snap-cadena-card-row"><span>% MD</span><span id="snc-mach-md">—</span></div>
+              <div class="snap-cadena-card-row"><span>% Cuota</span><span id="snc-mach-md">—</span></div>
               <div class="snap-cadena-card-row"><span>Tiendas</span><span>12</span></div>
             </div>
             <div class="snap-cadena-card">
               <div class="snap-cadena-card-name">👑 Rey Salomón</div>
               <div class="snap-cadena-card-venta" id="snc-rey-venta">—</div>
-              <div class="snap-cadena-card-row"><span>Delta vs mes ant.</span><span id="snc-rey-delta">—</span></div>
+              <div class="snap-cadena-card-row"><span>Cuota</span><span id="snc-rey-delta">—</span></div>
               <div class="snap-cadena-card-row"><span>Prom. diario</span><span id="snc-rey-prom">—</span></div>
-              <div class="snap-cadena-card-row"><span>% MD</span><span id="snc-rey-md">—</span></div>
+              <div class="snap-cadena-card-row"><span>% Cuota</span><span id="snc-rey-md">—</span></div>
               <div class="snap-cadena-card-row"><span>Tiendas</span><span>8</span></div>
             </div>
           </div>
@@ -2958,40 +2958,90 @@ function snapMdView(view, btn){
 // ═══════════════════════════════════════
 //  SNAPSHOTS — CADENA
 // ═══════════════════════════════════════
-function snapRenderCadenaCards(){
-  var data = window.SNAP_CADENA || [];
-  if(!data.length) return;
-  var half  = Math.floor(data.length/2);
-  var prev  = data.slice(0, half);
-  var curr  = data.slice(half);
 
-  function totSum(arr, k){ return arr.reduce(function(s,d){ return s+d[k]; }, 0); }
-  function avgVal(arr, k){ return arr.length ? Math.round(arr.reduce(function(s,d){ return s+d[k]; },0)/arr.length*10)/10 : 0; }
+// Asignación vendedor → cadena derivada de TIENDAS_VENDEDORES/MACHETAZO_LUT/TIENDAS_REY.
+// Prioridad: Machetazo > Rey > XTRA (vendedores que cubren múltiples cadenas se asignan
+// a la cadena donde tienen mayor presencia; empate → XTRA como cadena dominante).
+var _VEND_CADENA = (function(){
+  var M = {
+    // Machetazo — únicos o con mayor presencia en Goly
+    'CECILIA VALDES':'machetazo', 'ERICK RUIZ':'machetazo',
+    'MANUEL VALDEZ':'machetazo',  'SAMUEL BARRIA':'machetazo'
+  };
+  var R = {
+    // Rey Salomón — únicos o con mayor presencia en Rey
+    'ELEIDI FRANCO':'rey', 'MADELEN ACOSTA':'rey',
+    'RUTH SANCHEZ':'rey',  'YESLIN PALERMO':'rey'
+  };
+  // Merge; M y R tienen precedencia sobre XTRA (default para el resto)
+  var out = {};
+  Object.keys(M).forEach(function(k){ out[k] = M[k]; });
+  Object.keys(R).forEach(function(k){ out[k] = R[k]; });
+  return out;
+})();
+
+function _snapVendCadena(name){
+  var u = (name || '').trim().toUpperCase();
+  // 1. Intenta derivar de DATA.inventario (más preciso)
+  var inv = (window.DATA && window.DATA.inventario) || [];
+  if(inv.length){
+    var cnt = {};
+    inv.forEach(function(r){
+      if((r.vendedor||'').trim().toUpperCase() !== u) return;
+      var c = (r.cadena||'').trim().toLowerCase();
+      if(c) cnt[c] = (cnt[c]||0) + 1;
+    });
+    var best = '', bestN = 0;
+    Object.keys(cnt).forEach(function(c){ if(cnt[c] > bestN){ bestN = cnt[c]; best = c; } });
+    if(best) return best.indexOf('mach') >= 0 ? 'machetazo' : best.indexOf('rey') >= 0 ? 'rey' : best;
+  }
+  // 2. Fallback tabla hardcodeada
+  return _VEND_CADENA[u] || 'xtra';
+}
+
+function snapRenderCadenaCards(){
+  var vd = window._snapVendData;
+  if(!vd || !Object.keys(vd).length) return;
+
+  var totals = {
+    xtra:      {venta:0, cuota:0},
+    machetazo: {venta:0, cuota:0},
+    rey:       {venta:0, cuota:0}
+  };
+
+  Object.keys(vd).forEach(function(name){
+    var d = vd[name];
+    var c = _snapVendCadena(name);
+    var key = c === 'machetazo' ? 'machetazo' : c === 'rey' ? 'rey' : 'xtra';
+    totals[key].venta += d.acumulado;
+    totals[key].cuota += d.cuota;
+  });
+
+  // Días transcurridos del mes actual
+  var diasMes = new Date().getDate();
+
+  var $f = function(n){ return '$'+Math.round(n).toLocaleString('es-PA'); };
 
   [
-    {id:'xtra', key:'xtra', mdKey:'xtra_md'},
-    {id:'mach', key:'mach', mdKey:'mach_md'},
-    {id:'rey',  key:'rey',  mdKey:'rey_md'},
+    {id:'xtra', key:'xtra'},
+    {id:'mach', key:'machetazo'},
+    {id:'rey',  key:'rey'},
   ].forEach(function(ch){
-    var total = totSum(data, ch.key);
-    var prevT = totSum(prev, ch.key);
-    var currT = totSum(curr, ch.key);
-    var delta = prevT>0 ? Math.round((currT-prevT)/prevT*1000)/10 : 0;
-    var prom  = data.length ? Math.round(total/data.length) : 0;
-    var mdAvg = avgVal(data, ch.mdKey);
+    var t   = totals[ch.key];
+    var pct = t.cuota > 0 ? Math.round(t.venta / t.cuota * 1000) / 10 : null;
+    var prom = diasMes > 0 ? Math.round(t.venta / diasMes) : 0;
 
     var ventaEl = document.getElementById('snc-'+ch.id+'-venta');
     var deltaEl = document.getElementById('snc-'+ch.id+'-delta');
     var promEl  = document.getElementById('snc-'+ch.id+'-prom');
     var mdEl    = document.getElementById('snc-'+ch.id+'-md');
 
-    if(ventaEl) ventaEl.textContent = '$'+total.toLocaleString('es-PA');
-    if(promEl)  promEl.textContent  = '$'+prom.toLocaleString('es-PA');
-    if(mdEl)    mdEl.textContent    = mdAvg+'%';
-    if(deltaEl){
-      var up = delta>=0;
-      deltaEl.textContent = (up?'+':'')+delta+'%';
-      deltaEl.className   = up ? 'snap-delta-up' : 'snap-delta-dn';
+    if(ventaEl) ventaEl.textContent = $f(t.venta);
+    if(deltaEl) deltaEl.textContent = $f(t.cuota);
+    if(promEl)  promEl.textContent  = $f(prom);
+    if(mdEl){
+      mdEl.textContent = pct !== null ? pct + '%' : '—';
+      mdEl.className   = pct !== null ? (pct >= 100 ? 'snap-delta-up' : 'snap-delta-dn') : '';
     }
   });
 }
