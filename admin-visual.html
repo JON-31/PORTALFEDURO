@@ -477,28 +477,82 @@ tbody td.right { text-align: right; }
 
 /* ── SNAPSHOTS ── */
 /* ── Vista Tiendas — sticky filtros + expand panel ── */
+
+/* overflow:clip conserva border-radius pero NO rompe position:sticky
+   (a diferencia de overflow:hidden que crea un scroll-container) */
+#view-tiendas .card { overflow: clip; }
+
+/* Filtros sticky al tope del scroll-container (#content) */
 #view-tiendas .filtros {
-  position: sticky; top: 0; z-index: 20;
-  background: var(--surface); padding-bottom: 8px; margin-bottom: 8px;
+  position: sticky; top: 0; z-index: 10;
+  background: #fff;
+  padding: 12px 0 10px;
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--border);
 }
-.tbl-tiendas-main thead th { z-index: 2; top: 44px; }
+
+/* Thead sticky justo debajo del filtros bar
+   (12px padding-top + 30px input + 10px padding-bottom + 2px border = 54px) */
+.tbl-tiendas-main thead th { z-index: 2; top: 54px; }
+
+/* Fila clickable */
 .ti-row-clickable { cursor: pointer; }
-.ti-row-clickable:hover { background: var(--surface2); }
-.ti-row-open { background: rgba(29,61,143,0.06) !important; }
-.ti-expand-tr > td { padding: 0; border-bottom: 2px solid var(--verde); }
+.ti-row-clickable:hover { background: var(--verde-pale); }
+
+/* Fila seleccionada: fondo verde pálido + borde izquierdo verde sólido */
+.ti-row-open {
+  background: var(--verde-pale) !important;
+  box-shadow: inset 4px 0 0 var(--verde);
+}
+
+/* Celda contenedora de la fila expandida */
+.ti-expand-tr > td { padding: 0; }
+
+/* ── Panel expansivo ── */
 .ti-expand-panel {
-  background: var(--surface2); padding: 14px 16px;
-  border-top: 2px solid var(--verde); border-left: 3px solid var(--verde);
+  background: #fff;
+  border-top: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 16px 20px;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.09);
 }
+
+/* Header del panel */
 .ti-expand-header {
-  display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px; gap: 12px;
 }
-.ti-expand-filters { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }
+.ti-expand-title {
+  font-size: 13px; font-weight: 700; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+.ti-expand-title::before {
+  content: ''; display: inline-block;
+  width: 3px; height: 15px; background: var(--verde); border-radius: 2px;
+}
+
+/* Pills de filtro */
+.ti-expand-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+
+/* Botón cerrar */
 .ti-close-btn {
-  background: none; border: 1px solid var(--border); border-radius: 6px;
-  padding: 3px 10px; cursor: pointer; font-size: 12px; color: var(--text-2); line-height: 1.5;
+  flex-shrink: 0; background: none;
+  border: 1px solid #d0d0d0; border-radius: 6px;
+  padding: 4px 12px; cursor: pointer;
+  font-size: 12px; color: var(--text-2); line-height: 1.5;
+  transition: all .15s; font-family: inherit;
 }
-.ti-close-btn:hover { background: var(--border); color: var(--text); }
+.ti-close-btn:hover { background: #f5f5f5; border-color: #aaa; color: var(--text); }
+
+/* Tabla interna del panel: líneas suaves */
+.ti-expand-panel .snap-tbl-wrap { border: 1px solid #f0f0f0; border-radius: 6px; overflow: hidden; }
+.ti-expand-panel .snap-tbl-wrap thead th {
+  background: var(--surface2); border-bottom: 1px solid #e8e8e8;
+  position: sticky; top: 0; z-index: 2;
+  padding: 8px 12px; font-size: 10.5px;
+}
+.ti-expand-panel .snap-tbl-wrap td { border-bottom: 1px solid #f4f4f4; padding: 8px 12px; }
+.ti-expand-panel .snap-tbl-wrap tr:last-child td { border-bottom: none; }
 
 /* ── Tabla Vendedores ── */
 .vt-wrap { max-height: 420px; overflow-y: auto; }
@@ -1864,15 +1918,18 @@ function tiendaToggle(idx){
   expandTr.id = 'tiexp_'+idx;
   expandTr.innerHTML =
     '<td colspan="11"><div class="ti-expand-panel">'
+    // Header: título con barra verde + botón cerrar alineado a la derecha
     +'<div class="ti-expand-header">'
-    +'<span style="font-weight:700;font-size:13px">'+t.tienda+'</span>'
+    +'<div class="ti-expand-title">'+t.tienda+'</div>'
+    +'<button class="ti-close-btn" onclick="tiendaToggle('+idx+')">✕ Cerrar</button>'
+    +'</div>'
+    // Pills de filtro
     +'<div class="ti-expand-filters" id="ti-pf-'+idx+'">'
     +['Todos','Agotado','Crítico','Atención','Óptimo','Sobrestock'].map(function(f,fi){
         return '<button class="snap-pill'+(fi===0?' active':'')+'" onclick="tiendaFiltProd('+idx+',\''+f+'\',this)">'+f+'</button>';
       }).join('')
     +'</div>'
-    +'<button class="ti-close-btn" onclick="tiendaToggle('+idx+')">✕ Cerrar</button>'
-    +'</div>'
+    // Tabla de productos
     +'<div class="snap-tbl-wrap" style="max-height:220px">'
     +'<table><thead><tr>'
     +'<th>Producto</th><th class="right">Inventario</th><th class="right">Cobertura</th><th>Estado</th>'
