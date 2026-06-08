@@ -950,6 +950,14 @@ tbody td.right { text-align: right; }
           <option value="PetCare">🐾 PetCare</option>
         </select>
         <input type="text" id="filtro-prod-nombre" placeholder="🔍 Buscar producto…">
+        <select id="filtro-prod-estado">
+          <option value="">Todos los estados</option>
+          <option value="Agotado">Agotado</option>
+          <option value="Crítico">Crítico</option>
+          <option value="Atención">Atención</option>
+          <option value="Óptimo">Óptimo</option>
+          <option value="Sobrestock">Sobrestock</option>
+        </select>
       </div>
 
       <!-- Por grupo -->
@@ -1974,7 +1982,7 @@ function renderProductos(){
     };
     prodMap[key].total += Number(r.inventario || 0);
     prodMap[key].tiendas.push({
-      tienda: r.tienda || '—', vendedor: r.vendedor || '—',
+      tienda: r.tienda || '—', cadena: r.cadena || '—', vendedor: r.vendedor || '—',
       inventario: Number(r.inventario || 0), cobertura: cob,
       venta_promedio: Number(r.venta_promedio || 0),
       barcode: r.barcode || ''
@@ -1993,6 +2001,7 @@ function renderProductos(){
       : 0
   }));
   window._avOpenTienda = {};
+  window._avOpenProd = null;
   const prods = window._avProds;
 
   document.getElementById('badge-prod-count').textContent = prods.length + ' SKUs';
@@ -2001,6 +2010,7 @@ function renderProductos(){
   document.getElementById('kpi-prod-crit').textContent = prods.filter(p=>p.crit>0).length;
 
   function renderGrupos(lista){
+    window._avOpenProd = null;
     const container = document.getElementById('productos-por-grupo');
     if(!lista.length){
       container.innerHTML = '<div class="empty-state"><div class="ico">🔍</div><p>Sin resultados</p></div>';
@@ -2064,15 +2074,28 @@ function renderProductos(){
 
   renderGrupos(prods);
 
+  function prodTieneEstado(p, e){
+    if(e === 'Agotado')    return p.agot > 0;
+    if(e === 'Crítico')    return p.crit > 0;
+    if(e === 'Atención')   return p.aten > 0;
+    if(e === 'Óptimo')     return p.opt  > 0;
+    if(e === 'Sobrestock') return p.sob  > 0;
+    return true;
+  }
+
   function applyFiltroProds(){
     const g = document.getElementById('filtro-prod-grupo').value;
     const q = document.getElementById('filtro-prod-nombre').value.toLowerCase();
+    const e = document.getElementById('filtro-prod-estado').value;
     renderGrupos(prods.filter(p =>
-      (!g || p.grupo === g) && (!q || p.producto.toLowerCase().includes(q))
+      (!g || p.grupo === g) &&
+      (!q || p.producto.toLowerCase().includes(q)) &&
+      (!e || prodTieneEstado(p, e))
     ));
   }
-  document.getElementById('filtro-prod-grupo').onchange = applyFiltroProds;
+  document.getElementById('filtro-prod-grupo').onchange  = applyFiltroProds;
   document.getElementById('filtro-prod-nombre').oninput  = applyFiltroProds;
+  document.getElementById('filtro-prod-estado').onchange = applyFiltroProds;
 }
 
 function avCobBadge(cob){
@@ -2096,80 +2119,69 @@ function avToggleProd(idx){
   const panel = document.getElementById('av-panel-'+idx);
   const chev  = document.getElementById('av-chev-'+idx);
   if(!panel) return;
-  const isOpen = panel.style.display !== 'none';
-  if(isOpen){
-    panel.style.display = 'none';
-    if(chev) chev.textContent = '▶';
-    window._avOpenTienda[idx] = null;
-    return;
+  const isOpen = window._avOpenProd === idx;
+  // Cerrar panel previamente abierto
+  if(window._avOpenProd !== null){
+    const pp = document.getElementById('av-panel-'+window._avOpenProd);
+    const pc = document.getElementById('av-chev-'+window._avOpenProd);
+    if(pp) pp.style.display = 'none';
+    if(pc) pc.textContent = '▶';
   }
+  window._avOpenProd = null;
+  if(isOpen) return;
+  window._avOpenProd = idx;
   panel.style.display = '';
   if(chev) chev.textContent = '▼';
+  avRenderProdPanel(idx, 'Todos');
+}
+
+function avRenderProdPanel(idx, filtro){
   const p = window._avProds[idx];
+  if(!p) return;
   const inner = document.getElementById('av-panel-inner-'+idx);
-  inner.innerHTML = `
-    <div style="padding:12px 16px;background:#F9FBFA;border-left:3px solid ${GRUPO_DOTS[p.grupo]||'#0F6E56'}">
-      <table style="width:100%;border-collapse:collapse;font-size:12px">
-        <thead><tr style="border-bottom:1px solid var(--border)">
-          <th style="padding:6px 8px;text-align:left;color:var(--text-2);font-weight:600">Tienda</th>
-          <th style="padding:6px 8px;text-align:left;color:var(--text-2);font-weight:600">Vendedor</th>
-          <th style="padding:6px 8px;text-align:right;color:var(--text-2);font-weight:600">Inventario</th>
-          <th style="padding:6px 8px;text-align:right;color:var(--text-2);font-weight:600">Venta 1M</th>
-          <th style="padding:6px 8px;text-align:right;color:var(--text-2);font-weight:600">Cobertura</th>
-          <th style="padding:6px 8px;text-align:left;color:var(--text-2);font-weight:600">Estado</th>
-          <th style="padding:6px 8px;text-align:center;color:var(--text-2);font-weight:600">Acción</th>
-        </tr></thead>
-        <tbody>
-          ${p.tiendas.map((t, ti) => `
-            <tr style="border-bottom:1px solid var(--border)">
-              <td style="padding:6px 8px;font-weight:500">${t.tienda}</td>
-              <td style="padding:6px 8px;color:var(--text-2);font-size:11px">${t.vendedor}</td>
-              <td style="padding:6px 8px;text-align:right;font-family:'DM Mono',monospace">${fmt(t.inventario)}</td>
-              <td style="padding:6px 8px;text-align:right;font-family:'DM Mono',monospace">${fmt(t.venta_promedio)}</td>
-              <td style="padding:6px 8px;text-align:right;font-family:'DM Mono',monospace">${t.cobertura}d</td>
-              <td style="padding:6px 8px">${avCobBadgeFull(t.cobertura)}</td>
-              <td style="padding:6px 8px;text-align:center">
-                <button onclick="avToggleTarea(${idx},${ti})"
-                  style="background:var(--verde);color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;font-weight:600">
-                  ➕ Tarea
-                </button>
-              </td>
-            </tr>
-            <tr id="av-tarea-${idx}-${ti}" style="display:none">
-              <td colspan="7" style="padding:10px 16px;background:#F0F7F4;border-bottom:1px solid var(--border)">
-                <div style="display:flex;gap:6px;margin-bottom:8px" id="av-tipos-${idx}-${ti}" data-tipo="inventario">
-                  <button class="av-tipo" data-tipo="inventario" onclick="avSetTipo(${idx},${ti},'inventario')"
-                    style="padding:4px 12px;border-radius:6px;border:1.5px solid var(--verde);background:var(--verde);color:#fff;font-size:11px;font-weight:600;cursor:pointer">
-                    Inventario
-                  </button>
-                  <button class="av-tipo" data-tipo="sugerido" onclick="avSetTipo(${idx},${ti},'sugerido')"
-                    style="padding:4px 12px;border-radius:6px;border:1.5px solid var(--border);background:#fff;color:var(--text-2);font-size:11px;font-weight:600;cursor:pointer">
-                    Sugerido
-                  </button>
-                  <button class="av-tipo" data-tipo="verificacion" onclick="avSetTipo(${idx},${ti},'verificacion')"
-                    style="padding:4px 12px;border-radius:6px;border:1.5px solid var(--border);background:#fff;color:var(--text-2);font-size:11px;font-weight:600;cursor:pointer">
-                    Verificación
-                  </button>
-                  <button class="av-tipo" data-tipo="conteo_fisico" onclick="avSetTipo(${idx},${ti},'conteo_fisico')"
-                    style="padding:4px 12px;border-radius:6px;border:1.5px solid var(--border);background:#fff;color:var(--text-2);font-size:11px;font-weight:600;cursor:pointer">
-                    📋 Conteo Físico
-                  </button>
-                </div>
-                <div id="av-conteo-${idx}-${ti}" style="display:none;margin-bottom:8px"></div>
-                <textarea id="av-comentario-${idx}-${ti}" placeholder="Comentario (opcional)…"
-                  style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;font-family:'DM Sans',sans-serif;resize:vertical;min-height:56px;margin-bottom:8px;outline:none;box-sizing:border-box"></textarea>
-                <div style="display:flex;align-items:center;gap:10px">
-                  <button onclick="avAsignarTarea(${idx},${ti})"
-                    style="background:var(--verde);color:#fff;border:none;border-radius:8px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer">
-                    Asignar Tarea
-                  </button>
-                  <span id="av-msg-${idx}-${ti}" style="font-size:12px;font-weight:600"></span>
-                </div>
-              </td>
-            </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>`;
+  if(!inner) return;
+  const ESTADOS = ['Todos','Agotado','Crítico','Atención','Óptimo','Sobrestock'];
+  function estadoTienda(cob){
+    if(cob === 0)    return 'Agotado';
+    if(cob < 10)     return 'Crítico';
+    if(cob < 20)     return 'Atención';
+    if(cob <= 40)    return 'Óptimo';
+    return 'Sobrestock';
+  }
+  const lista = filtro === 'Todos' ? p.tiendas
+    : p.tiendas.filter(t => estadoTienda(t.cobertura) === filtro);
+  const thStyle = 'padding:8px 10px;text-align:left;background:var(--surface2);font-size:10.5px;font-weight:700;color:var(--text-2);position:sticky;top:0;z-index:2;white-space:nowrap';
+  inner.innerHTML =
+    '<div style="padding:14px 16px;background:#fff;border-top:2px solid var(--verde)">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:12px">'
+    +'<div style="font-weight:700;font-size:13px;color:var(--text)">'+p.producto+'</div>'
+    +'<button onclick="avToggleProd('+idx+')" style="background:none;border:1px solid #d0d0d0;border-radius:6px;padding:4px 12px;cursor:pointer;font-size:12px;color:var(--text-2);font-family:inherit">✕ Cerrar</button>'
+    +'</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">'
+    +ESTADOS.map(function(f){ return '<button class="snap-pill'+(f===filtro?' active':'')+'" onclick="avRenderProdPanel('+idx+',\''+f+'\')">'+f+'</button>'; }).join('')
+    +'</div>'
+    +'<div style="max-height:300px;overflow-y:auto;border:1px solid #f0f0f0;border-radius:6px">'
+    +'<table style="width:100%;border-collapse:collapse;font-size:12px">'
+    +'<thead><tr>'
+    +'<th style="'+thStyle+'">Tienda</th>'
+    +'<th style="'+thStyle+'">Cadena</th>'
+    +'<th style="'+thStyle+'">Vendedor</th>'
+    +'<th style="'+thStyle+';text-align:right">Inventario</th>'
+    +'<th style="'+thStyle+';text-align:right">Cobertura</th>'
+    +'<th style="'+thStyle+'">Estado</th>'
+    +'</tr></thead>'
+    +'<tbody>'
+    +(lista.length ? lista.map(function(t){
+      return '<tr style="border-bottom:1px solid #f4f4f4">'
+        +'<td style="padding:8px 10px;font-weight:500">'+t.tienda+'</td>'
+        +'<td style="padding:8px 10px"><span style="background:var(--blue-pale);color:var(--blue);padding:2px 8px;border-radius:20px;font-size:10.5px;font-weight:700">'+t.cadena+'</span></td>'
+        +'<td style="padding:8px 10px;color:var(--text-2);font-size:11px">'+t.vendedor+'</td>'
+        +'<td style="padding:8px 10px;text-align:right;font-family:\'DM Mono\',monospace">'+fmt(t.inventario)+'</td>'
+        +'<td style="padding:8px 10px;text-align:right;font-family:\'DM Mono\',monospace">'+t.cobertura+'d</td>'
+        +'<td style="padding:8px 10px">'+avCobBadgeFull(t.cobertura)+'</td>'
+        +'</tr>';
+    }).join('') : '<tr><td colspan="6" style="padding:16px;text-align:center;color:var(--text-3)">Sin tiendas para este estado</td></tr>')
+    +'</tbody></table></div></div>';
 }
 
 function avToggleBod(idx){
