@@ -486,8 +486,8 @@ tbody td.right { text-align: right; }
   background: #fff;
   padding: 10px 0 8px;
   margin-bottom: 0;
-  border-bottom: 1px solid var(--border);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+  border-bottom: 2px solid var(--verde-mid);
+  box-shadow: 0 3px 8px rgba(0,0,0,0.12);
 }
 
 /* Contenedor puramente visual — SIN overflow de ningún tipo.
@@ -522,7 +522,7 @@ tbody td.right { text-align: right; }
 
 /* Fila seleccionada — box-shadow:inset no funciona en <tr> en la mayoría
    de browsers; se usa border-left en el primer td en su lugar */
-.ti-row-open { background: var(--verde-pale) !important; }
+.ti-row-open { background: var(--verde-mid) !important; }
 .ti-row-open td:first-child { border-left: 4px solid var(--verde); }
 
 /* Celda contenedora del panel expansivo */
@@ -1922,6 +1922,8 @@ function tiendaToggle(idx){
   const row = document.querySelector('#tbl-tiendas tr[data-ti-idx="'+idx+'"]');
   if(!row) return;
   row.classList.add('ti-row-open');
+  row.style.background = '#b2dfdb';
+  if(row.cells[0]) row.cells[0].style.borderLeft = '4px solid #0f6e56';
 
   const expandTr = document.createElement('tr');
   expandTr.className = 'ti-expand-tr';
@@ -1939,8 +1941,8 @@ function tiendaToggle(idx){
         return '<button class="snap-pill'+(fi===0?' active':'')+'" onclick="tiendaFiltProd('+idx+',\''+f+'\',this)">'+f+'</button>';
       }).join('')
     +'</div>'
-    // Tabla de productos
-    +'<div class="snap-tbl-wrap">'
+    // Tabla de productos — inline style garantiza scroll independiente de especificidad CSS
+    +'<div class="snap-tbl-wrap" style="max-height:320px;overflow-y:auto;overflow-x:hidden">'
     +'<table><thead><tr>'
     +'<th>Producto</th><th class="right">Inventario</th><th class="right">Cobertura</th><th>Estado</th>'
     +'</tr></thead>'
@@ -1958,7 +1960,11 @@ function _tiendaCloseOpen(){
   const tr = document.getElementById('tiexp_'+_tiendaOpenIdx);
   if(tr) tr.remove();
   const row = document.querySelector('#tbl-tiendas tr[data-ti-idx="'+_tiendaOpenIdx+'"]');
-  if(row) row.classList.remove('ti-row-open');
+  if(row){
+    row.classList.remove('ti-row-open');
+    row.style.background = '';
+    if(row.cells[0]) row.cells[0].style.borderLeft = '';
+  }
   _tiendaOpenIdx = null;
 }
 
