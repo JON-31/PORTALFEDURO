@@ -478,73 +478,28 @@ tbody td.right { text-align: right; }
 /* ── SNAPSHOTS ── */
 /* ── Vista Tiendas ── */
 
-#ti-sticky-bar {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  background: var(--bg, #fff);
-  padding: 10px 0 8px;
-  border-bottom: 1px solid var(--border);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
-}
-
-.tbl-tiendas-main thead th {
-  position: sticky;
-  top: 53px;
-  z-index: 10;
-  background: #fff;
-  white-space: nowrap;
-}
-
-/* Fila clickable */
+.tbl-tiendas-main thead th { z-index: 2; }
 .ti-row-clickable { cursor: pointer; }
 .ti-row-clickable:hover { background: var(--verde-pale); }
-
-/* Fila seleccionada — box-shadow:inset no funciona en <tr> en la mayoría
-   de browsers; se usa border-left en el primer td en su lugar */
 .ti-row-open { background: var(--verde-pale) !important; }
 .ti-row-open td:first-child { border-left: 4px solid var(--verde); }
-
-/* Celda contenedora del panel expansivo */
 .ti-expand-tr > td { padding: 0; }
-
-/* ── Panel expansivo ── */
 .ti-expand-panel {
-  background: #fff;
-  border-top: 1px solid #e0e0e0;
-  border-bottom: 1px solid #e0e0e0;
-  padding: 16px 20px;
+  background: #fff; padding: 16px 20px;
+  border-top: 1px solid #e0e0e0; border-bottom: 1px solid #e0e0e0;
   box-shadow: 0 4px 18px rgba(0,0,0,0.09);
-  transition: all 0.2s ease;
 }
-.ti-expand-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 12px; gap: 12px;
-}
-.ti-expand-title {
-  font-size: 13px; font-weight: 700; color: var(--text);
-  display: flex; align-items: center; gap: 8px;
-}
-.ti-expand-title::before {
-  content: ''; display: inline-block;
-  width: 3px; height: 15px; background: var(--verde); border-radius: 2px;
-}
+.ti-expand-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 12px; }
+.ti-expand-title { font-size: 13px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.ti-expand-title::before { content: ''; display: inline-block; width: 3px; height: 15px; background: var(--verde); border-radius: 2px; }
 .ti-expand-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
 .ti-close-btn {
-  flex-shrink: 0; background: none;
-  border: 1px solid #d0d0d0; border-radius: 6px;
-  padding: 4px 12px; cursor: pointer;
-  font-size: 12px; color: var(--text-2); line-height: 1.5;
-  transition: all .15s; font-family: inherit;
+  flex-shrink: 0; background: none; border: 1px solid #d0d0d0; border-radius: 6px;
+  padding: 4px 12px; cursor: pointer; font-size: 12px; color: var(--text-2); line-height: 1.5; font-family: inherit;
 }
 .ti-close-btn:hover { background: #f5f5f5; border-color: #aaa; color: var(--text); }
-
-/* Tabla interna del panel: overflow-y:auto para scroll, no hidden */
 .ti-expand-panel .snap-tbl-wrap { border: 1px solid #f0f0f0; border-radius: 6px; overflow-x: hidden; overflow-y: auto; max-height: 300px; }
-.ti-expand-panel .snap-tbl-wrap thead th {
-  background: var(--surface2); border-bottom: 1px solid #e8e8e8;
-  position: sticky; top: 0; z-index: 2; padding: 8px 12px; font-size: 10.5px;
-}
+.ti-expand-panel .snap-tbl-wrap thead th { background: var(--surface2); border-bottom: 1px solid #e8e8e8; position: sticky; top: 0; z-index: 2; padding: 8px 12px; font-size: 10.5px; }
 .ti-expand-panel .snap-tbl-wrap td { border-bottom: 1px solid #f4f4f4; padding: 8px 12px; }
 .ti-expand-panel .snap-tbl-wrap tr:last-child td { border-bottom: none; }
 
@@ -920,41 +875,43 @@ tbody td.right { text-align: right; }
         <span class="badge" id="badge-tiendas-count">—</span>
       </div>
 
-      <div id="ti-sticky-bar">
-        <div class="filtros">
-          <input type="text" id="filtro-tienda" placeholder="🔍 Buscar tienda…">
-          <select id="filtro-tienda-cadena">
-            <option value="">Todas las cadenas</option>
-            <option value="machetazo">Machetazo</option>
-            <option value="xtra">Xtra</option>
-          </select>
-          <select id="filtro-tienda-vend">
-            <option value="">Todos los vendedores</option>
-          </select>
-        </div>
+      <div class="filtros">
+        <input type="text" id="filtro-tienda" placeholder="🔍 Buscar tienda…">
+        <select id="filtro-tienda-cadena">
+          <option value="">Todas las cadenas</option>
+          <option value="machetazo">Machetazo</option>
+          <option value="xtra">Xtra</option>
+        </select>
+        <select id="filtro-tienda-vend">
+          <option value="">Todos los vendedores</option>
+        </select>
       </div>
 
-      <div style="overflow-x: clip;">
-        <table class="tbl-tiendas-main">
-          <thead>
-            <tr>
-              <th>Tienda</th>
-              <th>Cadena</th>
-              <th>Vendedor</th>
-              <th class="right">SKUs</th>
-              <th class="right">Total Inv.</th>
-              <th class="right" style="color:var(--red)">Agotados</th>
-              <th class="right" style="color:var(--amber)">Críticos</th>
-              <th class="right" style="color:#E67E22">Atención</th>
-              <th class="right" style="color:var(--verde)">Óptimo</th>
-              <th class="right" style="color:#3b7dd8">Sobrestock</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody id="tbl-tiendas">
-            <tr><td colspan="11" style="padding:20px;text-align:center;color:var(--text-3)">Cargando…</td></tr>
-          </tbody>
-        </table>
+      <div class="card">
+        <div class="card-body" style="padding:0">
+          <div class="tbl-wrap">
+            <table class="tbl-tiendas-main">
+              <thead>
+                <tr>
+                  <th>Tienda</th>
+                  <th>Cadena</th>
+                  <th>Vendedor</th>
+                  <th class="right">SKUs</th>
+                  <th class="right">Total Inv.</th>
+                  <th class="right" style="color:var(--red)">Agotados</th>
+                  <th class="right" style="color:var(--amber)">Críticos</th>
+                  <th class="right" style="color:#E67E22">Atención</th>
+                  <th class="right" style="color:var(--verde)">Óptimo</th>
+                  <th class="right" style="color:#3b7dd8">Sobrestock</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="tbl-tiendas">
+                <tr><td colspan="11" style="padding:20px;text-align:center;color:var(--text-3)">Cargando…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
 
