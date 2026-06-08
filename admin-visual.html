@@ -476,36 +476,55 @@ tbody td.right { text-align: right; }
 }
 
 /* ── SNAPSHOTS ── */
-/* ── Vista Tiendas — sticky filtros + expand panel ── */
+/* ── Vista Tiendas ── */
 
-/* overflow:clip conserva border-radius pero NO rompe position:sticky
-   (a diferencia de overflow:hidden que crea un scroll-container) */
-#view-tiendas .card { overflow: clip; }
-
-/* Filtros sticky al tope del scroll-container (#content) */
+/* Filtros sticky — background blanco explícito, z-index sobre el thead */
 #view-tiendas .filtros {
-  position: sticky; top: 0; z-index: 10;
+  position: sticky;
+  top: 0;
+  z-index: 10;
   background: #fff;
-  padding: 12px 0 10px;
+  padding: 10px 0 8px;
   margin-bottom: 0;
   border-bottom: 1px solid var(--border);
 }
 
-/* Thead sticky justo debajo del filtros bar
-   (12px padding-top + 30px input + 10px padding-bottom + 2px border = 54px) */
-.tbl-tiendas-main thead th { z-index: 2; top: 54px; }
+/* Contenedor de la tabla: aspecto de card SIN overflow que rompa sticky.
+   overflow-x:auto permite scroll horizontal.
+   overflow-y:clip clipea visualmente pero NO crea scroll-container vertical,
+   por lo que position:sticky del thead sigue referenciando #content. */
+.ti-tbl-outer {
+  overflow-x: auto;
+  overflow-y: clip;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+}
+
+/* Thead sticky justo debajo del filtros bar.
+   10px padding-top + ~32px input + 8px padding-bottom + 1px border = 51px.
+   background blanco explícito para que tape las filas al hacer scroll. */
+.tbl-tiendas-main thead th {
+  position: sticky;
+  top: 51px;
+  z-index: 5;
+  background: #fff;
+  white-space: nowrap;
+}
 
 /* Fila clickable */
 .ti-row-clickable { cursor: pointer; }
 .ti-row-clickable:hover { background: var(--verde-pale); }
 
-/* Fila seleccionada: fondo verde pálido + borde izquierdo verde sólido */
+/* Fila seleccionada */
 .ti-row-open {
   background: var(--verde-pale) !important;
   box-shadow: inset 4px 0 0 var(--verde);
 }
 
-/* Celda contenedora de la fila expandida */
+/* Celda contenedora del panel expansivo */
 .ti-expand-tr > td { padding: 0; }
 
 /* ── Panel expansivo ── */
@@ -516,8 +535,6 @@ tbody td.right { text-align: right; }
   padding: 16px 20px;
   box-shadow: 0 4px 18px rgba(0,0,0,0.09);
 }
-
-/* Header del panel */
 .ti-expand-header {
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 12px; gap: 12px;
@@ -530,11 +547,7 @@ tbody td.right { text-align: right; }
   content: ''; display: inline-block;
   width: 3px; height: 15px; background: var(--verde); border-radius: 2px;
 }
-
-/* Pills de filtro */
 .ti-expand-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-
-/* Botón cerrar */
 .ti-close-btn {
   flex-shrink: 0; background: none;
   border: 1px solid #d0d0d0; border-radius: 6px;
@@ -544,12 +557,11 @@ tbody td.right { text-align: right; }
 }
 .ti-close-btn:hover { background: #f5f5f5; border-color: #aaa; color: var(--text); }
 
-/* Tabla interna del panel: líneas suaves */
+/* Tabla interna del panel */
 .ti-expand-panel .snap-tbl-wrap { border: 1px solid #f0f0f0; border-radius: 6px; overflow: hidden; }
 .ti-expand-panel .snap-tbl-wrap thead th {
   background: var(--surface2); border-bottom: 1px solid #e8e8e8;
-  position: sticky; top: 0; z-index: 2;
-  padding: 8px 12px; font-size: 10.5px;
+  position: sticky; top: 0; z-index: 2; padding: 8px 12px; font-size: 10.5px;
 }
 .ti-expand-panel .snap-tbl-wrap td { border-bottom: 1px solid #f4f4f4; padding: 8px 12px; }
 .ti-expand-panel .snap-tbl-wrap tr:last-child td { border-bottom: none; }
@@ -938,31 +950,27 @@ tbody td.right { text-align: right; }
         </select>
       </div>
 
-      <div class="card">
-        <div class="card-body" style="padding:0">
-          <div class="tbl-wrap">
-            <table class="tbl-tiendas-main">
-              <thead>
-                <tr>
-                  <th>Tienda</th>
-                  <th>Cadena</th>
-                  <th>Vendedor</th>
-                  <th class="right">SKUs</th>
-                  <th class="right">Total Inv.</th>
-                  <th class="right" style="color:var(--red)">Agotados</th>
-                  <th class="right" style="color:var(--amber)">Críticos</th>
-                  <th class="right" style="color:#E67E22">Atención</th>
-                  <th class="right" style="color:var(--verde)">Óptimo</th>
-                  <th class="right" style="color:#3b7dd8">Sobrestock</th>
-                  <th>Estado</th>
-                </tr>
-              </thead>
-              <tbody id="tbl-tiendas">
-                <tr><td colspan="11" style="padding:20px;text-align:center;color:var(--text-3)">Cargando…</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+      <div class="ti-tbl-outer">
+        <table class="tbl-tiendas-main">
+          <thead>
+            <tr>
+              <th>Tienda</th>
+              <th>Cadena</th>
+              <th>Vendedor</th>
+              <th class="right">SKUs</th>
+              <th class="right">Total Inv.</th>
+              <th class="right" style="color:var(--red)">Agotados</th>
+              <th class="right" style="color:var(--amber)">Críticos</th>
+              <th class="right" style="color:#E67E22">Atención</th>
+              <th class="right" style="color:var(--verde)">Óptimo</th>
+              <th class="right" style="color:#3b7dd8">Sobrestock</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="tbl-tiendas">
+            <tr><td colspan="11" style="padding:20px;text-align:center;color:var(--text-3)">Cargando…</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
