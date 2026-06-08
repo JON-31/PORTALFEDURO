@@ -487,6 +487,7 @@ tbody td.right { text-align: right; }
   padding: 10px 0 8px;
   margin-bottom: 0;
   border-bottom: 1px solid var(--border);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
 }
 
 /* Contenedor puramente visual — SIN overflow de ningún tipo.
@@ -519,11 +520,10 @@ tbody td.right { text-align: right; }
 .ti-row-clickable { cursor: pointer; }
 .ti-row-clickable:hover { background: var(--verde-pale); }
 
-/* Fila seleccionada */
-.ti-row-open {
-  background: var(--verde-pale) !important;
-  box-shadow: inset 4px 0 0 var(--verde);
-}
+/* Fila seleccionada — box-shadow:inset no funciona en <tr> en la mayoría
+   de browsers; se usa border-left en el primer td en su lugar */
+.ti-row-open { background: var(--verde-pale) !important; }
+.ti-row-open td:first-child { border-left: 4px solid var(--verde); }
 
 /* Celda contenedora del panel expansivo */
 .ti-expand-tr > td { padding: 0; }
@@ -535,6 +535,7 @@ tbody td.right { text-align: right; }
   border-bottom: 1px solid #e0e0e0;
   padding: 16px 20px;
   box-shadow: 0 4px 18px rgba(0,0,0,0.09);
+  transition: all 0.2s ease;
 }
 .ti-expand-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -558,8 +559,8 @@ tbody td.right { text-align: right; }
 }
 .ti-close-btn:hover { background: #f5f5f5; border-color: #aaa; color: var(--text); }
 
-/* Tabla interna del panel */
-.ti-expand-panel .snap-tbl-wrap { border: 1px solid #f0f0f0; border-radius: 6px; overflow: hidden; }
+/* Tabla interna del panel: overflow-y:auto para scroll, no hidden */
+.ti-expand-panel .snap-tbl-wrap { border: 1px solid #f0f0f0; border-radius: 6px; overflow-x: hidden; overflow-y: auto; max-height: 320px; }
 .ti-expand-panel .snap-tbl-wrap thead th {
   background: var(--surface2); border-bottom: 1px solid #e8e8e8;
   position: sticky; top: 0; z-index: 2; padding: 8px 12px; font-size: 10.5px;
@@ -1939,7 +1940,7 @@ function tiendaToggle(idx){
       }).join('')
     +'</div>'
     // Tabla de productos
-    +'<div class="snap-tbl-wrap" style="max-height:220px">'
+    +'<div class="snap-tbl-wrap">'
     +'<table><thead><tr>'
     +'<th>Producto</th><th class="right">Inventario</th><th class="right">Cobertura</th><th>Estado</th>'
     +'</tr></thead>'
