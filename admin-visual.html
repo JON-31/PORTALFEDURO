@@ -653,12 +653,23 @@ tbody td.right { text-align: right; }
 .snap-expand-row { cursor: pointer; }
 .snap-expand-detail td { padding: 10px 14px !important; background: var(--verde-pale); }
 
+.snap-desglose-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+.snap-desglose-item {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 14px; flex: 1; min-width: 120px;
+}
+.snap-desglose-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.snap-desglose-label { font-size: 11px; color: var(--text-2); flex: 1; }
+.snap-desglose-val { font-size: 13px; font-weight: 700; font-family: 'DM Mono', monospace; color: var(--text); }
+
 @media(max-width:768px){
   .snap-cadena-cards { grid-template-columns: 1fr; }
   .snap-kpi-grid { grid-template-columns: 1fr 1fr; }
 }
 @media(max-width:480px){
   .snap-kpi-grid { grid-template-columns: 1fr; }
+  .snap-desglose-grid { flex-direction: column; }
 }
 </style>
 </head>
@@ -1084,7 +1095,7 @@ tbody td.right { text-align: right; }
               <div class="snap-kpi-delta" id="snap-vk-total-delta">&nbsp;</div>
             </div>
             <div class="snap-kpi">
-              <div class="snap-kpi-label">% MD General</div>
+              <div class="snap-kpi-label">% de Cuota</div>
               <div class="snap-kpi-value" id="snap-vk-md">—</div>
               <div class="snap-kpi-delta" id="snap-vk-md-delta">&nbsp;</div>
             </div>
@@ -1092,6 +1103,26 @@ tbody td.right { text-align: right; }
               <div class="snap-kpi-label">Tendencia de venta</div>
               <div class="snap-kpi-value" id="snap-vk-tend">—</div>
               <div class="snap-kpi-delta" id="snap-vk-tend-delta">&nbsp;</div>
+            </div>
+          </div>
+
+          <div id="snap-vend-desglose" style="display:none;margin:0 0 16px 0">
+            <div class="snap-desglose-grid">
+              <div class="snap-desglose-item">
+                <span class="snap-desglose-dot" style="background:#7B4B2A"></span>
+                <span class="snap-desglose-label">Chocolate</span>
+                <span class="snap-desglose-val" id="snap-vk-choc">—</span>
+              </div>
+              <div class="snap-desglose-item">
+                <span class="snap-desglose-dot" style="background:#D4A843"></span>
+                <span class="snap-desglose-label">Confitería</span>
+                <span class="snap-desglose-val" id="snap-vk-conf">—</span>
+              </div>
+              <div class="snap-desglose-item">
+                <span class="snap-desglose-dot" style="background:#3b7dd8"></span>
+                <span class="snap-desglose-label">PetCare</span>
+                <span class="snap-desglose-val" id="snap-vk-pet">—</span>
+              </div>
             </div>
           </div>
 
@@ -2798,6 +2829,9 @@ function renderOfertas(){
                tiendas:mdTiendas, selTiendas:mdTiendas.slice() };
     });
   });
+  // Exponer helpers para snapActivate
+  window._snapRng     = rng;
+  window._snapDates30 = DATES30;
 })();
 
 // ═══════════════════════════════════════
@@ -2810,14 +2844,62 @@ var _snapOpenProd     = null; // índice de fila expandida en MD-Producto
 // ═══════════════════════════════════════
 //  SNAPSHOTS — ACTIVACIÓN (lazy, solo la primera vez)
 // ═══════════════════════════════════════
-function snapActivate(){
+async function snapActivate(){
   if(_snapInited) return;
   _snapInited = true;
+
+  // Cargar vendedores reales desde ventas_resumen
+  var names = [];
+  try {
+    var res = await sbGet('/configuracion?clave=eq.ventas_resumen&select=valor');
+    if(res && res.length && res[0].valor) {
+      var raw = JSON.parse(res[0].valor);
+      window._snapVendData = {};
+      names = Object.keys(raw).sort();
+      names.forEach(function(name){
+        var d = raw[name] || {};
+        window._snapVendData[name] = {
+          nombre:     name,
+          cuota:      Number(d.cuota      || 0),
+          acumulado:  Number(d.acumulado  || 0),
+          chocolate:  Number(d.chocolate  || d.choc_venta || 0),
+          confiteria: Number(d.confiteria || d.conf_venta || 0),
+          mascotas:   Number(d.mascotas   || d.pet_venta  || 0),
+          mes:        d.mes || '—'
+        };
+      });
+      window._snapVendNames = names;
+      // Generar datos de ejemplo diarios para vendedores que no tienen
+      var rngFn  = window._snapRng     || function(s){ var x=s; return function(){ x=(x*9301+49297)%233280; return x/233280; }; };
+      var dates  = window._snapDates30 || [];
+      names.forEach(function(name, ni){
+        if(window.SNAP_VENDEDOR && window.SNAP_VENDEDOR[name]) return;
+        var rA=rngFn(ni*17+3), rB=rngFn(ni*23+7), rC=rngFn(ni*11+5);
+        var bC=800+ni*80, bF=600+ni*60, bP=400+ni*40;
+        if(!window.SNAP_VENDEDOR) window.SNAP_VENDEDOR = {};
+        window.SNAP_VENDEDOR[name] = dates.map(function(f,i){
+          return {
+            fecha:   f,
+            choc:    Math.round(bC + rA()*400 + i*12),
+            conf:    Math.round(bF + rB()*300 + i*8),
+            pet:     Math.round(bP + rC()*200 + i*5),
+            choc_md: Math.round((35+rA()*15)*10)/10,
+            conf_md: Math.round((38+rB()*12)*10)/10,
+            pet_md:  Math.round((30+rC()*10)*10)/10,
+          };
+        });
+      });
+    }
+  } catch(e) {
+    console.error('[snapActivate] Error cargando ventas_resumen:', e);
+  }
+
+  if(!names.length) names = window._snapVendNames || [];
 
   var sel = document.getElementById('snap-vend-selector');
   if(sel){
     sel.innerHTML = '<option value="">Seleccionar vendedor…</option>' +
-      (window._snapVendNames||[]).map(function(v){
+      names.map(function(v){
         return '<option value="'+v+'">'+v+'</option>';
       }).join('');
   }
@@ -3015,66 +3097,69 @@ function snapRenderCadenaDetalle(){
 //  SNAPSHOTS — VENDEDOR
 // ═══════════════════════════════════════
 function snapVendChange(){
-  _snapMdTiendaSel = {};   // limpiar selección anterior al cambiar vendedor
+  _snapMdTiendaSel = {};
   _snapOpenProd    = null;
 
-  var vend  = (document.getElementById('snap-vend-selector')||{}).value;
-  var dias  = parseInt((document.getElementById('snap-vend-periodo')||{}).value||'30');
+  var vend = (document.getElementById('snap-vend-selector')||{}).value;
+  var dias = parseInt((document.getElementById('snap-vend-periodo')||{}).value||'30');
   if(!vend) return;
 
+  var $fmt = function(n){ return '$'+Number(n).toLocaleString('es-PA', {minimumFractionDigits:2, maximumFractionDigits:2}); };
+
+  // ── KPIs reales: Total acumulado, % Cuota, Desglose ──
+  var vd = (window._snapVendData || {})[vend];
+  if(vd) {
+    var acum     = vd.acumulado;
+    var cuota    = vd.cuota;
+    var pctCuota = cuota > 0 ? Math.round(acum / cuota * 1000) / 10 : null;
+
+    document.getElementById('snap-vk-total').textContent = $fmt(acum);
+    var dtEl = document.getElementById('snap-vk-total-delta');
+    if(dtEl) dtEl.innerHTML = 'Cuota: ' + $fmt(cuota) + (vd.mes ? ' &nbsp;·&nbsp; ' + vd.mes : '');
+
+    var mdEl = document.getElementById('snap-vk-md');
+    if(mdEl){
+      mdEl.textContent = pctCuota !== null ? pctCuota + '%' : '—';
+      mdEl.style.color = pctCuota !== null ? (pctCuota >= 100 ? 'var(--verde)' : 'var(--amber)') : '';
+    }
+    var mdDtEl = document.getElementById('snap-vk-md-delta');
+    if(mdDtEl){
+      if(pctCuota !== null){
+        var diff = acum - cuota;
+        mdDtEl.innerHTML = '<span class="'+(diff >= 0 ? 'snap-delta-up' : 'snap-delta-dn')+'">'
+          +(diff >= 0 ? '▲ ' : '▼ ')+ $fmt(Math.abs(diff))
+          +(diff >= 0 ? ' sobre cuota' : ' bajo cuota')+'</span>';
+      } else { mdDtEl.innerHTML = '&nbsp;'; }
+    }
+
+    // Desglose por segmento
+    var desEl = document.getElementById('snap-vend-desglose');
+    if(desEl) desEl.style.display = '';
+    var el;
+    el = document.getElementById('snap-vk-choc'); if(el) el.textContent = $fmt(vd.chocolate);
+    el = document.getElementById('snap-vk-conf'); if(el) el.textContent = $fmt(vd.confiteria);
+    el = document.getElementById('snap-vk-pet');  if(el) el.textContent = $fmt(vd.mascotas);
+  }
+
+  // ── Tendencia: datos de ejemplo (ventas_snapshots vacía) ──
   var allData = window.SNAP_VENDEDOR[vend] || [];
   var data    = allData.slice(-dias);
   if(!data.length) return;
 
-  // ── KPIs ──
-  var totChoc = data.reduce(function(s,d){return s+d.choc;},0);
-  var totConf = data.reduce(function(s,d){return s+d.conf;},0);
-  var totPet  = data.reduce(function(s,d){return s+d.pet; },0);
-  var total   = totChoc+totConf+totPet;
-
-  var prevData  = allData.slice(-dias*2, -dias);
-  var prevTotal = prevData.reduce(function(s,d){return s+d.choc+d.conf+d.pet;},0);
-  var deltaTotal = prevTotal>0 ? Math.round((total-prevTotal)/prevTotal*1000)/10 : null;
-
-  var mdAvg    = Math.round(data.reduce(function(s,d){return s+(d.choc_md+d.conf_md+d.pet_md)/3;},0)/data.length*10)/10;
-  var prevMdAvg = prevData.length
-    ? Math.round(prevData.reduce(function(s,d){return s+(d.choc_md+d.conf_md+d.pet_md)/3;},0)/prevData.length*10)/10
-    : null;
-  var deltaMd = prevMdAvg!==null ? Math.round((mdAvg-prevMdAvg)*10)/10 : null;
-
   var semAct = data.slice(-7).reduce(function(s,d){return s+d.choc+d.conf+d.pet;},0);
   var semAnt = data.slice(-14,-7).reduce(function(s,d){return s+d.choc+d.conf+d.pet;},0);
-  var diffSem = semAct-semAnt;
-  var pctSem  = semAnt>0 ? Math.round(diffSem/semAnt*1000)/10 : 0;
-  var tendDir = diffSem>0 ? '↑' : diffSem<0 ? '↓' : '→';
-  var tendColor = diffSem>0 ? 'var(--verde)' : diffSem<0 ? 'var(--red)' : 'var(--text-3)';
-
-  var $ = function(n){ return '$'+n.toLocaleString('es-PA'); };
-
-  document.getElementById('snap-vk-total').textContent = $(total);
-  var dtEl = document.getElementById('snap-vk-total-delta');
-  if(dtEl){
-    if(deltaTotal!==null){
-      var up=deltaTotal>=0;
-      dtEl.innerHTML = '<span class="'+(up?'snap-delta-up':'snap-delta-dn')+'">'+(up?'▲':'▼')+' '+(up?'+':'')+deltaTotal+'% vs período anterior</span>';
-    } else { dtEl.innerHTML='&nbsp;'; }
-  }
-
-  document.getElementById('snap-vk-md').textContent = mdAvg+'%';
-  var mdDtEl = document.getElementById('snap-vk-md-delta');
-  if(mdDtEl){
-    if(deltaMd!==null){
-      var upM=deltaMd>=0;
-      mdDtEl.innerHTML = '<span class="'+(upM?'snap-delta-up':'snap-delta-dn')+'">'+(upM?'▲':'▼')+' '+(upM?'+':'')+deltaMd+' pp vs período anterior</span>';
-    } else { mdDtEl.innerHTML='&nbsp;'; }
-  }
+  var diffSem   = semAct - semAnt;
+  var pctSem    = semAnt > 0 ? Math.round(diffSem / semAnt * 1000) / 10 : 0;
+  var tendDir   = diffSem > 0 ? '↑' : diffSem < 0 ? '↓' : '→';
+  var tendColor = diffSem > 0 ? 'var(--verde)' : diffSem < 0 ? 'var(--red)' : 'var(--text-3)';
+  var $s = function(n){ return '$'+n.toLocaleString('es-PA'); };
 
   var tendEl = document.getElementById('snap-vk-tend');
-  if(tendEl){ tendEl.textContent=tendDir; tendEl.style.color=tendColor; }
+  if(tendEl){ tendEl.textContent = tendDir; tendEl.style.color = tendColor; }
   var tendDtEl = document.getElementById('snap-vk-tend-delta');
   if(tendDtEl){
-    tendDtEl.innerHTML = '<span class="'+(diffSem>=0?'snap-delta-up':'snap-delta-dn')+'">'
-      +$(Math.abs(diffSem))+' esta semana vs anterior ('+(diffSem>=0?'+':'')+pctSem+'%)</span>';
+    tendDtEl.innerHTML = '<span class="'+(diffSem >= 0 ? 'snap-delta-up' : 'snap-delta-dn')+'">'
+      +$s(Math.abs(diffSem))+' esta semana vs anterior ('+(diffSem >= 0 ? '+' : '')+pctSem+'%)</span>';
   }
 
   // ── Renderizar sub-panel activo ──
