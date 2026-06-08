@@ -476,6 +476,18 @@ tbody td.right { text-align: right; }
 }
 
 /* ── SNAPSHOTS ── */
+/* ── Tabla Vendedores ── */
+.vt-wrap { max-height: 420px; overflow-y: auto; }
+.tbl-vendedores-main thead th { z-index: 2; }
+.tbl-vendedores-main .vt-col-sep,
+.tbl-vendedores-main td.vt-col-sep { border-right: 1px solid var(--border); }
+.tbl-vendedores-main .vt-pct-col { background: #f5f5f5; }
+.tbl-vendedores-main tfoot td {
+  position: sticky; bottom: 0; background: var(--surface2);
+  font-weight: 700; border-top: 2px solid var(--border);
+  padding: 9px 12px; font-size: 12.5px;
+}
+
 .snap-tabs {
   display: flex;
   gap: 0;
@@ -789,26 +801,28 @@ tbody td.right { text-align: right; }
 
       <div class="card">
         <div class="card-body" style="padding:0">
-          <div class="tbl-wrap">
-            <table>
+          <div class="tbl-wrap vt-wrap">
+            <table class="tbl-vendedores-main">
               <thead>
                 <tr>
-                  <th>Vendedor</th>
-                  <th class="right">Choc. Venta</th>
-                  <th class="right">Choc. Cuota</th>
-                  <th class="right">% Total</th>
-                  <th class="right">Conf. Venta</th>
-                  <th class="right">Conf. Cuota</th>
-                  <th class="right">% Total</th>
-                  <th class="right">Pet Venta</th>
-                  <th class="right">Pet Cuota</th>
-                  <th class="right">% Total</th>
+                  <th class="vt-col-sep">Vendedor</th>
+                  <th class="right vt-col-sep">Choc. Venta</th>
+                  <th class="right vt-col-sep">Choc. Cuota</th>
+                  <th class="right vt-col-sep vt-pct-col">% Total</th>
+                  <th class="right vt-col-sep">Conf. Venta</th>
+                  <th class="right vt-col-sep">Conf. Cuota</th>
+                  <th class="right vt-col-sep vt-pct-col">% Total</th>
+                  <th class="right vt-col-sep">Pet Venta</th>
+                  <th class="right vt-col-sep">Pet Cuota</th>
+                  <th class="right vt-col-sep vt-pct-col">% Total</th>
+                  <th class="right vt-col-sep">Total Venta</th>
                   <th>Estado</th>
                 </tr>
               </thead>
               <tbody id="tbl-vendedores">
-                <tr><td colspan="11" style="padding:20px;text-align:center;color:var(--text-3)">Cargando…</td></tr>
+                <tr><td colspan="12" style="padding:20px;text-align:center;color:var(--text-3)">Cargando…</td></tr>
               </tbody>
+              <tfoot id="tbl-vendedores-foot"></tfoot>
             </table>
           </div>
         </div>
@@ -1612,54 +1626,75 @@ function renderVendedores(){
     return {...v, pctTotal: pct(tv,tq), tv, tq};
   });
 
+  const SEP = 'vt-col-sep', PCT = 'right mono vt-col-sep vt-pct-col';
+
   function renderTablaVend(lista){
     const tbody = document.getElementById('tbl-vendedores');
-    if(!lista.length){ tbody.innerHTML = `<tr><td colspan="11" style="padding:20px;text-align:center;color:var(--text-3)">Sin datos</td></tr>`; return; }
+    const tfoot = document.getElementById('tbl-vendedores-foot');
+    if(!lista.length){
+      tbody.innerHTML = `<tr><td colspan="12" style="padding:20px;text-align:center;color:var(--text-3)">Sin datos</td></tr>`;
+      if(tfoot) tfoot.innerHTML = '';
+      return;
+    }
     tbody.innerHTML = lista.map(v => `
       <tr>
-        <td style="font-weight:600">${v.vendedor||'—'}</td>
-        <td class="right mono">${fmt(v.choc_venta)}</td>
-        <td class="right mono">${fmt(v.choc_cuota)}</td>
-        <td class="right mono">${pct(v.choc_venta,v.choc_cuota)}%</td>
-        <td class="right mono">${fmt(v.conf_venta)}</td>
-        <td class="right mono">${fmt(v.conf_cuota)}</td>
-        <td class="right mono">${pct(v.conf_venta,v.conf_cuota)}%</td>
-        <td class="right mono">${fmt(v.pet_venta)}</td>
-        <td class="right mono">${fmt(v.pet_cuota)}</td>
-        <td class="right mono">${pct(v.pet_venta,v.pet_cuota)}%</td>
+        <td class="${SEP}" style="font-weight:600">${v.vendedor||'—'}</td>
+        <td class="right mono ${SEP}">${fmt(v.choc_venta)}</td>
+        <td class="right mono ${SEP}">${fmt(v.choc_cuota)}</td>
+        <td class="${PCT}">${pct(v.choc_venta,v.choc_cuota)}%</td>
+        <td class="right mono ${SEP}">${fmt(v.conf_venta)}</td>
+        <td class="right mono ${SEP}">${fmt(v.conf_cuota)}</td>
+        <td class="${PCT}">${pct(v.conf_venta,v.conf_cuota)}%</td>
+        <td class="right mono ${SEP}">${fmt(v.pet_venta)}</td>
+        <td class="right mono ${SEP}">${fmt(v.pet_cuota)}</td>
+        <td class="${PCT}">${pct(v.pet_venta,v.pet_cuota)}%</td>
+        <td class="right mono ${SEP}" style="font-weight:700">${fmt(v.tv)}</td>
         <td>${badgeVend(v.choc_venta,v.choc_cuota,v.conf_venta,v.conf_cuota,v.pet_venta,v.pet_cuota)}</td>
       </tr>`).join('');
+
+    // Fila de totales
+    if(tfoot){
+      const tC = lista.reduce((s,v)=>s+(v.choc_venta||0),0);
+      const tF = lista.reduce((s,v)=>s+(v.conf_venta||0),0);
+      const tP = lista.reduce((s,v)=>s+(v.pet_venta||0),0);
+      const tT = tC+tF+tP;
+      const tCQ = lista.reduce((s,v)=>s+(v.choc_cuota||0),0);
+      const tFQ = lista.reduce((s,v)=>s+(v.conf_cuota||0),0);
+      const tPQ = lista.reduce((s,v)=>s+(v.pet_cuota||0),0);
+      tfoot.innerHTML = `<tr>
+        <td class="${SEP}">TOTAL</td>
+        <td class="right mono ${SEP}" style="color:var(--verde)">${fmt(tC)}</td>
+        <td class="right mono ${SEP}">${fmt(tCQ)}</td>
+        <td class="${PCT}">${pct(tC,tCQ)}%</td>
+        <td class="right mono ${SEP}" style="color:var(--verde)">${fmt(tF)}</td>
+        <td class="right mono ${SEP}">${fmt(tFQ)}</td>
+        <td class="${PCT}">${pct(tF,tFQ)}%</td>
+        <td class="right mono ${SEP}" style="color:var(--verde)">${fmt(tP)}</td>
+        <td class="right mono ${SEP}">${fmt(tPQ)}</td>
+        <td class="${PCT}">${pct(tP,tPQ)}%</td>
+        <td class="right mono ${SEP}" style="color:var(--verde);font-weight:700">${fmt(tT)}</td>
+        <td></td>
+      </tr>`;
+    }
   }
 
   renderTablaVend(rows);
 
-  // Filtros
-  const fNombre = document.getElementById('filtro-vend');
-  const fGrupo = document.getElementById('filtro-vend-grupo');
-  fNombre.oninput = () => {
-    const q = fNombre.value.toLowerCase();
-    const g = fGrupo.value;
-    renderTablaVend(rows.filter(v => {
+  // Filtros — usa cuota > 0 para detectar si el vendedor pertenece al grupo
+  function filterRows(){
+    const q = (document.getElementById('filtro-vend').value||'').toLowerCase();
+    const g = (document.getElementById('filtro-vend-grupo').value||'');
+    return rows.filter(v => {
       const matchNombre = (v.vendedor||'').toLowerCase().includes(q);
       if(!g) return matchNombre;
-      if(g === 'Chocolate')  return matchNombre && (v.choc_venta||0) > 0;
-      if(g === 'Confection') return matchNombre && (v.conf_venta||0) > 0;
-      if(g === 'PetCare')    return matchNombre && (v.pet_venta||0) > 0;
+      if(g === 'Chocolate')  return matchNombre && (v.choc_cuota||0) > 0;
+      if(g === 'Confection') return matchNombre && (v.conf_cuota||0) > 0;
+      if(g === 'PetCare')    return matchNombre && (v.pet_cuota||0) > 0;
       return matchNombre;
-    }));
-  };
-  fGrupo.onchange = () => {
-    const g = fGrupo.value;
-    const q = fNombre.value.toLowerCase();
-    renderTablaVend(rows.filter(v => {
-      const matchNombre = (v.vendedor||'').toLowerCase().includes(q);
-      if(!g) return matchNombre;
-      if(g === 'Chocolate')  return matchNombre && (v.choc_venta||0) > 0;
-      if(g === 'Confection') return matchNombre && (v.conf_venta||0) > 0;
-      if(g === 'PetCare')    return matchNombre && (v.pet_venta||0) > 0;
-      return matchNombre;
-    }));
-  };
+    });
+  }
+  document.getElementById('filtro-vend').oninput    = () => renderTablaVend(filterRows());
+  document.getElementById('filtro-vend-grupo').onchange = () => renderTablaVend(filterRows());
 
   // Gráfico barras horizontales
   destroyChart('chart-vendedores');
