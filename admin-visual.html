@@ -737,6 +737,20 @@ tbody td.right { text-align: right; }
         </div>
       </div>
 
+      <!-- 2 KPIs adicionales -->
+      <div class="grid-2" style="margin-top:-4px">
+        <div class="stat-card">
+          <div class="label">% MD General</div>
+          <div class="value" id="kpi-md-general">—</div>
+          <div class="sub" id="kpi-md-delta">&nbsp;</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Tendencia de Venta</div>
+          <div class="value" id="kpi-tend-dir" style="font-size:20px">—</div>
+          <div class="sub" id="kpi-tend-sub">&nbsp;</div>
+        </div>
+      </div>
+
       <!-- Barras por grupo -->
       <div class="grid-3">
         <div class="card">
@@ -797,11 +811,12 @@ tbody td.right { text-align: right; }
           </div>
         </div>
         <div class="card">
-          <div class="card-header"><h3>📊 Distribución Ventas</h3></div>
+          <div class="card-header"><h3>📈 Ventas por Categoría</h3></div>
           <div class="card-body">
-            <div class="chart-box">
+            <div class="chart-box" style="height:200px">
               <canvas id="chart-dist"></canvas>
             </div>
+            <div id="chart-dist-tabla" style="margin-top:8px"></div>
           </div>
         </div>
       </div>
@@ -1602,6 +1617,47 @@ function renderResumen(){
   }
   document.getElementById('kpi-agot').textContent = agot;
 
+  // ── % MD General ──
+  let mdNum = 0, mdDen = 0;
+  if(inv && Array.isArray(inv)){
+    inv.forEach(r => { mdDen += Number(r.inventario||0); mdNum += Number(r.inventario_md||r.md||0); });
+  }
+  const mdPct = mdDen > 0 ? Math.round(mdNum/mdDen*1000)/10 : null;
+  document.getElementById('kpi-md-general').textContent = mdPct != null ? mdPct+'%' : '—';
+
+  const hist = normalizeHistorico();
+  if(hist && hist.length >= 2){
+    const cur = hist[hist.length-1], prev = hist[hist.length-2];
+    if(cur.pct_md != null && prev.pct_md != null){
+      const delta = Math.round((cur.pct_md - prev.pct_md)*10)/10;
+      // ↑ malo (rojo), ↓ bueno (verde) — menos MD es mejor
+      const color = delta > 0 ? 'var(--red)' : delta < 0 ? 'var(--verde)' : 'var(--text-3)';
+      const arrow = delta > 0 ? '↑' : delta < 0 ? '↓' : '→';
+      document.getElementById('kpi-md-delta').innerHTML =
+        '<span style="color:'+color+';font-weight:600">'+arrow+' '+(delta>0?'+':'')+delta+' pp vs '+prev.mes+'</span>';
+    } else {
+      document.getElementById('kpi-md-delta').textContent = 'sin datos previos';
+    }
+  } else {
+    document.getElementById('kpi-md-delta').textContent = 'sin datos previos';
+  }
+
+  // ── Tendencia de venta ──
+  if(hist && hist.length >= 2){
+    const cur = hist[hist.length-1], prev = hist[hist.length-2];
+    const vCur  = (cur.choc||0)+(cur.conf||0)+(cur.pet||0);
+    const vPrev = (prev.choc||0)+(prev.conf||0)+(prev.pet||0);
+    const pctD  = vPrev > 0 ? Math.round((vCur-vPrev)/vPrev*1000)/10 : 0;
+    const dir   = pctD > 3 ? '↑ Creciendo' : pctD < -3 ? '↓ Cayendo' : '→ Estable';
+    const color = pctD > 3 ? 'var(--verde)' : pctD < -3 ? 'var(--red)' : 'var(--text-3)';
+    document.getElementById('kpi-tend-dir').innerHTML = '<span style="color:'+color+'">'+dir+'</span>';
+    document.getElementById('kpi-tend-sub').innerHTML =
+      cur.mes+': <b>'+fmt(vCur)+'</b> &nbsp;|&nbsp; '+prev.mes+': <b>'+fmt(vPrev)+'</b>';
+  } else {
+    document.getElementById('kpi-tend-dir').textContent = '—';
+    document.getElementById('kpi-tend-sub').textContent = 'sin datos históricos';
+  }
+
   // Barras grupos
   function setGrupo(id, bar, det, v, q){
     const p = pct(v,q);
@@ -1631,25 +1687,74 @@ function renderResumen(){
       <td>${chipEstado(v.pctTotal)}</td>
     </tr>`).join('');
 
-  // Gráfico distribución (dona)
+  // ── Gráfico de líneas por categoría ──
+  const histData = hist || genHistoricoSample();
+  const labels = histData.map(d => d.mes);
   destroyChart('chart-dist');
   const ctx = document.getElementById('chart-dist').getContext('2d');
   chartsInstancias['chart-dist'] = new Chart(ctx, {
-    type: 'doughnut',
+    type: 'line',
     data: {
-      labels: ['Chocolate','Confection','PetCare'],
-      datasets:[{
-        data: [t.totChocV, t.totConfV, t.totPetV],
-        backgroundColor: ['#7B4B2A','#D4A843','#3b7dd8'],
-        borderWidth: 2,
-        borderColor: '#fff'
-      }]
+      labels,
+      datasets:[
+        { label:'Chocolate', data: histData.map(d=>d.choc), borderColor:'#7B4B2A', backgroundColor:'rgba(123,75,42,0.07)',  tension:0.4, pointRadius:4, pointHoverRadius:6, fill:true, borderWidth:2 },
+        { label:'Confection', data: histData.map(d=>d.conf), borderColor:'#D4A843', backgroundColor:'rgba(212,168,67,0.07)', tension:0.4, pointRadius:4, pointHoverRadius:6, fill:true, borderWidth:2 },
+        { label:'PetCare',   data: histData.map(d=>d.pet),  borderColor:'#3b7dd8', backgroundColor:'rgba(59,125,216,0.07)', tension:0.4, pointRadius:4, pointHoverRadius:6, fill:true, borderWidth:2 }
+      ]
     },
     options:{
       responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ position:'bottom', labels:{ font:{family:'DM Sans'}, padding:12 } } }
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{ position:'bottom', labels:{ font:{family:'DM Sans',size:11}, padding:10, boxWidth:12 } },
+        tooltip:{ callbacks:{ label: c => ' '+c.dataset.label+': '+Number(c.raw).toLocaleString('es-PA') } }
+      },
+      scales:{
+        y:{ beginAtZero:false, ticks:{ font:{family:'DM Mono',size:10}, callback: v=>Number(v).toLocaleString('es-PA') }, grid:{color:'rgba(0,0,0,0.04)'} },
+        x:{ ticks:{ font:{family:'DM Sans',size:11} }, grid:{display:false} }
+      }
     }
   });
+
+  // Tabla de valores (muestra últimos 3 meses)
+  const tablaEl = document.getElementById('chart-dist-tabla');
+  if(tablaEl){
+    const last3 = histData.slice(-3);
+    const TH = 'text-align:right;padding:4px 6px;border-bottom:1px solid var(--border);font-size:10.5px;color:var(--text-2)';
+    const TD = 'text-align:right;padding:4px 6px;font-family:\'DM Mono\',monospace;font-size:11px';
+    tablaEl.innerHTML = '<table style="width:100%;border-collapse:collapse">'
+      +'<thead><tr>'
+      +'<th style="text-align:left;padding:4px 6px;border-bottom:1px solid var(--border);font-size:10.5px;color:var(--text-2)"></th>'
+      +last3.map(d=>'<th style="'+TH+'">'+d.mes+'</th>').join('')
+      +'</tr></thead><tbody>'
+      +[{k:'choc',l:'🍫 Choc.',c:'#7B4B2A'},{k:'conf',l:'🍬 Conf.',c:'#D4A843'},{k:'pet',l:'🐾 Pet',c:'#3b7dd8'}].map(cat=>
+        '<tr><td style="padding:4px 6px;font-size:11px;font-weight:600;color:'+cat.c+'">'+cat.l+'</td>'
+        +last3.map(d=>'<td style="'+TD+'">'+Number(d[cat.k]||0).toLocaleString('es-PA')+'</td>').join('')
+        +'</tr>').join('')
+      +'</tbody></table>';
+  }
+}
+
+function normalizeHistorico(){
+  const h = DATA.historico_ventas;
+  if(!Array.isArray(h) || h.length < 2) return null;
+  const f = h[0];
+  if(!f || !('choc' in f || 'chocolate' in f || 'Chocolate' in f
+             || 'conf' in f || 'confection' in f
+             || 'pet'  in f || 'petcare' in f || 'PetCare' in f)) return null;
+  return h.map(e => ({
+    mes:    e.mes || e.label || e.fecha || '?',
+    choc:   Number(e.choc  || e.chocolate || e.Chocolate  || 0),
+    conf:   Number(e.conf  || e.confection || e.Confection || 0),
+    pet:    Number(e.pet   || e.petcare   || e.PetCare    || 0),
+    pct_md: e.pct_md != null ? Number(e.pct_md) : null
+  }));
+}
+
+function genHistoricoSample(){
+  const M = ['Oct','Nov','Dic','Ene','Feb','Mar'];
+  function r(base, i, amp){ return Math.round(base + amp*Math.sin(i*0.9+1) + i*base*0.035); }
+  return M.map(function(m,i){ return { mes:m, choc:r(40000,i,5000), conf:r(34000,i,4000), pet:r(24000,i,3000), pct_md:null }; });
 }
 
 // ═══════════════════════════════════════
