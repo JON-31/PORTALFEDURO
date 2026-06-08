@@ -476,6 +476,30 @@ tbody td.right { text-align: right; }
 }
 
 /* ── SNAPSHOTS ── */
+/* ── Vista Tiendas — sticky filtros + expand panel ── */
+#view-tiendas .filtros {
+  position: sticky; top: 0; z-index: 20;
+  background: var(--surface); padding-bottom: 8px; margin-bottom: 8px;
+}
+.tbl-tiendas-main thead th { z-index: 2; top: 44px; }
+.ti-row-clickable { cursor: pointer; }
+.ti-row-clickable:hover { background: var(--surface2); }
+.ti-row-open { background: rgba(29,61,143,0.06) !important; }
+.ti-expand-tr > td { padding: 0; border-bottom: 2px solid var(--verde); }
+.ti-expand-panel {
+  background: var(--surface2); padding: 14px 16px;
+  border-top: 2px solid var(--verde); border-left: 3px solid var(--verde);
+}
+.ti-expand-header {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;
+}
+.ti-expand-filters { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; }
+.ti-close-btn {
+  background: none; border: 1px solid var(--border); border-radius: 6px;
+  padding: 3px 10px; cursor: pointer; font-size: 12px; color: var(--text-2); line-height: 1.5;
+}
+.ti-close-btn:hover { background: var(--border); color: var(--text); }
+
 /* ── Tabla Vendedores ── */
 .vt-wrap { max-height: 420px; overflow-y: auto; }
 .tbl-vendedores-main thead th { z-index: 2; }
@@ -863,20 +887,24 @@ tbody td.right { text-align: right; }
       <div class="card">
         <div class="card-body" style="padding:0">
           <div class="tbl-wrap">
-            <table>
+            <table class="tbl-tiendas-main">
               <thead>
                 <tr>
                   <th>Tienda</th>
                   <th>Cadena</th>
                   <th>Vendedor</th>
-                  <th class="right">Prods. en inventario</th>
-                  <th class="right">Agotados</th>
-                  <th class="right">Críticos</th>
+                  <th class="right">SKUs</th>
+                  <th class="right">Total Inv.</th>
+                  <th class="right" style="color:var(--red)">Agotados</th>
+                  <th class="right" style="color:var(--amber)">Críticos</th>
+                  <th class="right" style="color:#E67E22">Atención</th>
+                  <th class="right" style="color:var(--verde)">Óptimo</th>
+                  <th class="right" style="color:#3b7dd8">Sobrestock</th>
                   <th>Estado</th>
                 </tr>
               </thead>
               <tbody id="tbl-tiendas">
-                <tr><td colspan="7" style="padding:20px;text-align:center;color:var(--text-3)">Cargando…</td></tr>
+                <tr><td colspan="11" style="padding:20px;text-align:center;color:var(--text-3)">Cargando…</td></tr>
               </tbody>
             </table>
           </div>
@@ -1724,67 +1752,178 @@ function renderVendedores(){
 // ═══════════════════════════════════════
 //  RENDER TIENDAS
 // ═══════════════════════════════════════
+var _tiendas       = [];
+var _tiendaOpenIdx = null;
+
 function renderTiendas(){
   const inv = DATA.inventario;
   if(!inv || !Array.isArray(inv)){
-    document.getElementById('tbl-tiendas').innerHTML = `<tr><td colspan="7" style="padding:20px;text-align:center;color:var(--text-3)">Sin datos de inventario</td></tr>`;
+    document.getElementById('tbl-tiendas').innerHTML =
+      '<tr><td colspan="11" style="padding:20px;text-align:center;color:var(--text-3)">Sin datos de inventario</td></tr>';
     return;
   }
 
-  // Agrupar por tienda
+  // Agrupar por tienda — usa cobertura para clasificar estado de cada SKU
   const tiendaMap = {};
   inv.forEach(r => {
     const t = r.tienda || '—';
-    if(!tiendaMap[t]) tiendaMap[t] = { tienda:t, vendedor:r.vendedor||'—', cadena: r.cadena||'—', prods:0, agot:0, crit:0 };
+    if(!tiendaMap[t]) tiendaMap[t] = {
+      tienda:t, vendedor:r.vendedor||'—', cadena:r.cadena||'—',
+      prods:0, totalInv:0, agot:0, crit:0, aten:0, opt:0, sob:0
+    };
     tiendaMap[t].prods++;
-    const n = Number(r.inventario||0);
-    if(n === 0) tiendaMap[t].agot++;
-    else if(n < 10) tiendaMap[t].crit++;
+    tiendaMap[t].totalInv += Number(r.inventario||0);
+    const cob = Number(r.cobertura||0);
+    if(cob === 0)      tiendaMap[t].agot++;
+    else if(cob < 10)  tiendaMap[t].crit++;
+    else if(cob < 20)  tiendaMap[t].aten++;
+    else if(cob <= 40) tiendaMap[t].opt++;
+    else               tiendaMap[t].sob++;
   });
 
-  const tiendas = Object.values(tiendaMap).sort((a,b) => b.agot - a.agot);
-  document.getElementById('badge-tiendas-count').textContent = tiendas.length + ' tiendas';
+  const allTiendas = Object.values(tiendaMap).sort((a,b) => b.agot - a.agot);
+  document.getElementById('badge-tiendas-count').textContent = allTiendas.length + ' tiendas';
 
   // Poblar select vendedores
-  const vends = [...new Set(tiendas.map(t=>t.vendedor))].filter(Boolean).sort();
+  const vends = [...new Set(allTiendas.map(t=>t.vendedor))].filter(Boolean).sort();
   const sel = document.getElementById('filtro-tienda-vend');
   sel.innerHTML = '<option value="">Todos los vendedores</option>' + vends.map(v=>`<option>${v}</option>`).join('');
 
+  function tiendaEstadoGeneral(t){
+    if(t.agot > 0) return '<span class="chip chip-danger">Agotado</span>';
+    if(t.crit > 0) return '<span class="chip chip-warn">Crítico</span>';
+    if(t.aten > 0) return '<span class="chip chip-gold">Atención</span>';
+    if(t.sob  > 0) return '<span class="chip chip-blue">Sobrestock</span>';
+    return '<span class="chip chip-ok">Óptimo</span>';
+  }
+
   function renderTablaTiendas(lista){
+    _tiendaCloseOpen();
+    _tiendas = lista;
     const tbody = document.getElementById('tbl-tiendas');
-    if(!lista.length){ tbody.innerHTML=`<tr><td colspan="7" style="padding:20px;text-align:center;color:var(--text-3)">Sin resultados</td></tr>`; return; }
-    tbody.innerHTML = lista.map(t => {
-      const estado = t.agot > 3 ? '<span class="chip chip-danger">Crítica</span>' :
-                     t.agot > 0 ? '<span class="chip chip-warn">Atención</span>' :
-                     '<span class="chip chip-ok">OK</span>';
-      return `<tr>
+    if(!lista.length){
+      tbody.innerHTML = '<tr><td colspan="11" style="padding:20px;text-align:center;color:var(--text-3)">Sin resultados</td></tr>';
+      return;
+    }
+    tbody.innerHTML = lista.map((t,i) => `
+      <tr class="ti-row-clickable" data-ti-idx="${i}" onclick="tiendaToggle(${i})">
         <td style="font-weight:600">${t.tienda}</td>
         <td><span class="chip chip-blue">${t.cadena}</span></td>
         <td>${t.vendedor}</td>
         <td class="right mono">${t.prods}</td>
-        <td class="right mono" style="color:var(--red)">${t.agot}</td>
-        <td class="right mono" style="color:var(--amber)">${t.crit}</td>
-        <td>${estado}</td>
-      </tr>`;
-    }).join('');
+        <td class="right mono">${t.totalInv.toLocaleString('es-PA')}</td>
+        <td class="right mono" style="color:var(--red)">${t.agot||'—'}</td>
+        <td class="right mono" style="color:var(--amber)">${t.crit||'—'}</td>
+        <td class="right mono" style="color:#E67E22">${t.aten||'—'}</td>
+        <td class="right mono" style="color:var(--verde)">${t.opt||'—'}</td>
+        <td class="right mono" style="color:#3b7dd8">${t.sob||'—'}</td>
+        <td>${tiendaEstadoGeneral(t)}</td>
+      </tr>`).join('');
   }
 
-  renderTablaTiendas(tiendas);
+  renderTablaTiendas(allTiendas);
 
   function applyFiltroTiendas(){
     const q = document.getElementById('filtro-tienda').value.toLowerCase();
     const c = document.getElementById('filtro-tienda-cadena').value;
     const v = document.getElementById('filtro-tienda-vend').value;
-    renderTablaTiendas(tiendas.filter(t =>
+    renderTablaTiendas(allTiendas.filter(t =>
       (!q || t.tienda.toLowerCase().includes(q)) &&
       (!c || t.cadena === c) &&
       (!v || t.vendedor === v)
     ));
   }
 
-  document.getElementById('filtro-tienda').oninput = applyFiltroTiendas;
+  document.getElementById('filtro-tienda').oninput    = applyFiltroTiendas;
   document.getElementById('filtro-tienda-cadena').onchange = applyFiltroTiendas;
-  document.getElementById('filtro-tienda-vend').onchange = applyFiltroTiendas;
+  document.getElementById('filtro-tienda-vend').onchange   = applyFiltroTiendas;
+}
+
+function tiendaEstadoProd(cob){
+  if(cob === 0)    return { label:'Agotado',    cls:'chip-danger' };
+  if(cob < 10)     return { label:'Crítico',    cls:'chip-warn'   };
+  if(cob < 20)     return { label:'Atención',   cls:'chip-gold'   };
+  if(cob <= 40)    return { label:'Óptimo',     cls:'chip-ok'     };
+  return            { label:'Sobrestock', cls:'chip-blue'   };
+}
+
+function tiendaToggle(idx){
+  if(_tiendaOpenIdx === idx){ _tiendaCloseOpen(); return; }
+  _tiendaCloseOpen();
+
+  const t = _tiendas[idx];
+  if(!t) return;
+  _tiendaOpenIdx = idx;
+
+  const row = document.querySelector('#tbl-tiendas tr[data-ti-idx="'+idx+'"]');
+  if(!row) return;
+  row.classList.add('ti-row-open');
+
+  const expandTr = document.createElement('tr');
+  expandTr.className = 'ti-expand-tr';
+  expandTr.id = 'tiexp_'+idx;
+  expandTr.innerHTML =
+    '<td colspan="11"><div class="ti-expand-panel">'
+    +'<div class="ti-expand-header">'
+    +'<span style="font-weight:700;font-size:13px">'+t.tienda+'</span>'
+    +'<div class="ti-expand-filters" id="ti-pf-'+idx+'">'
+    +['Todos','Agotado','Crítico','Atención','Óptimo','Sobrestock'].map(function(f,fi){
+        return '<button class="snap-pill'+(fi===0?' active':'')+'" onclick="tiendaFiltProd('+idx+',\''+f+'\',this)">'+f+'</button>';
+      }).join('')
+    +'</div>'
+    +'<button class="ti-close-btn" onclick="tiendaToggle('+idx+')">✕ Cerrar</button>'
+    +'</div>'
+    +'<div class="snap-tbl-wrap" style="max-height:220px">'
+    +'<table><thead><tr>'
+    +'<th>Producto</th><th class="right">Inventario</th><th class="right">Cobertura</th><th>Estado</th>'
+    +'</tr></thead>'
+    +'<tbody id="ti-pb-'+idx+'"></tbody>'
+    +'</table>'
+    +'</div>'
+    +'</div></td>';
+
+  row.insertAdjacentElement('afterend', expandTr);
+  tiendaRenderProds(idx, 'Todos');
+}
+
+function _tiendaCloseOpen(){
+  if(_tiendaOpenIdx === null) return;
+  const tr = document.getElementById('tiexp_'+_tiendaOpenIdx);
+  if(tr) tr.remove();
+  const row = document.querySelector('#tbl-tiendas tr[data-ti-idx="'+_tiendaOpenIdx+'"]');
+  if(row) row.classList.remove('ti-row-open');
+  _tiendaOpenIdx = null;
+}
+
+function tiendaFiltProd(idx, filtro, btn){
+  btn.closest('.ti-expand-filters').querySelectorAll('.snap-pill').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  tiendaRenderProds(idx, filtro);
+}
+
+function tiendaRenderProds(idx, filtro){
+  const t = _tiendas[idx];
+  if(!t) return;
+  const tbody = document.getElementById('ti-pb-'+idx);
+  if(!tbody) return;
+  const prods = (DATA.inventario||[]).filter(function(r){ return r.tienda === t.tienda; });
+  const lista = filtro === 'Todos' ? prods : prods.filter(function(p){
+    return tiendaEstadoProd(Number(p.cobertura||0)).label === filtro;
+  });
+  if(!lista.length){
+    tbody.innerHTML = '<tr><td colspan="4" style="padding:12px;text-align:center;color:var(--text-3)">Sin productos en este estado</td></tr>';
+    return;
+  }
+  tbody.innerHTML = lista.map(function(p){
+    const cob = Number(p.cobertura||0);
+    const e = tiendaEstadoProd(cob);
+    return '<tr>'
+      +'<td style="font-size:12px">'+( p.producto||'—')+'</td>'
+      +'<td class="right mono">'+Number(p.inventario||0)+'</td>'
+      +'<td class="right mono">'+(cob > 0 ? cob+'d' : '—')+'</td>'
+      +'<td><span class="chip '+e.cls+'">'+e.label+'</span></td>'
+      +'</tr>';
+  }).join('');
 }
 
 // ═══════════════════════════════════════
