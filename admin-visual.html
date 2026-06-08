@@ -489,13 +489,14 @@ tbody td.right { text-align: right; }
   border-bottom: 1px solid var(--border);
 }
 
-/* Contenedor de la tabla: aspecto de card SIN overflow que rompa sticky.
-   overflow-x:auto permite scroll horizontal.
-   overflow-y:clip clipea visualmente pero NO crea scroll-container vertical,
-   por lo que position:sticky del thead sigue referenciando #content. */
-.ti-tbl-outer {
-  overflow-x: auto;
-  overflow-y: clip;
+/* Contenedor puramente visual — SIN overflow de ningún tipo.
+   Cualquier overflow (auto, hidden, scroll, clip) convierte el elemento
+   en un scroll-container y hace que sticky del thead lo referencie a él
+   en lugar de a #content. Sin overflow, el thead stickea correctamente.
+   El scroll horizontal lo provee #content: cuando overflow-y:auto está
+   declarado, overflow-x se coerce a auto por spec, así que #content
+   maneja ambos ejes. */
+.ti-card-outer {
   background: var(--surface);
   border-radius: var(--radius);
   border: 1px solid var(--border);
@@ -503,15 +504,15 @@ tbody td.right { text-align: right; }
   margin-bottom: 20px;
 }
 
-/* Thead sticky justo debajo del filtros bar.
-   10px padding-top + ~32px input + 8px padding-bottom + 1px border = 51px.
-   background blanco explícito para que tape las filas al hacer scroll. */
+/* Thead sticky: referencia #content (scroll-container real) porque
+   .ti-card-outer no tiene overflow → no es scroll-container.
+   top = altura del filtros bar: 10px pad-top + 32px input + 8px pad-bottom + 1px border = 51px.
+   background #fff explícito para que tape el contenido que pasa por detrás. */
 .tbl-tiendas-main thead th {
   position: sticky;
   top: 51px;
   z-index: 5;
   background: #fff;
-  white-space: nowrap;
 }
 
 /* Fila clickable */
@@ -950,7 +951,7 @@ tbody td.right { text-align: right; }
         </select>
       </div>
 
-      <div class="ti-tbl-outer">
+      <div class="ti-card-outer">
         <table class="tbl-tiendas-main">
           <thead>
             <tr>
