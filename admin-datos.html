@@ -548,37 +548,37 @@ tbody tr:last-child td { border-bottom: none; }
 
       <!-- Card 2: Ventas y cuotas -->
       <div class="inicio-card">
-        <div class="inicio-card-title">💰 Ventas acumuladas y cuotas</div>
-        <div class="form-group" style="max-width:220px">
-          <label class="form-label">Mes</label>
-          <select id="inicio-mes">
-            <option>Enero</option><option>Febrero</option><option>Marzo</option>
-            <option>Abril</option><option>Mayo</option><option>Junio</option>
-            <option>Julio</option><option>Agosto</option><option>Septiembre</option>
-            <option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
-          </select>
+        <div class="inicio-card-title">💰 Importar ventas desde Excel</div>
+        <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px">
+          <div class="form-group" style="margin:0">
+            <label class="form-label">📅 Fecha del corte</label>
+            <input type="date" id="ventas-fecha" style="font-size:13px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);outline:none">
+          </div>
+          <div>
+            <label class="form-label">📎 Archivo Excel</label>
+            <div>
+              <input type="file" id="ventas-file-input" accept=".xlsx,.xls" style="display:none" onchange="ventasParseExcel(this)">
+              <button class="btn-green" onclick="document.getElementById('ventas-file-input').click()">Seleccionar Excel</button>
+            </div>
+          </div>
         </div>
-        <div style="overflow-x:auto">
+        <div id="ventas-preview" style="display:none;overflow-x:auto;margin-bottom:14px">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Vista previa — solo lectura</div>
           <table class="ventas-table">
             <thead>
               <tr>
-                <th>Vendedor</th>
-                <th>Cuota</th>
-                <th>Acumulado</th>
-                <th>Chocolate</th>
-                <th>Confection</th>
-                <th>PetCare</th>
-                <th>%</th>
-                <th>Falta</th>
+                <th>Vendedor</th><th>Cuota</th><th>Acumulado</th>
+                <th>Chocolate</th><th>Confitería</th><th>PetCare</th>
+                <th>%</th><th>Falta</th>
               </tr>
             </thead>
-            <tbody id="inicio-ventas-tbody">
-              <tr><td colspan="8" style="color:var(--muted);text-align:center;padding:16px">Cargando…</td></tr>
-            </tbody>
+            <tbody id="ventas-preview-tbody"></tbody>
           </table>
         </div>
-        <button class="btn-green" onclick="guardarVentasResumen()" style="margin-top:14px">Guardar</button>
-        <button onclick="abrirCerrarMes()" style="margin-top:14px;margin-left:10px;background:var(--red);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer">🔒 Cerrar Mes</button>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button id="ventas-btn-importar" class="btn-green" onclick="importarVentas()" style="display:none">✅ Importar ventas</button>
+          <button onclick="abrirCerrarMes()" style="background:var(--red);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer">🔒 Cerrar Mes</button>
+        </div>
         <div id="inicio-ventas-msg" style="margin-top:8px;font-size:13px;font-weight:600"></div>
       </div>
 
@@ -3184,14 +3184,12 @@ async function iniciarViewInicio() {
   while (slides.length < 3) slides.push({img:'', titulo:'', subtitulo:''});
   cargarSlidesEnSlots(slides.slice(0, 3));
 
-  var resVentas = await sbGet('/configuracion?clave=eq.ventas_resumen&select=valor');
-  var ventasData = (resVentas && resVentas[0]) ? JSON.parse(resVentas[0].valor || '{}') : {};
-
   var resUsers = await sbGet('/usuarios?rol=eq.vendedor&select=nombre&order=nombre');
-  var vendedores = (resUsers && resUsers.length) ? resUsers.map(function(u){return u.nombre;}) : Object.keys(ventasData);
-
-  renderVentasEditor(vendedores, ventasData);
+  var vendedores = (resUsers && resUsers.length) ? resUsers.map(function(u){return u.nombre;}) : [];
   renderMdEditor(vendedores);
+
+  var fechaEl = document.getElementById('ventas-fecha');
+  if (fechaEl) fechaEl.value = new Date().toISOString().split('T')[0];
 }
 
 function renderCarruselEditor() {
@@ -3297,44 +3295,137 @@ function renderVentasTable() {
   }).join('');
 }
 
-async function guardarVentasResumen() {
-  var mes = (document.getElementById('inicio-mes')||{}).value || '';
-  var msg = document.getElementById('inicio-ventas-msg');
-  var payload = {};
-  (window._iniVendedores||[]).forEach(function(v) {
-    payload[v] = Object.assign({}, window._iniVentasData[v]||{}, {mes: mes});
-  });
-  try {
+window._ventasParsed = null;
+
+function ventasNormField(s) {
+  return String(s).toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .trim();
+}
+
+var VENTAS_COL_MAP = {
+  'vendedor':   'vendedor',
+  'cuota':      'cuota',
+  'acumulado':  'acumulado',
+  'chocolate':  'chocolate',
+  'confiteria': 'confiteria',
+  'petcare':    'mascotas',
+  'pet care':   'mascotas',
+  'mascotas':   'mascotas'
+};
+
+function ventasParseExcel(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
     try {
-      var snapshotRes = await sbGet('/configuracion?clave=eq.ventas_resumen&select=valor');
-      if (snapshotRes && snapshotRes.length && snapshotRes[0].valor) {
-        var snapshotData = JSON.parse(snapshotRes[0].valor);
-        var snapshotRows = Object.keys(snapshotData).map(function(v) {
-          var d = snapshotData[v] || {};
-          return {
-            fecha_hora:  new Date().toISOString(),
-            mes_cierre:  null,
-            mes_cerrado: false,
-            vendedor:    v,
-            choc_venta:  d.choc_venta  || 0,
-            choc_cuota:  d.choc_cuota  || 0,
-            conf_venta:  d.conf_venta  || 0,
-            conf_cuota:  d.conf_cuota  || 0,
-            pet_venta:   d.pet_venta   || 0,
-            pet_cuota:   d.pet_cuota   || 0
-          };
-        });
-        if (snapshotRows.length) await sbAdmin('POST', '/ventas_snapshots', snapshotRows);
+      var wb = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
+      var ws = wb.Sheets[wb.SheetNames[0]];
+      var rawRows = XLSX.utils.sheet_to_json(ws, {header: 1, defval: '', raw: true});
+      if (!rawRows.length) throw new Error('Archivo vacío');
+      var headerRow = rawRows[0].map(ventasNormField);
+      var colIdx = {};
+      headerRow.forEach(function(h, i) {
+        var mapped = VENTAS_COL_MAP[h];
+        if (mapped && colIdx[mapped] === undefined) colIdx[mapped] = i;
+      });
+      var required = ['vendedor', 'cuota', 'acumulado'];
+      for (var ri = 0; ri < required.length; ri++) {
+        if (colIdx[required[ri]] === undefined) throw new Error('Columna requerida no encontrada: ' + required[ri]);
       }
+      var parsed = [];
+      for (var i = 1; i < rawRows.length; i++) {
+        var row = rawRows[i];
+        var vendedor = String(row[colIdx['vendedor']] || '').trim();
+        if (!vendedor) continue;
+        var cuota      = Number(row[colIdx['cuota']]      || 0);
+        var acumulado  = Number(row[colIdx['acumulado']]  || 0);
+        var chocolate  = colIdx['chocolate']  !== undefined ? Number(row[colIdx['chocolate']]  || 0) : 0;
+        var confiteria = colIdx['confiteria'] !== undefined ? Number(row[colIdx['confiteria']] || 0) : 0;
+        var mascotas   = colIdx['mascotas']   !== undefined ? Number(row[colIdx['mascotas']]   || 0) : 0;
+        var pct        = cuota > 0 ? Math.round(acumulado / cuota * 100) : 0;
+        var falta      = cuota - acumulado;
+        parsed.push({vendedor: vendedor, cuota: cuota, acumulado: acumulado, chocolate: chocolate, confiteria: confiteria, mascotas: mascotas, pct: pct, falta: falta});
+      }
+      if (!parsed.length) throw new Error('No se encontraron filas de datos');
+      window._ventasParsed = parsed;
+      ventasRenderPreview(parsed);
+    } catch(err) {
+      alert('Error al leer el Excel: ' + err.message);
+      window._ventasParsed = null;
+      document.getElementById('ventas-preview').style.display = 'none';
+      document.getElementById('ventas-btn-importar').style.display = 'none';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function ventasRenderPreview(rows) {
+  var tbody = document.getElementById('ventas-preview-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = rows.map(function(r) {
+    var pctColor   = r.pct >= 100 ? '#1D9E75' : r.pct >= 75 ? '#854F0B' : '#A32D2D';
+    var faltaColor = r.falta <= 0 ? '#1D9E75' : '#A32D2D';
+    var faltaTxt   = r.falta <= 0 ? '✓ Meta' : '$' + r.falta.toLocaleString();
+    return '<tr>'
+      + '<td style="font-weight:600;white-space:nowrap">' + r.vendedor + '</td>'
+      + '<td>$' + r.cuota.toLocaleString() + '</td>'
+      + '<td>$' + r.acumulado.toLocaleString() + '</td>'
+      + '<td>$' + r.chocolate.toLocaleString() + '</td>'
+      + '<td>$' + r.confiteria.toLocaleString() + '</td>'
+      + '<td>$' + r.mascotas.toLocaleString() + '</td>'
+      + '<td style="font-weight:700;color:' + pctColor + '">' + r.pct + '%</td>'
+      + '<td style="font-weight:600;color:' + faltaColor + '">' + faltaTxt + '</td>'
+      + '</tr>';
+  }).join('');
+  document.getElementById('ventas-preview').style.display = '';
+  document.getElementById('ventas-btn-importar').style.display = '';
+}
+
+async function importarVentas() {
+  var fecha = document.getElementById('ventas-fecha').value;
+  var msg   = document.getElementById('inicio-ventas-msg');
+  var btn   = document.getElementById('ventas-btn-importar');
+  if (!fecha) { msg.textContent = '❌ Selecciona una fecha.'; msg.style.color = 'var(--red)'; return; }
+  if (!window._ventasParsed || !window._ventasParsed.length) { msg.textContent = '❌ No hay datos cargados.'; msg.style.color = 'var(--red)'; return; }
+  msg.textContent = '⏳ Importando ventas...';
+  msg.style.color = '';
+  btn.disabled = true;
+  try {
+    var parsed = window._ventasParsed;
+    var payload = {};
+    parsed.forEach(function(r) {
+      payload[r.vendedor] = {cuota: r.cuota, acumulado: r.acumulado, chocolate: r.chocolate, confiteria: r.confiteria, mascotas: r.mascotas};
+    });
+    var snapshotRows = parsed.map(function(r) {
+      return {
+        vendedor:    r.vendedor,
+        fecha_hora:  fecha + 'T12:00:00.000Z',
+        mes_cierre:  null,
+        mes_cerrado: false,
+        choc_venta:  r.chocolate,
+        choc_cuota:  r.cuota,
+        conf_venta:  r.confiteria,
+        conf_cuota:  r.cuota,
+        pet_venta:   r.mascotas,
+        pet_cuota:   r.cuota
+      };
+    });
+    try {
+      await sbAdmin('POST', '/ventas_snapshots', snapshotRows);
     } catch(snapshotErr) {
       console.error('[snapshot ventas_resumen]', snapshotErr);
     }
-    await sbUpsert('configuracion', {clave:'ventas_resumen', valor: JSON.stringify(payload)});
-    if (msg) { msg.textContent = '✅ Ventas guardadas.'; msg.style.color = '#1D9E75'; }
+    await sbUpsert('configuracion', {clave: 'ventas_resumen', valor: JSON.stringify(payload)});
+    msg.textContent = '✅ Ventas importadas correctamente — ' + parsed.length + ' vendedores actualizados';
+    msg.style.color = '#1D9E75';
+    btn.disabled = false;
   } catch(e) {
-    if (msg) { msg.textContent = '❌ Error: ' + e.message; msg.style.color = '#A32D2D'; }
+    msg.textContent = '❌ Error al guardar ventas: ' + e.message;
+    msg.style.color = 'var(--red)';
+    btn.disabled = false;
   }
-  setTimeout(function(){ if(msg) msg.textContent=''; }, 3000);
 }
 
 function renderMdEditor(vendedores) {
