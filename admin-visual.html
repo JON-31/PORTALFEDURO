@@ -511,7 +511,7 @@ tbody td.right { text-align: right; }
    background #fff explícito para que tape el contenido que pasa por detrás. */
 .tbl-tiendas-main thead th {
   position: sticky;
-  top: 51px;
+  top: var(--ti-filtros-h, 52px);
   z-index: 5;
   background: #fff;
 }
@@ -522,7 +522,7 @@ tbody td.right { text-align: right; }
 
 /* Fila seleccionada — box-shadow:inset no funciona en <tr> en la mayoría
    de browsers; se usa border-left en el primer td en su lugar */
-.ti-row-open { background: var(--verde-mid) !important; }
+.ti-row-open { background: var(--verde-pale) !important; }
 .ti-row-open td:first-child { border-left: 4px solid var(--verde); }
 
 /* Celda contenedora del panel expansivo */
@@ -560,7 +560,7 @@ tbody td.right { text-align: right; }
 .ti-close-btn:hover { background: #f5f5f5; border-color: #aaa; color: var(--text); }
 
 /* Tabla interna del panel: overflow-y:auto para scroll, no hidden */
-.ti-expand-panel .snap-tbl-wrap { border: 1px solid #f0f0f0; border-radius: 6px; overflow-x: hidden; overflow-y: auto; max-height: 320px; }
+.ti-expand-panel .snap-tbl-wrap { border: 1px solid #f0f0f0; border-radius: 6px; overflow-x: hidden; overflow-y: auto; max-height: 300px; }
 .ti-expand-panel .snap-tbl-wrap thead th {
   background: var(--surface2); border-bottom: 1px solid #e8e8e8;
   position: sticky; top: 0; z-index: 2; padding: 8px 12px; font-size: 10.5px;
@@ -1425,6 +1425,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initOverlay();
   loadData();
   document.getElementById('sync-btn').addEventListener('click', loadData);
+  window.addEventListener('resize', updateTiStickyTop);
 });
 
 // ═══════════════════════════════════════
@@ -1445,6 +1446,7 @@ function initNav(){
       document.getElementById('view-'+v).classList.add('active');
       document.getElementById('page-title').textContent = NAV_TITLES[v];
       closeSidebar();
+      if(v === 'tiendas') requestAnimationFrame(updateTiStickyTop);
     });
   });
   document.getElementById('menu-toggle').addEventListener('click', () => {
@@ -1922,8 +1924,9 @@ function tiendaToggle(idx){
   const row = document.querySelector('#tbl-tiendas tr[data-ti-idx="'+idx+'"]');
   if(!row) return;
   row.classList.add('ti-row-open');
-  row.style.background = '#b2dfdb';
+  row.style.background = '#e8f5f1';
   if(row.cells[0]) row.cells[0].style.borderLeft = '4px solid #0f6e56';
+  row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
   const expandTr = document.createElement('tr');
   expandTr.className = 'ti-expand-tr';
@@ -1942,7 +1945,7 @@ function tiendaToggle(idx){
       }).join('')
     +'</div>'
     // Tabla de productos — inline style garantiza scroll independiente de especificidad CSS
-    +'<div class="snap-tbl-wrap" style="max-height:320px;overflow-y:auto;overflow-x:hidden">'
+    +'<div class="snap-tbl-wrap" style="max-height:300px;overflow-y:auto;overflow-x:hidden">'
     +'<table><thead><tr>'
     +'<th>Producto</th><th class="right">Inventario</th><th class="right">Cobertura</th><th>Estado</th>'
     +'</tr></thead>'
@@ -1966,6 +1969,16 @@ function _tiendaCloseOpen(){
     if(row.cells[0]) row.cells[0].style.borderLeft = '';
   }
   _tiendaOpenIdx = null;
+}
+
+// Mide la altura real del filtros bar y actualiza --ti-filtros-h para que
+// el thead sticky se pegue exactamente debajo — evita el recorte de 1-2px
+// causado por valores hardcodeados que no coinciden con el renderizado real.
+function updateTiStickyTop(){
+  var filtros = document.querySelector('#view-tiendas .filtros');
+  if(!filtros) return;
+  var h = filtros.getBoundingClientRect().height;
+  if(h > 0) document.documentElement.style.setProperty('--ti-filtros-h', Math.ceil(h) + 'px');
 }
 
 function tiendaFiltProd(idx, filtro, btn){
