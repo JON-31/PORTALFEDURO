@@ -917,90 +917,10 @@ tbody td.right { text-align: right; }
     <div class="view" id="view-ventas">
       <div class="section-header">
         <h2>Ventas</h2>
-        <span class="badge" id="badge-ventas-mes">—</span>
-      </div>
-
-      <div class="subtabs" id="subtabs-ventas">
-        <div class="subtab active" data-sub="resumen-ventas">Resumen</div>
-        <div class="subtab" data-sub="por-vendedor">Por Vendedor</div>
-        <div class="subtab" data-sub="tendencia">Tendencia</div>
-        <div class="subtab" data-sub="snapshots" onclick="snapActivate()">Snapshots</div>
-      </div>
-
-      <!-- Sub: Resumen Ventas -->
-      <div id="sub-resumen-ventas">
-        <div class="grid-3">
-          <div class="card">
-            <div class="card-header"><h3>🍫 Chocolate</h3></div>
-            <div class="card-body">
-              <div class="chart-box" style="height:200px"><canvas id="chart-venta-choc"></canvas></div>
-              <div id="ventas-choc-detalle" style="margin-top:12px"></div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header"><h3>🍬 Confection</h3></div>
-            <div class="card-body">
-              <div class="chart-box" style="height:200px"><canvas id="chart-venta-conf"></canvas></div>
-              <div id="ventas-conf-detalle" style="margin-top:12px"></div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header"><h3>🐾 PetCare</h3></div>
-            <div class="card-body">
-              <div class="chart-box" style="height:200px"><canvas id="chart-venta-pet"></canvas></div>
-              <div id="ventas-pet-detalle" style="margin-top:12px"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sub: Por Vendedor -->
-      <div id="sub-por-vendedor" style="display:none">
-        <div class="filtros">
-          <select id="filtro-ventas-vend">
-            <option value="">Todos los vendedores</option>
-          </select>
-        </div>
-        <div class="card">
-          <div class="card-body" style="padding:0">
-            <div class="tbl-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Vendedor</th>
-                    <th class="right">Choc.</th>
-                    <th class="right">Cuota</th>
-                    <th class="right">%</th>
-                    <th class="right">Conf.</th>
-                    <th class="right">Cuota</th>
-                    <th class="right">%</th>
-                    <th class="right">Pet</th>
-                    <th class="right">Cuota</th>
-                    <th class="right">%</th>
-                    <th class="right">Falta</th>
-                  </tr>
-                </thead>
-                <tbody id="tbl-ventas-vend">
-                  <tr><td colspan="11" style="padding:20px;text-align:center;color:var(--text-3)">Cargando…</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sub: Tendencia -->
-      <div id="sub-tendencia" style="display:none">
-        <div class="card">
-          <div class="card-header"><h3>Tendencia histórica (meses disponibles)</h3></div>
-          <div class="card-body">
-            <div class="chart-box" style="height:300px"><canvas id="chart-tendencia"></canvas></div>
-          </div>
-        </div>
       </div>
 
       <!-- Sub: Snapshots -->
-      <div id="sub-snapshots" style="display:none">
+      <div id="sub-snapshots">
 
         <!-- Cadena | Vendedor primary tabs -->
         <div class="snap-tabs" id="snap-main-tabs">
@@ -1536,7 +1456,7 @@ function renderAll(){
   renderVendedores();
   renderTiendas();
   renderProductos();
-  renderVentas();
+  snapActivate();
   renderBodega();
   renderOfertas();
 }
@@ -2245,101 +2165,6 @@ function avCfUpdateCount(idx, ti){
 // ═══════════════════════════════════════
 //  RENDER VENTAS
 // ═══════════════════════════════════════
-function renderVentas(){
-  const vr = DATA.ventas_resumen;
-  const mes = new Date().toLocaleString('es-PA',{month:'long'});
-  document.getElementById('badge-ventas-mes').textContent = mes.charAt(0).toUpperCase()+mes.slice(1);
-
-  if(!vr || !Array.isArray(vr)) return;
-
-  // Gráficos por grupo (dona)
-  function donaGrupo(canvasId, labelField, valorField, cuotaField){
-    destroyChart(canvasId);
-    const ctx = document.getElementById(canvasId)?.getContext('2d');
-    if(!ctx) return;
-    const labels = vr.map(v=>v.vendedor||'');
-    const data   = vr.map(v=>Number(v[valorField]||0));
-    chartsInstancias[canvasId] = new Chart(ctx,{
-      type:'bar',
-      data:{ labels, datasets:[{ data, backgroundColor: '#0F6E56', borderRadius:4 }] },
-      options:{
-        responsive:true, maintainAspectRatio:false,
-        plugins:{ legend:{display:false} },
-        scales:{ x:{ticks:{font:{family:'DM Sans',size:10}}}, y:{ticks:{font:{family:'DM Mono'}}} }
-      }
-    });
-  }
-
-  donaGrupo('chart-venta-choc',null,'choc_venta','choc_cuota');
-  donaGrupo('chart-venta-conf',null,'conf_venta','conf_cuota');
-  donaGrupo('chart-venta-pet', null,'pet_venta', 'pet_cuota');
-
-  // Detalle texto
-  const t = calcTotales();
-  document.getElementById('ventas-choc-detalle').innerHTML =
-    `<span style="font-size:12px;color:var(--text-2)">Total: <b>${fmt(t.totChocV)}</b> / Cuota: ${fmt(t.totChocQ)}</span>`;
-  document.getElementById('ventas-conf-detalle').innerHTML =
-    `<span style="font-size:12px;color:var(--text-2)">Total: <b>${fmt(t.totConfV)}</b> / Cuota: ${fmt(t.totConfQ)}</span>`;
-  document.getElementById('ventas-pet-detalle').innerHTML =
-    `<span style="font-size:12px;color:var(--text-2)">Total: <b>${fmt(t.totPetV)}</b> / Cuota: ${fmt(t.totPetQ)}</span>`;
-
-  // Tabla por vendedor
-  const tbody = document.getElementById('tbl-ventas-vend');
-  tbody.innerHTML = vr.map(v => {
-    const tv = (v.choc_venta||0)+(v.conf_venta||0)+(v.pet_venta||0);
-    const tq = (v.choc_cuota||0)+(v.conf_cuota||0)+(v.pet_cuota||0);
-    const falta = Math.max(0, tq - tv);
-    return `<tr>
-      <td style="font-weight:600">${v.vendedor||'—'}</td>
-      <td class="right mono">${fmt(v.choc_venta)}</td><td class="right mono">${fmt(v.choc_cuota)}</td>
-      <td class="right mono">${pct(v.choc_venta,v.choc_cuota)}%</td>
-      <td class="right mono">${fmt(v.conf_venta)}</td><td class="right mono">${fmt(v.conf_cuota)}</td>
-      <td class="right mono">${pct(v.conf_venta,v.conf_cuota)}%</td>
-      <td class="right mono">${fmt(v.pet_venta)}</td><td class="right mono">${fmt(v.pet_cuota)}</td>
-      <td class="right mono">${pct(v.pet_venta,v.pet_cuota)}%</td>
-      <td class="right mono" style="color:var(--red);font-weight:700">${fmt(falta)}</td>
-    </tr>`;
-  }).join('');
-
-  // Gráfico tendencia — lee historico_ventas de configuracion
-  destroyChart('chart-tendencia');
-  const ctxT = document.getElementById('chart-tendencia').getContext('2d');
-  const historico = DATA.historico_ventas || {};
-  const hEntradas = Object.values(historico);
-  if (!hEntradas.length) {
-    ctxT.canvas.parentNode.innerHTML =
-      '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-3);font-size:14px;text-align:center;padding:16px;">' +
-      'Sin datos históricos aún<br><span style="font-size:12px;opacity:0.7">Sube un Excel en Admin Datos para comenzar</span></div>';
-  } else {
-    const hMeses   = [...new Set(hEntradas.map(e => e.mes))].sort();
-    const hCadenas = [...new Set(hEntradas.map(e => e.cadena))];
-    const COLORES_H = { xtra:'#1D3D8F', machetazo:'#CC0000', rey:'#2E7D32', ricamar:'#7B4B2A' };
-    const hDatasets = hCadenas.map(function(c) {
-      const hex = (COLORES_H[c] || '#D4A843').replace('#','');
-      const r = parseInt(hex.slice(0,2),16), g = parseInt(hex.slice(2,4),16), b = parseInt(hex.slice(4,6),16);
-      return {
-        label: c.charAt(0).toUpperCase() + c.slice(1),
-        data: hMeses.map(function(m) {
-          const e = hEntradas.find(function(x){ return x.mes === m && x.cadena === c; });
-          return e ? e.total_inventario : null;
-        }),
-        borderColor: '#' + hex,
-        backgroundColor: 'rgba('+r+','+g+','+b+',0.08)',
-        fill: true, tension: 0.4, spanGaps: true, pointRadius: 4, pointHoverRadius: 6
-      };
-    });
-    chartsInstancias['chart-tendencia'] = new Chart(ctxT, {
-      type: 'line',
-      data: { labels: hMeses, datasets: hDatasets },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { position: 'top' } },
-        scales: { y: { ticks: { font: { family: 'DM Mono' }, callback: function(v){ return v.toLocaleString('es-PA'); } } } }
-      }
-    });
-  }
-}
-
 // ═══════════════════════════════════════
 //  RENDER BODEGA
 // ═══════════════════════════════════════
@@ -2550,7 +2375,7 @@ function renderOfertas(){
 // ═══════════════════════════════════════
 //  FILTROS ADICIONALES VENTAS
 // ═══════════════════════════════════════
-// (ya manejado inline en renderVentas / subtabs)
+// (sub-tab único: Snapshots — ver snapActivate())
 
 // ═══════════════════════════════════════
 //  SNAPSHOTS — DATOS DE EJEMPLO
