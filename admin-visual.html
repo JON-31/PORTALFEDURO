@@ -2880,6 +2880,8 @@ async function snapActivate(){
         totPet   += d.mascotas || 0;
       });
       window._snapTotales = { cuota: totCuota, acumulado: totAcum, chocolate: totChoc, confiteria: totConf, mascotas: totPet };
+      console.log('[snap] _snapTotales:', window._snapTotales);
+      console.log('[snap] _snapVendData keys:', Object.keys(window._snapVendData || {}).length);
     }
   } catch(e) {
     console.error('[snapActivate] Error cargando ventas_resumen:', e);
@@ -2888,6 +2890,7 @@ async function snapActivate(){
   // Cargar snapshots reales de todos los vendedores
   try {
     var snapRes = await sbGet('/ventas_snapshots?mes_cerrado=eq.false&order=fecha_hora.asc&select=vendedor,fecha_hora,choc_venta,conf_venta,pet_venta,choc_cuota');
+    console.log('[snap] ventas_snapshots rows:', snapRes ? snapRes.length : 'null', snapRes);
     window.SNAP_VENDEDOR = {};
     (snapRes || []).forEach(function(row) {
       var name = row.vendedor;
