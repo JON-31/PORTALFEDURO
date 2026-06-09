@@ -3412,10 +3412,13 @@ async function importarVentas() {
         pet_cuota:   r.cuota
       };
     });
+    console.log('[snap INSERT] snapshotRows sample:', snapshotRows[0]);
+    console.log('[snap INSERT] total rows:', snapshotRows.length);
     try {
       await sbAdmin('POST', '/ventas_snapshots', snapshotRows);
     } catch(snapshotErr) {
       console.error('[snapshot ventas_resumen]', snapshotErr);
+      alert('[ERROR snapshot] ' + (snapshotErr?.message || JSON.stringify(snapshotErr)));
     }
     await sbUpsert('configuracion', {clave: 'ventas_resumen', valor: JSON.stringify(payload)});
     msg.textContent = '✅ Ventas importadas correctamente — ' + parsed.length + ' vendedores actualizados';
