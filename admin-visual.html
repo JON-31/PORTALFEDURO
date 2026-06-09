@@ -2869,29 +2869,40 @@ async function snapActivate(){
         };
       });
       window._snapVendNames = names;
-      // Generar datos de ejemplo diarios para vendedores que no tienen
-      var rngFn  = window._snapRng     || function(s){ var x=s; return function(){ x=(x*9301+49297)%233280; return x/233280; }; };
-      var dates  = window._snapDates30 || [];
-      names.forEach(function(name, ni){
-        if(window.SNAP_VENDEDOR && window.SNAP_VENDEDOR[name]) return;
-        var rA=rngFn(ni*17+3), rB=rngFn(ni*23+7), rC=rngFn(ni*11+5);
-        var bC=800+ni*80, bF=600+ni*60, bP=400+ni*40;
-        if(!window.SNAP_VENDEDOR) window.SNAP_VENDEDOR = {};
-        window.SNAP_VENDEDOR[name] = dates.map(function(f,i){
-          return {
-            fecha:   f,
-            choc:    Math.round(bC + rA()*400 + i*12),
-            conf:    Math.round(bF + rB()*300 + i*8),
-            pet:     Math.round(bP + rC()*200 + i*5),
-            choc_md: Math.round((35+rA()*15)*10)/10,
-            conf_md: Math.round((38+rB()*12)*10)/10,
-            pet_md:  Math.round((30+rC()*10)*10)/10,
-          };
-        });
+
+      // Totales generales (para cuando no hay vendedor seleccionado)
+      var totCuota = 0, totAcum = 0, totChoc = 0, totConf = 0, totPet = 0;
+      Object.values(window._snapVendData).forEach(function(d) {
+        totCuota += d.cuota || 0;
+        totAcum  += d.acumulado || 0;
+        totChoc  += d.chocolate || 0;
+        totConf  += d.confiteria || 0;
+        totPet   += d.mascotas || 0;
       });
+      window._snapTotales = { cuota: totCuota, acumulado: totAcum, chocolate: totChoc, confiteria: totConf, mascotas: totPet };
     }
   } catch(e) {
     console.error('[snapActivate] Error cargando ventas_resumen:', e);
+  }
+
+  // Cargar snapshots reales de todos los vendedores
+  try {
+    var snapRes = await sbGet('/ventas_snapshots?mes_cerrado=eq.false&order=fecha_hora.asc&select=vendedor,fecha_hora,choc_venta,conf_venta,pet_venta,choc_cuota');
+    window.SNAP_VENDEDOR = {};
+    (snapRes || []).forEach(function(row) {
+      var name = row.vendedor;
+      if (!window.SNAP_VENDEDOR[name]) window.SNAP_VENDEDOR[name] = [];
+      window.SNAP_VENDEDOR[name].push({
+        fecha: row.fecha_hora.slice(0, 10),
+        choc:  row.choc_venta  || 0,
+        conf:  row.conf_venta  || 0,
+        pet:   row.pet_venta   || 0,
+        cuota: row.choc_cuota  || 0
+      });
+    });
+  } catch(e) {
+    console.error('[snapActivate] Error cargando ventas_snapshots:', e);
+    window.SNAP_VENDEDOR = window.SNAP_VENDEDOR || {};
   }
 
   if(!names.length) names = window._snapVendNames || [];
@@ -3152,12 +3163,10 @@ function snapVendChange(){
 
   var vend = (document.getElementById('snap-vend-selector')||{}).value;
   var dias = parseInt((document.getElementById('snap-vend-periodo')||{}).value||'30');
-  if(!vend) return;
-
   var $fmt = function(n){ return '$'+Number(n).toLocaleString('es-PA', {minimumFractionDigits:2, maximumFractionDigits:2}); };
 
   // ── KPIs reales: Total acumulado, % Cuota, Desglose ──
-  var vd = (window._snapVendData || {})[vend];
+  var vd = vend ? (window._snapVendData || {})[vend] : window._snapTotales;
   if(vd) {
     var acum     = vd.acumulado;
     var cuota    = vd.cuota;
@@ -3191,8 +3200,24 @@ function snapVendChange(){
     el = document.getElementById('snap-vk-pet');  if(el) el.textContent = $fmt(vd.mascotas);
   }
 
-  // ── Tendencia: datos de ejemplo (ventas_snapshots vacía) ──
-  var allData = window.SNAP_VENDEDOR[vend] || [];
+  // ── Tendencia: datos reales de ventas_snapshots ──
+  var allData;
+  if (!vend) {
+    var porFecha = {};
+    Object.values(window.SNAP_VENDEDOR || {}).forEach(function(rows) {
+      rows.forEach(function(r) {
+        if (!porFecha[r.fecha]) porFecha[r.fecha] = { choc: 0, conf: 0, pet: 0 };
+        porFecha[r.fecha].choc += r.choc;
+        porFecha[r.fecha].conf += r.conf;
+        porFecha[r.fecha].pet  += r.pet;
+      });
+    });
+    allData = Object.keys(porFecha).sort().map(function(f) {
+      return { fecha: f, choc: porFecha[f].choc, conf: porFecha[f].conf, pet: porFecha[f].pet };
+    });
+  } else {
+    allData = (window.SNAP_VENDEDOR || {})[vend] || [];
+  }
   var data    = allData.slice(-dias);
   if(!data.length) return;
 
