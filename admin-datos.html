@@ -3412,8 +3412,6 @@ async function importarVentas() {
         pet_cuota:   r.cuota
       };
     });
-    console.log('[snap INSERT] snapshotRows sample:', snapshotRows[0]);
-    console.log('[snap INSERT] total rows:', snapshotRows.length);
     try {
       await sbAdmin('POST', '/ventas_snapshots', snapshotRows);
     } catch(snapshotErr) {
