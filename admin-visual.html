@@ -1417,7 +1417,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSubtabs();
   initOverlay();
   loadData();
-  document.getElementById('sync-btn').addEventListener('click', loadData);
+  document.getElementById('sync-btn').addEventListener('click', function(){ window._snapInited = false; loadData(); });
   window.addEventListener('resize', updateTiStickyTop);
 });
 
@@ -3222,7 +3222,11 @@ function snapVendChange(){
     allData = (window.SNAP_VENDEDOR || {})[vend] || [];
   }
   var data    = allData.slice(-dias);
-  if(!data.length) return;
+  if(!data.length) {
+    var chartEl = document.getElementById('snap-vend-chart');
+    if(chartEl) chartEl.parentElement.innerHTML = '<p style="color:#888;padding:20px">Sin datos históricos aún. Importa ventas desde Admin Datos para ver la tendencia.</p>';
+    return;
+  }
 
   var semAct = data.slice(-7).reduce(function(s,d){return s+d.choc+d.conf+d.pet;},0);
   var semAnt = data.slice(-14,-7).reduce(function(s,d){return s+d.choc+d.conf+d.pet;},0);
