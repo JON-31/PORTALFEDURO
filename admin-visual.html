@@ -2882,6 +2882,7 @@ async function snapActivate(){
       window._snapTotales = { cuota: totCuota, acumulado: totAcum, chocolate: totChoc, confiteria: totConf, mascotas: totPet };
       console.log('[snap] _snapTotales:', window._snapTotales);
       console.log('[snap] _snapVendData keys:', Object.keys(window._snapVendData || {}).length);
+      snapVendChange('');
     }
   } catch(e) {
     console.error('[snapActivate] Error cargando ventas_resumen:', e);
