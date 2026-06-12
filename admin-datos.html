@@ -3751,6 +3751,21 @@ async function confirmarCerrarMes() {
     if (!rows.length) throw new Error('No hay vendedores en ventas_resumen');
 
     await sbAdmin('POST', '/ventas_snapshots', rows);
+
+    // Resetear ventas_resumen a 0 para nuevo mes
+    var resUsers = await sbGet('/usuarios?rol=eq.vendedor&select=nombre');
+    var resetPayload = {};
+    resUsers.forEach(function(u) {
+      resetPayload[u.nombre] = {
+        cuota: 0,
+        acumulado: 0,
+        chocolate: 0,
+        confiteria: 0,
+        mascotas: 0
+      };
+    });
+    await sbUpsert('configuracion', { clave: 'ventas_resumen', valor: JSON.stringify(resetPayload) });
+
     msgEl.textContent = '✅ Mes ' + mesCierre + ' cerrado — ' + rows.length + ' vendedores guardados.';
     msgEl.style.color = '#1D9E75';
     btn.textContent = 'Confirmar cierre';
