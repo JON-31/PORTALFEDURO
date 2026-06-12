@@ -3765,6 +3765,7 @@ async function confirmarCerrarMes() {
       };
     });
     await sbUpsert('configuracion', { clave: 'ventas_resumen', valor: JSON.stringify(resetPayload) });
+    console.log('[cierre] reset completado, payload:', resetPayload);
 
     msgEl.textContent = '✅ Mes ' + mesCierre + ' cerrado — ' + rows.length + ' vendedores guardados.';
     msgEl.style.color = '#1D9E75';
