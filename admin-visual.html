@@ -2753,23 +2753,7 @@ function renderOfertas(){
   ];
   window._snapVendNames = SNAP_VEND_NAMES;
 
-  // ── Diario por vendedor ──
   window.SNAP_VENDEDOR = {};
-  SNAP_VEND_NAMES.forEach(function(name, ni){
-    var rA=rng(ni*17+3), rB=rng(ni*23+7), rC=rng(ni*11+5);
-    var bC=800+ni*80, bF=600+ni*60, bP=400+ni*40;
-    window.SNAP_VENDEDOR[name] = DATES30.map(function(f,i){
-      return {
-        fecha: f,
-        choc:    Math.round(bC + rA()*400 + i*12),
-        conf:    Math.round(bF + rB()*300 + i*8),
-        pet:     Math.round(bP + rC()*200 + i*5),
-        choc_md: Math.round((35+rA()*15)*10)/10,
-        conf_md: Math.round((38+rB()*12)*10)/10,
-        pet_md:  Math.round((30+rC()*10)*10)/10,
-      };
-    });
-  });
 
   // ── MD por tienda (por vendedor) ──
   var TV = {
