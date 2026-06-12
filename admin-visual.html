@@ -2744,19 +2744,7 @@ function renderOfertas(){
 
   var DATES30 = genDates(30);
 
-  // ── Cadena diario ──
-  var r1=rng(42), r2=rng(77), r3=rng(13);
-  window.SNAP_CADENA = DATES30.map(function(f,i){
-    return {
-      fecha:   f,
-      xtra:    Math.round(3800 + r1()*1200 + i*38),
-      mach:    Math.round(2500 + r2()*900  + i*22),
-      rey:     Math.round(1000 + r3()*500  + i*10),
-      xtra_md: Math.round((40 + r1()*10)*10)/10,
-      mach_md: Math.round((36 + r2()*10)*10)/10,
-      rey_md:  Math.round((27 + r3()*8)*10)/10,
-    };
-  });
+  window.SNAP_CADENA = [];
 
   // ── Vendedores de muestra ──
   var SNAP_VEND_NAMES = [
@@ -2905,6 +2893,23 @@ async function snapActivate(){
     console.error('[snapActivate] Error cargando ventas_snapshots:', e);
     window.SNAP_VENDEDOR = window.SNAP_VENDEDOR || {};
   }
+
+  // Construir SNAP_CADENA agrupando snapshots reales por fecha y cadena
+  var porFechaCadena = {};
+  Object.keys(window.SNAP_VENDEDOR).forEach(function(vend) {
+    var cadena = _snapVendCadena(vend);
+    var rows = window.SNAP_VENDEDOR[vend] || [];
+    rows.forEach(function(r) {
+      if (!porFechaCadena[r.fecha]) porFechaCadena[r.fecha] = { xtra: 0, mach: 0, rey: 0 };
+      var total = r.choc + r.conf + r.pet;
+      if (cadena.indexOf('mach') >= 0)      porFechaCadena[r.fecha].mach += total;
+      else if (cadena.indexOf('rey') >= 0)  porFechaCadena[r.fecha].rey  += total;
+      else                                  porFechaCadena[r.fecha].xtra += total;
+    });
+  });
+  window.SNAP_CADENA = Object.keys(porFechaCadena).sort().map(function(f) {
+    return { fecha: f, xtra: porFechaCadena[f].xtra, mach: porFechaCadena[f].mach, rey: porFechaCadena[f].rey, xtra_md: 0, mach_md: 0, rey_md: 0 };
+  });
 
   if(!names.length) names = window._snapVendNames || [];
 
