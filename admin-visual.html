@@ -2888,7 +2888,7 @@ async function snapActivate(){
 
   // Cargar snapshots reales de todos los vendedores
   try {
-    var snapRes = await sbGet('/ventas_snapshots?order=fecha_hora.asc&select=vendedor,fecha_hora,choc_venta,conf_venta,pet_venta,choc_cuota');
+    var snapRes = await sbGet('/ventas_snapshots?mes_cerrado=eq.false&order=fecha_hora.asc&select=vendedor,fecha_hora,choc_venta,conf_venta,pet_venta,choc_cuota');
     window.SNAP_VENDEDOR = {};
     (snapRes || []).forEach(function(row) {
       var name = row.vendedor;
