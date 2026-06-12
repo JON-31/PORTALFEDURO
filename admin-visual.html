@@ -1619,7 +1619,30 @@ function calcTotales(){
 // ═══════════════════════════════════════
 //  RENDER RESUMEN
 // ═══════════════════════════════════════
-function renderResumen(){
+async function cargarHistoricoDesdeSnapshots() {
+  try {
+    var rows = await sbGet('/ventas_snapshots?mes_cerrado=eq.true&order=mes_cierre.asc&select=mes_cierre,choc_venta,conf_venta,pet_venta');
+    if (!rows || !rows.length) return null;
+    var porMes = {};
+    rows.forEach(function(r) {
+      var m = r.mes_cierre;
+      if (!porMes[m]) porMes[m] = { choc: 0, conf: 0, pet: 0 };
+      porMes[m].choc += r.choc_venta || 0;
+      porMes[m].conf += r.conf_venta || 0;
+      porMes[m].pet  += r.pet_venta  || 0;
+    });
+    var meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    return Object.keys(porMes).sort().map(function(k) {
+      var mesNum = parseInt(k.slice(5)) - 1;
+      return { mes: meses[mesNum], choc: porMes[k].choc, conf: porMes[k].conf, pet: porMes[k].pet };
+    });
+  } catch(e) {
+    console.error('[cargarHistorico]', e);
+    return null;
+  }
+}
+
+async function renderResumen(){
   const vr = DATA.ventas_resumen;
   const inv = DATA.inventario;
 
@@ -1656,7 +1679,8 @@ function renderResumen(){
   const mdPct = mdDen > 0 ? Math.round(mdNum/mdDen*1000)/10 : null;
   document.getElementById('kpi-md-general').textContent = mdPct != null ? mdPct+'%' : '—';
 
-  const hist = normalizeHistorico();
+  var histFromSnap = await cargarHistoricoDesdeSnapshots();
+  const hist = histFromSnap || normalizeHistorico();
   if(hist && hist.length >= 2){
     const cur = hist[hist.length-1], prev = hist[hist.length-2];
     if(cur.pct_md != null && prev.pct_md != null){
