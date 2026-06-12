@@ -3771,6 +3771,10 @@ async function confirmarCerrarMes() {
     msgEl.style.color = '#1D9E75';
     btn.textContent = 'Confirmar cierre';
     setTimeout(cerrarModalCerrarMes, 2500);
+    // Recargar la vista para mostrar valores en 0
+    setTimeout(function() {
+      iniciarViewInicio();
+    }, 800);
   } catch(e) {
     msgEl.textContent = '❌ Error: ' + e.message;
     msgEl.style.color = 'var(--red)';
