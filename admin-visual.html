@@ -1480,7 +1480,7 @@ function initSubtabs(){
 // ═══════════════════════════════════════
 async function cargarVentasActualesDesdeSnapshots() {
   try {
-    var rows = await sbGet('/ventas_snapshots?mes_cerrado=eq.false&order=fecha_hora.desc&select=vendedor,choc_venta,choc_cuota,conf_venta,conf_cuota,pet_venta,pet_cuota');
+    var rows = await sbGet('/ventas_snapshots?mes_cerrado=eq.false&order=fecha_hora.desc&select=vendedor,acumulado,choc_venta,choc_cuota,conf_venta,conf_cuota,pet_venta,pet_cuota');
     if (!rows || !rows.length) return null;
     // Tomar el snapshot más reciente por vendedor
     var seen = {};
@@ -1630,11 +1630,14 @@ function calcTotales(){
   if(!vr || !Array.isArray(vr)) return null;
   let totChocV=0, totChocQ=0, totConfV=0, totConfQ=0, totPetV=0, totPetQ=0;
   vr.forEach(v => {
-    totChocV += Number(v.choc_venta||0);
+    const cv = Number(v.choc_venta||0), cfv = Number(v.conf_venta||0), pv = Number(v.pet_venta||0);
+    const catTotal = cv + cfv + pv;
+    const ventaEfectiva = catTotal > 0 ? catTotal : Number(v.acumulado||0);
+    totChocV += catTotal > 0 ? cv  : ventaEfectiva;
     totChocQ += Number(v.choc_cuota||0);
-    totConfV += Number(v.conf_venta||0);
+    totConfV += catTotal > 0 ? cfv : 0;
     totConfQ += Number(v.conf_cuota||0);
-    totPetV  += Number(v.pet_venta||0);
+    totPetV  += catTotal > 0 ? pv  : 0;
     totPetQ  += Number(v.pet_cuota||0);
   });
   return { totChocV, totChocQ, totConfV, totConfQ, totPetV, totPetQ };
