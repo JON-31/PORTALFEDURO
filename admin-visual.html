@@ -1478,6 +1478,26 @@ function initSubtabs(){
 // ═══════════════════════════════════════
 //  LOAD DATA
 // ═══════════════════════════════════════
+async function cargarVentasActualesDesdeSnapshots() {
+  try {
+    var rows = await sbGet('/ventas_snapshots?mes_cerrado=eq.false&order=fecha_hora.desc&select=vendedor,choc_venta,choc_cuota,conf_venta,conf_cuota,pet_venta,pet_cuota');
+    if (!rows || !rows.length) return null;
+    // Tomar el snapshot más reciente por vendedor
+    var seen = {};
+    var latest = [];
+    rows.forEach(function(r) {
+      if (!seen[r.vendedor]) {
+        seen[r.vendedor] = true;
+        latest.push(r);
+      }
+    });
+    return latest;
+  } catch(e) {
+    console.error('[cargarVentasActuales]', e);
+    return null;
+  }
+}
+
 async function loadData(){
   const btn = document.getElementById('sync-btn');
   btn.classList.add('loading');
@@ -1538,6 +1558,10 @@ async function loadData(){
     // INC-4: renombrado de DATA.ingresos → DATA.tareas (era un nombre engañoso)
     DATA.tareas   = tareas.data   || [];
     DATA.usuarios = usuarios.data || [];
+
+    // Override ventas_resumen con snapshots reales del mes actual
+    var vrFromSnap = await cargarVentasActualesDesdeSnapshots();
+    if (vrFromSnap && vrFromSnap.length) DATA.ventas_resumen = vrFromSnap;
 
     const now = new Date().toLocaleTimeString('es-PA', {hour:'2-digit',minute:'2-digit'});
     document.getElementById('last-sync').textContent = 'Sync ' + now;
