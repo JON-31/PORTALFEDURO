@@ -3325,11 +3325,15 @@ function ventasParseExcel(input) {
       var rawRows = XLSX.utils.sheet_to_json(ws, {header: 1, defval: '', raw: true});
       if (!rawRows.length) throw new Error('Archivo vacío');
       var headerRow = rawRows[0].map(ventasNormField);
+      console.log('[parser] headers normalizados:', headerRow);
+      console.log('[parser] VENTAS_COL_MAP keys:', Object.keys(VENTAS_COL_MAP));
       var colIdx = {};
       headerRow.forEach(function(h, i) {
         var mapped = VENTAS_COL_MAP[h];
+        console.log('[parser] header "' + h + '" → mapped:', mapped, '| charCodes:', h.split('').map(function(c){return c.charCodeAt(0);}));
         if (mapped && colIdx[mapped] === undefined) colIdx[mapped] = i;
       });
+      console.log('[parser] colIdx final:', colIdx);
       var required = ['vendedor', 'cuota', 'acumulado'];
       for (var ri = 0; ri < required.length; ri++) {
         if (colIdx[required[ri]] === undefined) throw new Error('Columna requerida no encontrada: ' + required[ri]);
