@@ -3303,6 +3303,12 @@ function ventasNormField(s) {
     .trim();
 }
 
+function toNum(val) {
+  if (val === null || val === undefined || val === '') return 0;
+  var n = Number(String(val).replace(/[^0-9.\-]/g, ''));
+  return isNaN(n) ? 0 : n;
+}
+
 var VENTAS_COL_MAP = {
   'vendedor':   'vendedor',
   'cuota':      'cuota',
@@ -3408,13 +3414,13 @@ async function importarVentas() {
         fecha_hora:  fecha + 'T12:00:00.000Z',
         mes_cierre:  null,
         mes_cerrado: false,
-        acumulado:   r.acumulado,
-        choc_venta:  r.chocolate,
-        choc_cuota:  r.cuota,
-        conf_venta:  r.confiteria,
-        conf_cuota:  r.cuota,
-        pet_venta:   r.mascotas,
-        pet_cuota:   r.cuota
+        acumulado:   toNum(r.acumulado)  || 0,
+        choc_venta:  toNum(r.chocolate)  || 0,
+        choc_cuota:  toNum(r.cuota)      || 0,
+        conf_venta:  toNum(r.confiteria) || 0,
+        conf_cuota:  toNum(r.cuota)      || 0,
+        pet_venta:   toNum(r.mascotas)   || 0,
+        pet_cuota:   toNum(r.cuota)      || 0
       };
     });
     try {
