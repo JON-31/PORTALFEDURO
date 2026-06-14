@@ -796,9 +796,11 @@ tbody td.right { text-align: right; }
                   <tr>
                     <th style="text-align:center;border-right:0.5px solid var(--color-border-tertiary)">#</th>
                     <th style="border-right:0.5px solid var(--color-border-tertiary)">Vendedor</th>
+                    <th style="text-align:center;border-right:0.5px solid var(--color-border-tertiary)">Cuota</th>
                     <th style="text-align:center;border-right:0.5px solid var(--color-border-tertiary)">Acumulado</th>
                     <th style="text-align:center;border-right:0.5px solid var(--color-border-tertiary)">% Cuota</th>
-                    <th style="text-align:center">Proyección</th>
+                    <th style="text-align:center;border-right:0.5px solid var(--color-border-tertiary)">Proyección</th>
+                    <th style="text-align:center">% Proy.</th>
                   </tr>
                 </thead>
                 <tbody id="tbl-top-vendedores">
@@ -1739,14 +1741,21 @@ async function renderResumen(){
   const tbody = document.getElementById('tbl-top-vendedores');
   const _br = 'border-right:0.5px solid var(--color-border-tertiary)';
   const _c  = 'text-align:center;font-family:"DM Mono",monospace';
-  tbody.innerHTML = sorted.slice(0,10).map((v,i) => `
-    <tr>
-      <td style="${_c};${_br}">${i+1}</td>
-      <td style="font-weight:600;${_br}">${v.vendedor||'—'}</td>
+  const _posColor = i => i===0?'#C9A84C':i===1?'#A8A8A8':i===2?'#CD7F32':i<10?'#185FA5':'var(--color-text-secondary)';
+  tbody.innerHTML = sorted.map((v,i) => {
+    const col = _posColor(i);
+    const cuota = (DATA.cuota_por_vend && DATA.cuota_por_vend[v.vendedor]) || 0;
+    const pctProy = cuota > 0 ? (v.proyeccion / cuota * 100).toFixed(1) + '%' : '—';
+    return `<tr>
+      <td style="${_c};${_br};color:${col};font-weight:600">${i+1}</td>
+      <td style="font-weight:600;${_br};color:${col}">${v.vendedor||'—'}</td>
+      <td style="${_c};${_br}">$${cuota.toLocaleString('es-PA')}</td>
       <td style="${_c};${_br}">$${Number(v.acumulado||0).toLocaleString('es-PA')}</td>
       <td style="${_c};${_br}">${v.pctTotal}%</td>
-      <td style="${_c}">$${v.proyeccion.toLocaleString('es-PA')}</td>
-    </tr>`).join('');
+      <td style="${_c};${_br}">$${v.proyeccion.toLocaleString('es-PA')}</td>
+      <td style="${_c}">${pctProy}</td>
+    </tr>`;
+  }).join('');
 
   // ── Gráfico de líneas por categoría ──
   const histData = hist || genHistoricoSample();
