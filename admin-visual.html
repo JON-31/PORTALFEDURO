@@ -790,7 +790,7 @@ tbody td.right { text-align: right; }
         <div class="card">
           <div class="card-header"><h3>🏆 Top Vendedores</h3></div>
           <div class="card-body" style="padding:0">
-            <div class="tbl-wrap">
+            <div class="tbl-wrap" style="max-height:520px;overflow-y:auto">
               <table>
                 <thead>
                   <tr>
@@ -811,10 +811,10 @@ tbody td.right { text-align: right; }
             </div>
           </div>
         </div>
-        <div class="card" style="height:100%">
+        <div class="card">
           <div class="card-header"><h3>📈 Ventas por Categoría</h3></div>
-          <div class="card-body" style="height:calc(100% - 48px);padding:16px 18px">
-            <div class="chart-box" style="height:100%;min-height:280px;overflow:hidden">
+          <div class="card-body" style="height:520px;padding:16px 18px">
+            <div class="chart-box" style="height:100%;min-height:480px;overflow:hidden">
               <canvas id="chart-dist"></canvas>
             </div>
             <div id="chart-dist-tabla" style="margin-top:8px"></div>
