@@ -846,6 +846,24 @@ function VentasResumenCard({ config }) {
           <div className="venta-progress-fill" style={{ width: `${w}%`, background: fillColor }}/>
         </div>
       </div>
+      {(() => {
+        const diaActual = new Date().getDate();
+        const diasTot   = 21;
+        const proy      = diaActual > 0 ? Math.round(acum / diaActual * diasTot) : 0;
+        const pctProy   = cuota > 0 ? (proy / cuota * 100).toFixed(1) : '0.0';
+        const mdKey     = Object.keys(config?.md_vendedores || {}).find(k => norm(k) === norm(sesion.nombre || ''));
+        const mdVal     = mdKey != null ? (config.md_vendedores[mdKey] + '%') : '—';
+        const kpiStyle  = { flex:1, background:'#F8F7F3', borderRadius:8, padding:'7px 10px', textAlign:'center' };
+        const lbl       = { fontSize:10, color:'#888780', marginBottom:2 };
+        const val       = { fontSize:13, fontWeight:600, color:'#1a1a1a' };
+        return (
+          <div style={{ display:'flex', gap:6, marginBottom:10 }}>
+            <div style={kpiStyle}><div style={lbl}>Proyección</div><div style={val}>{$(proy)}</div></div>
+            <div style={kpiStyle}><div style={lbl}>% Proyectado</div><div style={val}>{pctProy}%</div></div>
+            <div style={kpiStyle}><div style={lbl}>MD%</div><div style={val}>{mdVal}</div></div>
+          </div>
+        );
+      })()}
       <div className="venta-fila"><span className="venta-fila-label">Chocolate</span><span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span className="venta-fila-val">{$(chocolate)}</span>{delta && <DeltaChip d={delta.sin_datos ? 0 : delta.choc} />}</span></div>
       <div className="venta-fila"><span className="venta-fila-label">Confitería</span><span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span className="venta-fila-val">{$(confiteria)}</span>{delta && <DeltaChip d={delta.sin_datos ? 0 : delta.conf} />}</span></div>
       <div className="venta-fila"><span className="venta-fila-label">Mascotas</span><span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span className="venta-fila-val">{$(mascotas)}</span>{delta && <DeltaChip d={delta.sin_datos ? 0 : delta.pet} />}</span></div>
@@ -1246,105 +1264,70 @@ function AlertTiendaAccordion({ tienda, count, prom, badgeTxt, badgeStyle, borde
   );
 }
 
-function TabInicio({ tareas, onUpdateTareas, config, onSetTab, onConteoTarea }) {
-  const inv = config?.inventario || [];
+function RankingEquipo({ config }) {
+  const vr = config?.ventas_resumen;
+  if (!vr || typeof vr !== 'object') return null;
+  const sesion    = getSession() || {};
+  const normMi    = norm(sesion.nombre || '');
+  const DIAS_TOT  = 21;
+  const diaActual = new Date().getDate();
 
-  const { agotadosPorTienda, criticosPorTienda, atencionPorTienda,
-          totalAgotados, totalCriticos } = useMemo(() => {
-    const mapped = inv.map(r => ({ tienda: r.tienda, dias: Math.max(0, Number(r.cobertura)) }));
+  const lista = Object.entries(vr).map(([nombre, d]) => {
+    const acum  = Number(d.acumulado || 0);
+    const cuota = Number(d.cuota     || 0);
+    const pct   = cuota > 0 ? (acum / cuota * 100).toFixed(1) : '0.0';
+    const proy  = diaActual > 0 ? Math.round(acum / diaActual * DIAS_TOT) : 0;
+    return { nombre, acum, cuota, pct: parseFloat(pct), pctStr: pct, proy };
+  }).sort((a, b) => b.pct - a.pct);
 
-    const agMap = {};
-    mapped.filter(r => r.dias === 0).forEach(r => {
-      agMap[r.tienda] = (agMap[r.tienda] || 0) + 1;
-    });
-    const agotadosPorTienda = Object.entries(agMap)
-      .map(([tienda, count]) => ({ tienda, count }))
-      .sort((a, b) => b.count - a.count);
-    const totalAgotados = agotadosPorTienda.reduce((a, t) => a + t.count, 0);
+  const top5    = lista.slice(0, 5);
+  const posAll  = lista.findIndex(v => norm(v.nombre) === normMi);
+  const inTop5  = posAll >= 0 && posAll < 5;
+  const miEntry = posAll >= 0 ? lista[posAll] : null;
 
-    const criticos = mapped.filter(r => r.dias > 0 && r.dias < 10);
-    const criticosPorTienda = grupoPorTienda(criticos);
-    const totalCriticos = criticos.length;
-
-    const atencionPorTienda = grupoPorTienda(mapped.filter(r => r.dias >= 10 && r.dias < 20));
-
-    return { agotadosPorTienda, criticosPorTienda, atencionPorTienda, totalAgotados, totalCriticos };
-  }, [inv]);
-
-  const totalInventario = inv.reduce((a, r) => a + (r.inventario || 0), 0);
+  const colores  = ['#C9A84C', '#909090', '#CD7F32', '#185FA5', '#185FA5'];
+  const $ = n => `$${n.toLocaleString()}`;
+  const rowBase  = { display:'grid', gridTemplateColumns:'28px 1fr auto', alignItems:'center', gap:8, padding:'10px 14px', borderBottom:'0.5px solid #E5E5E3', fontSize:13 };
 
   return (
-    <div>
-      <Carousel slides={config.slides} />
-
-      <VentasResumenCard config={config}/>
-
-      <RecomendadosCard config={config}/>
-
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-value">{fmt(totalInventario)}</div>
-          <div className="stat-label">Inventario Total</div>
-        </div>
-        <div className="stat-card">
-          <div className={`stat-value${totalCriticos > 0 ? ' red' : ''}`}>{totalCriticos}</div>
-          <div className="stat-label">Productos Críticos</div>
-        </div>
-        <div className="stat-card">
-          <div className={`stat-value${totalAgotados > 0 ? ' red' : ''}`}>{totalAgotados}</div>
-          <div className="stat-label">Productos Agotados</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-value" style={{ color: '#0F6E56' }}>{(() => {
-            const sesion = getSession() || {};
-            const md = config?.md_vendedores || {};
-            const key = Object.keys(md).find(k => norm(k) === norm(sesion.nombre || ''));
-            return key != null ? md[key] + '%' : '—';
-          })()}</div>
-          <div className="stat-label">MD%</div>
-        </div>
+    <div style={{ background:'#fff', border:'0.5px solid #E5E5E3', borderRadius:12, marginBottom:12, overflow:'hidden' }}>
+      <div style={{ padding:'12px 14px 8px', fontSize:11, fontWeight:500, color:'#888780', textTransform:'uppercase', letterSpacing:'.05em' }}>
+        Ranking del equipo
       </div>
+      {top5.map((v, i) => {
+        const esMio   = norm(v.nombre) === normMi;
+        const color   = colores[i] || '#185FA5';
+        return (
+          <div key={v.nombre} style={{ ...rowBase, background: esMio ? '#FFF8E7' : 'transparent', borderBottom: i < top5.length - 1 || !inTop5 ? '0.5px solid #E5E5E3' : 'none' }}>
+            <span style={{ fontWeight:700, color, fontSize:12, textAlign:'center' }}>{i + 1}</span>
+            <span style={{ fontWeight: esMio ? 700 : 500, color:'#1a1a1a', fontSize:13, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{v.nombre}</span>
+            <span style={{ fontWeight:600, color, fontSize:12, whiteSpace:'nowrap' }}>{v.pctStr}%</span>
+          </div>
+        );
+      })}
+      {!inTop5 && miEntry && (
+        <>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'center', padding:'5px 0', gap:6 }}>
+            {[0,1,2].map(i => <span key={i} style={{ width:4, height:4, borderRadius:'50%', background:'#C5C3BC', display:'inline-block' }}/>)}
+          </div>
+          <div style={{ ...rowBase, background:'#FFF8E7', borderBottom:'none' }}>
+            <span style={{ fontWeight:700, color:'#1a1a1a', fontSize:12, textAlign:'center' }}>{posAll + 1}</span>
+            <span style={{ fontWeight:700, color:'#1a1a1a', fontSize:13, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{miEntry.nombre}</span>
+            <span style={{ fontWeight:600, color:'#1a1a1a', fontSize:12, whiteSpace:'nowrap' }}>{miEntry.pctStr}%</span>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
+function TabInicio({ tareas, onUpdateTareas, config, onSetTab, onConteoTarea }) {
+  return (
+    <div>
+      <VentasResumenCard config={config}/>
       <WidgetTareas tareas={tareas} onUpdate={onUpdateTareas} onSetTab={onSetTab} onConteoTarea={onConteoTarea}/>
-
-      {agotadosPorTienda.length > 0 && (
-        <div className="card">
-          <div className="section-title">PRODUCTOS AGOTADOS</div>
-          <div style={SCROLL_LIST}>
-            {agotadosPorTienda.map(({ tienda, count }) => (
-              <AlertTiendaAccordion key={tienda} tienda={tienda} count={count} prom={null}
-                badgeTxt="Agotado" badgeStyle={{ background: '#F3F4F6', color: '#374151' }}
-                borderColor="#374151" inv={inv} tipo="agotado"/>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {criticosPorTienda.length > 0 && (
-        <div className="card">
-          <div className="section-title">CRÍTICOS</div>
-          <div style={SCROLL_LIST}>
-            {criticosPorTienda.map(({ tienda, count, prom }) => (
-              <AlertTiendaAccordion key={tienda} tienda={tienda} count={count} prom={prom}
-                badgeTxt={`${prom}d`} badgeStyle={{ background: '#FCEBEB', color: '#A32D2D' }}
-                borderColor="#A32D2D" inv={inv} tipo="critico"/>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {atencionPorTienda.length > 0 && (
-        <div className="card">
-          <div className="section-title">ATENCIÓN</div>
-          <div style={SCROLL_LIST}>
-            {atencionPorTienda.map(({ tienda, count, prom }) => (
-              <AlertTiendaAccordion key={tienda} tienda={tienda} count={count} prom={prom}
-                badgeTxt={`${prom}d`} badgeStyle={{ background: '#FAEEDA', color: '#854F0B' }}
-                borderColor="#854F0B" inv={inv} tipo="atencion"/>
-            ))}
-          </div>
-        </div>
-      )}
+      <RecomendadosCard config={config}/>
+      <RankingEquipo config={config}/>
     </div>
   );
 }
