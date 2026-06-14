@@ -903,7 +903,7 @@ function RecomendadosCard({ config }) {
       catItem = r.barcode
         ? (window.CAT_DATA || []).find(c => normBarcode(c.b) === normBarcode(r.barcode))
         : null;
-      const _kw = s => (s || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);
+      const _kw = str => str?.toString().toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,7) || '';
       if(!catItem) catItem = (window.CAT_DATA || []).find(c =>
         _kw(c.n).includes(_kw(r.producto)) || _kw(r.producto).includes(_kw(c.n))
       );
