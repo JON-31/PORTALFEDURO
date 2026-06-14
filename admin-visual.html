@@ -2871,7 +2871,7 @@ var _snapOpenProd     = null; // índice de fila expandida en MD-Producto
 //  SNAPSHOTS — ACTIVACIÓN (lazy, solo la primera vez)
 // ═══════════════════════════════════════
 async function snapActivate(){
-  if(_snapInited) return;
+  if(_snapInited) { snapVendChange(''); return; }
   _snapInited = true;
 
   // Cargar vendedores reales desde ventas_resumen
@@ -2906,7 +2906,6 @@ async function snapActivate(){
         totPet   += d.mascotas || 0;
       });
       window._snapTotales = { cuota: totCuota, acumulado: totAcum, chocolate: totChoc, confiteria: totConf, mascotas: totPet };
-      snapVendChange('');
     }
   } catch(e) {
     console.error('[snapActivate] Error cargando ventas_resumen:', e);
@@ -2961,19 +2960,20 @@ async function snapActivate(){
   snapRenderCadenaCards();
   snapDrawCadenaCharts();
   snapRenderCadenaDetalle();
+  snapVendChange('');
 }
 
 // ═══════════════════════════════════════
 //  SNAPSHOTS — NAVEGACIÓN DE TABS
 // ═══════════════════════════════════════
 function snapSwitchMain(panel, btn){
+  console.log('[snapSwitch] panel=', panel);
   document.querySelectorAll('#snap-main-tabs .snap-tab').forEach(function(b){ b.classList.remove('active'); });
   btn.classList.add('active');
   document.getElementById('snap-panel-cadena').style.display   = panel==='cadena'   ? '' : 'none';
   document.getElementById('snap-panel-vendedor').style.display = panel==='vendedor' ? '' : 'none';
   if(panel==='vendedor'){
-    var sel = document.getElementById('snap-vend-selector');
-    if(sel && sel.value) snapVendChange();
+    snapVendChange();
   }
 }
 
@@ -3202,10 +3202,12 @@ function snapRenderCadenaDetalle(){
 //  SNAPSHOTS — VENDEDOR
 // ═══════════════════════════════════════
 function snapVendChange(){
+  console.log('[snapVend] función llamada');
   _snapMdTiendaSel = {};
   _snapOpenProd    = null;
 
   var vend = (document.getElementById('snap-vend-selector')||{}).value;
+  console.log('[snapVend] vend=', JSON.stringify(vend), 'snap-vend-selector existe:', !!document.getElementById('snap-vend-selector'));
   var dias = parseInt((document.getElementById('snap-vend-periodo')||{}).value||'30');
   var $fmt = function(n){ return '$'+Number(n).toLocaleString('es-PA', {minimumFractionDigits:2, maximumFractionDigits:2}); };
 
@@ -3247,6 +3249,7 @@ function snapVendChange(){
   // ── Tendencia: datos reales de ventas_snapshots ──
   var allData;
   if (!vend) {
+    console.log('[snapVend] sin vendedor, SNAP_VENDEDOR:', Object.keys(window.SNAP_VENDEDOR || {}).length, 'vendedores', Object.keys(window.SNAP_VENDEDOR || {}));
     var porFecha = {};
     Object.values(window.SNAP_VENDEDOR || {}).forEach(function(rows) {
       rows.forEach(function(r) {
@@ -3264,7 +3267,7 @@ function snapVendChange(){
   }
   var data    = allData.slice(-dias);
   if(!data.length) {
-    var chartEl = document.getElementById('snap-vend-chart');
+    var chartEl = document.getElementById('chart-snap-vend-tend');
     if(chartEl) chartEl.parentElement.innerHTML = '<p style="color:#888;padding:20px">Sin datos históricos aún. Importa ventas desde Admin Datos para ver la tendencia.</p>';
     return;
   }
