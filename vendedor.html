@@ -897,10 +897,11 @@ function RecomendadosCard({ config }) {
 
   const conCatalogo = conBodega.map(r => {
     const cadena = (r.cadena || '').toLowerCase();
+    const normBarcode = b => String(b || '').replace(/^0+/, '');
     let catItem = null;
     if(cadena === 'xtra') {
       catItem = r.barcode
-        ? (window.CAT_DATA || []).find(c => c.b === r.barcode)
+        ? (window.CAT_DATA || []).find(c => normBarcode(c.b) === normBarcode(r.barcode))
         : null;
       if(!catItem) catItem = (window.CAT_DATA || []).find(c =>
         norm(c.n || '').includes(norm(r.producto || '').substring(0, 10)) ||
@@ -908,7 +909,7 @@ function RecomendadosCard({ config }) {
       );
     } else {
       catItem = r.barcode
-        ? (window.MACHETAZO_PRODUCTOS || []).find(c => c.material === r.barcode || c.codigo === r.barcode)
+        ? (window.MACHETAZO_PRODUCTOS || []).find(c => normBarcode(c.material) === normBarcode(r.barcode) || normBarcode(c.codigo) === normBarcode(r.barcode))
         : null;
       if(!catItem) catItem = (window.MACHETAZO_PRODUCTOS || []).find(c =>
         norm(c.descripcion || '').includes(norm(r.producto || '').substring(0, 10)) ||
