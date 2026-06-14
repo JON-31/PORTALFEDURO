@@ -1537,6 +1537,8 @@ async function loadData(){
         if(row.clave === 'ventas_resumen'){
           if(v && !Array.isArray(v)){
             DATA.cuota_mes = Object.values(v).reduce((s, d) => s + Number(d.cuota||0), 0);
+            DATA.cuota_por_vend = {};
+            Object.entries(v).forEach(([nombre, d]) => { DATA.cuota_por_vend[nombre] = Number(d.cuota||0); });
             DATA.ventas_resumen = Object.entries(v).map(([nombre, d]) => {
               const choc = Number(d.chocolate||0), conf = Number(d.confiteria||0), pet = Number(d.mascotas||0);
               const total = choc + conf + pet || 1;
@@ -1757,8 +1759,8 @@ async function renderResumen(){
 
   // Top vendedores
   const sorted = [...vr].map(v => {
-    const tv = (v.choc_venta||0)+(v.conf_venta||0)+(v.pet_venta||0);
-    const tq = (v.choc_cuota||0)+(v.conf_cuota||0)+(v.pet_cuota||0);
+    const tv = Number(v.acumulado||0);
+    const tq = (DATA.cuota_por_vend && DATA.cuota_por_vend[v.vendedor]) || Number(v.choc_cuota||0);
     return {...v, pctTotal: pct(tv,tq)};
   }).sort((a,b) => b.pctTotal - a.pctTotal);
 
