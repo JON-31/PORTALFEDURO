@@ -912,15 +912,13 @@ function RecomendadosCard({ config }) {
       const kw = s => (s||'').toUpperCase().trim().split(/[\d\/\-\(]/)[0].trim();
       if(!catItem) { const kwP = kw(r.producto); catItem = kwP.length >= 4 ? (window.MACHETAZO_PRODUCTOS || []).find(c => { const kwC = kw(c.descripcion); return kwC.length >= 4 && (kwP.includes(kwC) || kwC.includes(kwP)); }) : null; }
     }
+    const hasCat = !!catItem;
     const u = catItem?.u || 1;
     const tipo = catItem?.t || 'CJ';
-    if ((r.producto || '').toUpperCase().includes('SNICKERS')) {
-      console.log('[recomendados diag]', { catItem, barcode: r.barcode, u, tipo });
-    }
     const cajasRec = Math.max(1, Math.ceil(Number(r.venta_promedio || 0) / u));
     const unidadesRec = cajasRec * u;
     const precioTotal = catItem?.p ? cajasRec * catItem.p : null;
-    return { ...r, u, tipo, cajasRec, unidadesRec, precioTotal };
+    return { ...r, u, tipo, cajasRec, unidadesRec, precioTotal, hasCat };
   });
 
   const sorted = conCatalogo.sort((a, b) => Number(b.venta_promedio) - Number(a.venta_promedio));
@@ -983,7 +981,7 @@ function RecomendadosCard({ config }) {
                         <div>
                           <div style={{fontSize:12,fontWeight:600,color:'var(--text-1)',marginBottom:2}}>{p.producto}</div>
                           {p.barcode && <div style={{fontSize:10,color:'var(--text-3)',marginBottom:3,fontFamily:'monospace'}}>{p.barcode}</div>}
-                          {p.unidadesRec > 0 && <div style={{fontSize:11,color:'var(--text-3)',marginBottom:2}}>{p.tipo || 'CJ'} · {p.u || '?'} und/empaque</div>}
+                          {p.hasCat && p.unidadesRec > 0 && <div style={{fontSize:11,color:'var(--text-3)',marginBottom:2}}>{p.tipo || 'CJ'} · {p.u || '?'} und/empaque</div>}
                           {p.venta_promedio > 0 && <div style={{fontSize:11,color:'var(--text-3)',marginBottom:3}}>Venta prom: {p.venta_promedio} und/mes</div>}
                           <div style={{display:'flex',alignItems:'center',gap:6}}>
                             <span style={{fontSize:11,background:badge.bg,color:badge.color,padding:'1px 7px',borderRadius:20,fontWeight:600}}>{badge.label}</span>
@@ -991,8 +989,8 @@ function RecomendadosCard({ config }) {
                           </div>
                         </div>
                         <div style={{textAlign:'right'}}>
-                          <div style={{fontSize:13,fontWeight:600,color:'var(--text-1)'}}>{p.cajasRec} {p.tipo}</div>
-                          <div style={{fontSize:11,color:'var(--text-3)'}}>{p.unidadesRec} unidades</div>
+                          <div style={{fontSize:13,fontWeight:600,color:'var(--text-1)'}}>{p.cajasRec}{p.hasCat ? ' '+p.tipo : ''}</div>
+                          {p.hasCat && <div style={{fontSize:11,color:'var(--text-3)'}}>{p.unidadesRec} unidades</div>}
                           {p.precioTotal && <div style={{fontSize:12,fontWeight:600,color:'#0F6E56',marginTop:2}}>${p.precioTotal.toLocaleString('es-PA',{minimumFractionDigits:2})}</div>}
                         </div>
                       </div>
