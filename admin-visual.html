@@ -813,7 +813,7 @@ tbody td.right { text-align: right; }
         </div>
         <div class="card" style="height:100%">
           <div class="card-header"><h3>📈 Ventas por Categoría</h3></div>
-          <div class="card-body">
+          <div class="card-body" style="height:calc(100% - 48px);padding:16px 18px">
             <div class="chart-box" style="height:100%;min-height:280px;overflow:hidden">
               <canvas id="chart-dist"></canvas>
             </div>
@@ -1742,7 +1742,7 @@ async function renderResumen(){
   const tbody = document.getElementById('tbl-top-vendedores');
   const _br = 'border-right:0.5px solid var(--color-border-tertiary)';
   const _c  = 'text-align:center;font-family:"DM Mono",monospace';
-  const _posBg    = i => i===0?'#FFF8E7':i===1?'#F5F5F5':i===2?'#FDF0E6':i<10?'#EEF4FB':'';
+  const _posBg    = i => i===0?'#FFF0C0':i===1?'#E8E8E8':i===2?'#FFE4CC':i<10?'#D6E8F8':'';
   const _posAccent= i => i===0?'#C9A84C':i===1?'#909090':i===2?'#CD7F32':i<10?'#185FA5':'var(--color-text-secondary)';
 
   // Posiciones de ayer desde SNAP_VENDEDOR (puede estar vacío si aún no cargó)
