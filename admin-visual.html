@@ -813,7 +813,7 @@ tbody td.right { text-align: right; }
         <div class="card">
           <div class="card-header"><h3>📈 Ventas por Categoría</h3></div>
           <div class="card-body">
-            <div class="chart-box" style="height:200px">
+            <div class="chart-box" style="height:280px;overflow:hidden">
               <canvas id="chart-dist"></canvas>
             </div>
             <div id="chart-dist-tabla" style="margin-top:8px"></div>
@@ -1741,14 +1741,17 @@ async function renderResumen(){
   const tbody = document.getElementById('tbl-top-vendedores');
   const _br = 'border-right:0.5px solid var(--color-border-tertiary)';
   const _c  = 'text-align:center;font-family:"DM Mono",monospace';
-  const _posColor = i => i===0?'#C9A84C':i===1?'#A8A8A8':i===2?'#CD7F32':i<10?'#185FA5':'var(--color-text-secondary)';
+  const _posBg    = i => i===0?'#FFF8E7':i===1?'#F5F5F5':i===2?'#FDF0E6':i<10?'#EEF4FB':'';
+  const _posAccent= i => i===0?'#C9A84C':i===1?'#909090':i===2?'#CD7F32':i<10?'#185FA5':'var(--color-text-secondary)';
   tbody.innerHTML = sorted.map((v,i) => {
-    const col = _posColor(i);
-    const cuota = (DATA.cuota_por_vend && DATA.cuota_por_vend[v.vendedor]) || 0;
+    const bg     = _posBg(i);
+    const accent = _posAccent(i);
+    const cuota  = (DATA.cuota_por_vend && DATA.cuota_por_vend[v.vendedor]) || 0;
     const pctProy = cuota > 0 ? (v.proyeccion / cuota * 100).toFixed(1) + '%' : '—';
-    return `<tr>
-      <td style="${_c};${_br};color:${col};font-weight:600">${i+1}</td>
-      <td style="font-weight:600;${_br};color:${col}">${v.vendedor||'—'}</td>
+    const trStyle = bg ? `background:${bg};color:var(--color-text-primary)` : '';
+    return `<tr style="${trStyle}">
+      <td style="${_c};${_br};color:${accent};font-weight:500">${i+1}</td>
+      <td style="font-weight:600;${_br}">${v.vendedor||'—'}</td>
       <td style="${_c};${_br}">$${cuota.toLocaleString('es-PA')}</td>
       <td style="${_c};${_br}">$${Number(v.acumulado||0).toLocaleString('es-PA')}</td>
       <td style="${_c};${_br}">${v.pctTotal}%</td>
