@@ -1631,19 +1631,17 @@ function toast(msg, err=false){
 function calcTotales(){
   const vr = DATA.ventas_resumen;
   if(!vr || !Array.isArray(vr)) return null;
-  let totChocV=0, totChocQ=0, totConfV=0, totConfQ=0, totPetV=0, totPetQ=0;
+  let totAcum=0, totChocV=0, totChocQ=0, totConfV=0, totConfQ=0, totPetV=0, totPetQ=0;
   vr.forEach(v => {
-    const cv = Number(v.choc_venta||0), cfv = Number(v.conf_venta||0), pv = Number(v.pet_venta||0);
-    const catTotal = cv + cfv + pv;
-    const ventaEfectiva = catTotal > 0 ? catTotal : Number(v.acumulado||0);
-    totChocV += catTotal > 0 ? cv  : ventaEfectiva;
+    totAcum  += Number(v.acumulado||0);
+    totChocV += Number(v.choc_venta||0);
     totChocQ += Number(v.choc_cuota||0);
-    totConfV += catTotal > 0 ? cfv : 0;
+    totConfV += Number(v.conf_venta||0);
     totConfQ += Number(v.conf_cuota||0);
-    totPetV  += catTotal > 0 ? pv  : 0;
+    totPetV  += Number(v.pet_venta||0);
     totPetQ  += Number(v.pet_cuota||0);
   });
-  return { totChocV, totChocQ, totConfV, totConfQ, totPetV, totPetQ };
+  return { totAcum, totChocV, totChocQ, totConfV, totConfQ, totPetV, totPetQ };
 }
 
 // ═══════════════════════════════════════
@@ -1686,7 +1684,7 @@ async function renderResumen(){
   }
 
   const t = calcTotales();
-  const totalV = t.totChocV + t.totConfV + t.totPetV;
+  const totalV = t.totAcum;
   const totalQ = t.totChocQ + t.totConfQ + t.totPetQ;
   const pctTotal = pct(totalV, totalQ);
 
