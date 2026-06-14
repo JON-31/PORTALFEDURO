@@ -897,20 +897,23 @@ function RecomendadosCard({ config }) {
 
   const conCatalogo = conBodega.map(r => {
     const cadena = (r.cadena || '').toLowerCase();
-    const normBarcode = b => String(b || '').replace(/^0+/, '');
+    const nb = s => String(s||'').replace(/^0+/,'');
+    const kw2 = s => (s||'').toUpperCase().replace(/[^A-Z0-9 ]/g,' ').trim().split(/\s+/).slice(0,2).join(' ');
     let catItem = null;
     if(cadena === 'xtra') {
+      const rbc = nb(r.barcode);
       catItem = r.barcode
-        ? (window.CAT_DATA || []).find(c => c.b.replace(/^0+/,'') === r.barcode.replace(/^0+/,''))
+        ? (window.CAT_DATA || []).find(c => nb(c.b) === rbc)
+          || (window.CAT_DATA || []).find(c => nb(c.b).startsWith(rbc) || rbc.startsWith(nb(c.b)))
         : null;
-      const kw = s => (s||'').toUpperCase().trim().split(/[\d\/\-\(]/)[0].trim();
-      if(!catItem) { const kwP = kw(r.producto); catItem = kwP.length >= 4 ? (window.CAT_DATA || []).find(c => { const kwC = kw(c.n); return kwC.length >= 4 && (kwP.includes(kwC) || kwC.includes(kwP)); }) : null; }
+      if(!catItem) { const kwP = kw2(r.producto); catItem = (window.CAT_DATA || []).find(c => kw2(c.n) === kwP); }
     } else {
+      const rbc = nb(r.barcode);
       catItem = r.barcode
-        ? (window.MACHETAZO_PRODUCTOS || []).find(c => normBarcode(c.material) === normBarcode(r.barcode) || normBarcode(c.codigo) === normBarcode(r.barcode))
+        ? (window.MACHETAZO_PRODUCTOS || []).find(c => nb(c.codigo) === rbc || nb(c.material) === rbc)
+          || (window.MACHETAZO_PRODUCTOS || []).find(c => nb(c.codigo).startsWith(rbc) || rbc.startsWith(nb(c.codigo)))
         : null;
-      const kw = s => (s||'').toUpperCase().trim().split(/[\d\/\-\(]/)[0].trim();
-      if(!catItem) { const kwP = kw(r.producto); catItem = kwP.length >= 4 ? (window.MACHETAZO_PRODUCTOS || []).find(c => { const kwC = kw(c.descripcion); return kwC.length >= 4 && (kwP.includes(kwC) || kwC.includes(kwP)); }) : null; }
+      if(!catItem) { const kwP = kw2(r.producto); catItem = (window.MACHETAZO_PRODUCTOS || []).find(c => kw2(c.descripcion) === kwP); }
     }
     const hasCat = !!catItem;
     const u = catItem?.u || 1;
