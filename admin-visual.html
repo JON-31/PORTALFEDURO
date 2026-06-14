@@ -3265,8 +3265,7 @@ function snapVendChange(){
   }
   var data    = allData.slice(-dias);
   if(!data.length) {
-    var chartEl = document.getElementById('chart-snap-vend-tend');
-    if(chartEl) chartEl.parentElement.innerHTML = '<p style="color:#888;padding:20px">Sin datos históricos aún. Importa ventas desde Admin Datos para ver la tendencia.</p>';
+    destroyChart('chart-snap-vend-tend');
     return;
   }
 
@@ -3300,7 +3299,13 @@ function snapDrawVendChart(vend, dataOverride){
   if(!data.length) return;
   destroyChart('chart-snap-vend-tend');
   var ctx = document.getElementById('chart-snap-vend-tend');
-  if(!ctx) return;
+  if(!ctx){
+    var box = document.querySelector('#snap-vi-tendencia .chart-box');
+    if(!box) return;
+    box.innerHTML = '<canvas id="chart-snap-vend-tend"></canvas>';
+    ctx = document.getElementById('chart-snap-vend-tend');
+    if(!ctx) return;
+  }
   var labels = data.map(function(d){return d.fecha.slice(5);});
   chartsInstancias['chart-snap-vend-tend'] = new Chart(ctx.getContext('2d'),{
     type:'line',
