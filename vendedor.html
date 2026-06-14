@@ -903,9 +903,9 @@ function RecomendadosCard({ config }) {
       catItem = r.barcode
         ? (window.CAT_DATA || []).find(c => normBarcode(c.b) === normBarcode(r.barcode))
         : null;
-      const _kw = str => str?.toString().toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,7) || '';
       if(!catItem) catItem = (window.CAT_DATA || []).find(c =>
-        _kw(c.n).includes(_kw(r.producto)) || _kw(r.producto).includes(_kw(c.n))
+        norm(c.n || '').includes(norm(r.producto || '').substring(0, 10)) ||
+        norm(r.producto || '').includes(norm(c.n || '').substring(0, 10))
       );
     } else {
       catItem = r.barcode
@@ -915,6 +915,11 @@ function RecomendadosCard({ config }) {
         norm(c.descripcion || '').includes(norm(r.producto || '').substring(0, 10)) ||
         norm(r.producto || '').includes(norm(c.descripcion || '').substring(0, 10))
       );
+    }
+    const u = catItem?.u || 1;
+    const tipo = catItem?.t || 'CJ';
+    if ((r.producto || '').toUpperCase().includes('SNICKERS')) {
+      console.log('[recomendados diag]', { catItem, barcode: r.barcode, u, tipo });
     }
     const cajasRec = Math.max(1, Math.ceil(Number(r.venta_promedio || 0) / u));
     const unidadesRec = cajasRec * u;
