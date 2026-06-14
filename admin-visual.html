@@ -3332,11 +3332,17 @@ function snapRenderVendDetalle(vendOverride, dataOverride){
   var tbody = document.getElementById('snap-vd-tbody');
   var tfoot = document.getElementById('snap-vd-tfoot');
   if(!thead||!tbody||!tfoot) return;
-  if(!vend){
-    thead.innerHTML = '';
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;padding:20px">Selecciona un vendedor para ver el detalle</td></tr>';
-    tfoot.innerHTML = '';
-    return;
+  if(!vend && !data.length){
+    var porFechaD = {};
+    Object.values(window.SNAP_VENDEDOR || {}).forEach(function(rows){
+      rows.slice(-dias).forEach(function(r){
+        if(!porFechaD[r.fecha]) porFechaD[r.fecha] = {fecha:r.fecha, choc:0, conf:0, pet:0};
+        porFechaD[r.fecha].choc += r.choc;
+        porFechaD[r.fecha].conf += r.conf;
+        porFechaD[r.fecha].pet  += r.pet;
+      });
+    });
+    data = Object.keys(porFechaD).sort().map(function(f){ return porFechaD[f]; });
   }
   if(!data.length) return;
 
