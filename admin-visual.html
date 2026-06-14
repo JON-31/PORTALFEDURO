@@ -729,7 +729,7 @@ tbody td.right { text-align: right; }
         <div class="stat-card verde">
           <div class="label">Acumulado equipo</div>
           <div class="value" id="kpi-venta">—</div>
-          <div class="sub">ventas mes actual</div>
+          <div class="sub" id="kpi-venta-sub">ventas mes actual</div>
         </div>
         <div class="stat-card gold">
           <div class="label">Proyección cierre</div>
@@ -742,9 +742,9 @@ tbody td.right { text-align: right; }
           <div class="sub">mercadeo dirigido general</div>
         </div>
         <div class="stat-card red">
-          <div class="label">SKUs sin rotación</div>
+          <div class="label">Vendedores en riesgo</div>
           <div class="value" id="kpi-agot">—</div>
-          <div class="sub">cobertura &gt; 6 semanas</div>
+          <div class="sub">proyección menor al 85% de cuota</div>
         </div>
       </div>
 
@@ -794,11 +794,11 @@ tbody td.right { text-align: right; }
               <table>
                 <thead>
                   <tr>
-                    <th>#</th>
-                    <th>Vendedor</th>
-                    <th class="right">Acumulado</th>
-                    <th class="right">% Cuota</th>
-                    <th class="right">Proyección</th>
+                    <th style="text-align:center;border-right:0.5px solid var(--color-border-tertiary)">#</th>
+                    <th style="border-right:0.5px solid var(--color-border-tertiary)">Vendedor</th>
+                    <th style="text-align:center;border-right:0.5px solid var(--color-border-tertiary)">Acumulado</th>
+                    <th style="text-align:center;border-right:0.5px solid var(--color-border-tertiary)">% Cuota</th>
+                    <th style="text-align:center">Proyección</th>
                   </tr>
                 </thead>
                 <tbody id="tbl-top-vendedores">
@@ -1686,7 +1686,12 @@ async function renderResumen(){
   var diasTotal = _diasHab(_ini, _fin);
   var proyTotal = diasTrans > 0 ? Math.round(totalV / diasTrans * diasTotal) : 0;
 
-  document.getElementById('kpi-venta').textContent = fmt(totalV);
+  const pctCuota = DATA.cuota_mes > 0 ? (totalV / DATA.cuota_mes * 100).toFixed(1) : '0.0';
+  const falta = Math.max(0, (DATA.cuota_mes||0) - totalV);
+  document.getElementById('kpi-venta').innerHTML =
+    fmt(totalV) + ' <span style="font-size:13px;color:var(--text-2)">' + pctCuota + '%</span>';
+  document.getElementById('kpi-venta-sub').innerHTML =
+    'Falta: <span style="font-size:12px;color:var(--text-2)">' + fmt(falta) + '</span>';
   document.getElementById('kpi-cumpl').textContent = pct(proyTotal, totalQ) + '%';
 
   // % MD equipo
@@ -1697,12 +1702,15 @@ async function renderResumen(){
   const mdPct = mdDen > 0 ? Math.round(mdNum/mdDen*1000)/10 : null;
   document.getElementById('kpi-vend').textContent = mdPct != null ? mdPct+'%' : '—';
 
-  // SKUs sin rotación (cobertura > 42 días)
-  let sinRot = 0;
-  if(inv && Array.isArray(inv)){
-    inv.forEach(r => { if(Number(r.cobertura||0) > 42) sinRot++; });
-  }
-  document.getElementById('kpi-agot').textContent = sinRot;
+  // Vendedores en riesgo (proyección < 85% de cuota individual)
+  let enRiesgo = 0;
+  vr.forEach(v => {
+    const tv = Number(v.acumulado||0);
+    const tq = (DATA.cuota_por_vend && DATA.cuota_por_vend[v.vendedor]) || Number(v.choc_cuota||0);
+    const proyV = diasTrans > 0 ? Math.round(tv / diasTrans * diasTotal) : 0;
+    if(tq > 0 && proyV < tq * 0.85) enRiesgo++;
+  });
+  document.getElementById('kpi-agot').textContent = enRiesgo;
 
   var histFromSnap = await cargarHistoricoDesdeSnapshots();
   const hist = histFromSnap || normalizeHistorico();
@@ -1729,13 +1737,15 @@ async function renderResumen(){
   }).sort((a,b) => b.pctTotal - a.pctTotal);
 
   const tbody = document.getElementById('tbl-top-vendedores');
+  const _br = 'border-right:0.5px solid var(--color-border-tertiary)';
+  const _c  = 'text-align:center;font-family:"DM Mono",monospace';
   tbody.innerHTML = sorted.slice(0,10).map((v,i) => `
     <tr>
-      <td class="mono">${i+1}</td>
-      <td style="font-weight:600">${v.vendedor||'—'}</td>
-      <td class="right mono">$${Number(v.acumulado||0).toLocaleString('es-PA')}</td>
-      <td class="right mono">${v.pctTotal}%</td>
-      <td class="right mono">$${v.proyeccion.toLocaleString('es-PA')}</td>
+      <td style="${_c};${_br}">${i+1}</td>
+      <td style="font-weight:600;${_br}">${v.vendedor||'—'}</td>
+      <td style="${_c};${_br}">$${Number(v.acumulado||0).toLocaleString('es-PA')}</td>
+      <td style="${_c};${_br}">${v.pctTotal}%</td>
+      <td style="${_c}">$${v.proyeccion.toLocaleString('es-PA')}</td>
     </tr>`).join('');
 
   // ── Gráfico de líneas por categoría ──
