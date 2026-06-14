@@ -2992,12 +2992,11 @@ function snapVendInner(sub, btn){
   document.getElementById('snap-vi-detalle').style.display   = sub==='detalle'   ? '' : 'none';
   document.getElementById('snap-vi-md').style.display        = sub==='md'        ? '' : 'none';
   var vend = document.getElementById('snap-vend-selector').value;
-  if(!vend) return;
   var dias = parseInt(document.getElementById('snap-vend-periodo').value||'30');
-  var data = (window.SNAP_VENDEDOR[vend]||[]).slice(-dias);
+  var data = vend ? (window.SNAP_VENDEDOR[vend]||[]).slice(-dias) : [];
   if(sub==='tendencia') snapDrawVendChart(vend, data);
   if(sub==='detalle')   snapRenderVendDetalle(vend, data);
-  if(sub==='md')        snapRenderMdTienda(vend);
+  if(sub==='md' && vend) snapRenderMdTienda(vend);
 }
 
 function snapMdView(view, btn){
@@ -3332,7 +3331,14 @@ function snapRenderVendDetalle(vendOverride, dataOverride){
   var thead = document.getElementById('snap-vd-thead');
   var tbody = document.getElementById('snap-vd-tbody');
   var tfoot = document.getElementById('snap-vd-tfoot');
-  if(!thead||!tbody||!tfoot||!data.length) return;
+  if(!thead||!tbody||!tfoot) return;
+  if(!vend){
+    thead.innerHTML = '';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;padding:20px">Selecciona un vendedor para ver el detalle</td></tr>';
+    tfoot.innerHTML = '';
+    return;
+  }
+  if(!data.length) return;
 
   function estadoBadge(p){
     if(p>=90) return '<span class="chip chip-ok">✓ Meta</span>';
