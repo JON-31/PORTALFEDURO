@@ -903,9 +903,9 @@ function RecomendadosCard({ config }) {
       catItem = r.barcode
         ? (window.CAT_DATA || []).find(c => normBarcode(c.b) === normBarcode(r.barcode))
         : null;
+      const _kw = s => (s || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 7);
       if(!catItem) catItem = (window.CAT_DATA || []).find(c =>
-        norm(c.n || '').includes(norm(r.producto || '').substring(0, 10)) ||
-        norm(r.producto || '').includes(norm(c.n || '').substring(0, 10))
+        _kw(c.n).includes(_kw(r.producto)) || _kw(r.producto).includes(_kw(c.n))
       );
     } else {
       catItem = r.barcode
@@ -915,15 +915,6 @@ function RecomendadosCard({ config }) {
         norm(c.descripcion || '').includes(norm(r.producto || '').substring(0, 10)) ||
         norm(r.producto || '').includes(norm(c.descripcion || '').substring(0, 10))
       );
-    }
-    const u = catItem?.u || 1;
-    const tipo = catItem?.t || 'CJ';
-    if ((r.producto || '').toUpperCase().includes('SNICKERS')) {
-      const _busqNombre = norm(r.producto || '').substring(0, 10);
-      const _matchNombre = (window.CAT_DATA || []).find(c =>
-        norm(c.n || '').includes(_busqNombre) || _busqNombre.includes(norm(c.n || '').substring(0, 10))
-      );
-      console.log('[recomendados diag]', { catItem, barcode: r.barcode, u, tipo, busqNombre: _busqNombre, matchNombre: _matchNombre || null, catItemResuelto: !!catItem });
     }
     const cajasRec = Math.max(1, Math.ceil(Number(r.venta_promedio || 0) / u));
     const unidadesRec = cajasRec * u;
