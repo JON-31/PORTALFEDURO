@@ -901,7 +901,7 @@ function RecomendadosCard({ config }) {
     let catItem = null;
     if(cadena === 'xtra') {
       catItem = r.barcode
-        ? (window.CAT_DATA || []).find(c => c.b.replace(/^0+/,'') === r.barcode)
+        ? (window.CAT_DATA || []).find(c => c.b.replace(/^0+/,'') === r.barcode.replace(/^0+/,''))
         : null;
       if(!catItem) catItem = (window.CAT_DATA || []).find(c =>
         norm(c.n || '').includes(norm(r.producto || '').substring(0, 10)) ||
