@@ -903,18 +903,14 @@ function RecomendadosCard({ config }) {
       catItem = r.barcode
         ? (window.CAT_DATA || []).find(c => c.b.replace(/^0+/,'') === r.barcode.replace(/^0+/,''))
         : null;
-      if(!catItem) catItem = (window.CAT_DATA || []).find(c =>
-        norm(c.n || '').includes(norm(r.producto || '').substring(0, 10)) ||
-        norm(r.producto || '').includes(norm(c.n || '').substring(0, 10))
-      );
+      const kw = s => (s||'').toUpperCase().trim().split(/[\d\/\-\(]/)[0].trim();
+      if(!catItem) { const kwP = kw(r.producto); catItem = kwP.length >= 4 ? (window.CAT_DATA || []).find(c => { const kwC = kw(c.n); return kwC.length >= 4 && (kwP.includes(kwC) || kwC.includes(kwP)); }) : null; }
     } else {
       catItem = r.barcode
         ? (window.MACHETAZO_PRODUCTOS || []).find(c => normBarcode(c.material) === normBarcode(r.barcode) || normBarcode(c.codigo) === normBarcode(r.barcode))
         : null;
-      if(!catItem) catItem = (window.MACHETAZO_PRODUCTOS || []).find(c =>
-        norm(c.descripcion || '').includes(norm(r.producto || '').substring(0, 10)) ||
-        norm(r.producto || '').includes(norm(c.descripcion || '').substring(0, 10))
-      );
+      const kw = s => (s||'').toUpperCase().trim().split(/[\d\/\-\(]/)[0].trim();
+      if(!catItem) { const kwP = kw(r.producto); catItem = kwP.length >= 4 ? (window.MACHETAZO_PRODUCTOS || []).find(c => { const kwC = kw(c.descripcion); return kwC.length >= 4 && (kwP.includes(kwC) || kwC.includes(kwP)); }) : null; }
     }
     const u = catItem?.u || 1;
     const tipo = catItem?.t || 'CJ';
