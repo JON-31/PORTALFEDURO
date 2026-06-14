@@ -786,7 +786,7 @@ tbody td.right { text-align: right; }
       </div>
 
       <!-- Ranking vendedores + gráfico -->
-      <div class="grid-2">
+      <div class="grid-2" style="align-items:stretch">
         <div class="card">
           <div class="card-header"><h3>🏆 Top Vendedores</h3></div>
           <div class="card-body" style="padding:0">
@@ -811,10 +811,10 @@ tbody td.right { text-align: right; }
             </div>
           </div>
         </div>
-        <div class="card">
+        <div class="card" style="height:100%">
           <div class="card-header"><h3>📈 Ventas por Categoría</h3></div>
           <div class="card-body">
-            <div class="chart-box" style="height:280px;overflow:hidden">
+            <div class="chart-box" style="height:100%;min-height:280px;overflow:hidden">
               <canvas id="chart-dist"></canvas>
             </div>
             <div id="chart-dist-tabla" style="margin-top:8px"></div>
