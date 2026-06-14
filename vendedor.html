@@ -919,7 +919,11 @@ function RecomendadosCard({ config }) {
     const u = catItem?.u || 1;
     const tipo = catItem?.t || 'CJ';
     if ((r.producto || '').toUpperCase().includes('SNICKERS')) {
-      console.log('[recomendados diag]', { catItem, barcode: r.barcode, u, tipo });
+      const _busqNombre = norm(r.producto || '').substring(0, 10);
+      const _matchNombre = (window.CAT_DATA || []).find(c =>
+        norm(c.n || '').includes(_busqNombre) || _busqNombre.includes(norm(c.n || '').substring(0, 10))
+      );
+      console.log('[recomendados diag]', { catItem, barcode: r.barcode, u, tipo, busqNombre: _busqNombre, matchNombre: _matchNombre || null, catItemResuelto: !!catItem });
     }
     const cajasRec = Math.max(1, Math.ceil(Number(r.venta_promedio || 0) / u));
     const unidadesRec = cajasRec * u;
