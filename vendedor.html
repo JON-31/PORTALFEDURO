@@ -983,6 +983,8 @@ function RecomendadosCard({ config }) {
                         <div>
                           <div style={{fontSize:12,fontWeight:600,color:'var(--text-1)',marginBottom:2}}>{p.producto}</div>
                           {p.barcode && <div style={{fontSize:10,color:'var(--text-3)',marginBottom:3,fontFamily:'monospace'}}>{p.barcode}</div>}
+                          {p.unidadesRec > 0 && <div style={{fontSize:11,color:'var(--text-3)',marginBottom:2}}>{p.cajasRec} CJ / {p.unidadesRec} und</div>}
+                          {p.venta_promedio > 0 && <div style={{fontSize:11,color:'var(--text-3)',marginBottom:3}}>Venta prom: {p.venta_promedio} und/día</div>}
                           <div style={{display:'flex',alignItems:'center',gap:6}}>
                             <span style={{fontSize:11,background:badge.bg,color:badge.color,padding:'1px 7px',borderRadius:20,fontWeight:600}}>{badge.label}</span>
                             <span style={{fontSize:11,color:'var(--text-3)'}}>Inv: {p.inventario} uds</span>
