@@ -1536,6 +1536,7 @@ async function loadData(){
         }
         if(row.clave === 'ventas_resumen'){
           if(v && !Array.isArray(v)){
+            DATA.cuota_mes = Object.values(v).reduce((s, d) => s + Number(d.cuota||0), 0);
             DATA.ventas_resumen = Object.entries(v).map(([nombre, d]) => {
               const choc = Number(d.chocolate||0), conf = Number(d.confiteria||0), pet = Number(d.mascotas||0);
               const total = choc + conf + pet || 1;
@@ -1685,7 +1686,7 @@ async function renderResumen(){
 
   const t = calcTotales();
   const totalV = t.totAcum;
-  const totalQ = t.totChocQ + t.totConfQ + t.totPetQ;
+  const totalQ = DATA.cuota_mes || (t.totChocQ + t.totConfQ + t.totPetQ);
   const pctTotal = pct(totalV, totalQ);
 
   document.getElementById('kpi-venta').textContent = fmt(totalV);
