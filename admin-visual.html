@@ -727,38 +727,24 @@ tbody td.right { text-align: right; }
       <!-- KPIs -->
       <div class="grid-4">
         <div class="stat-card verde">
-          <div class="label">Venta Total</div>
+          <div class="label">Acumulado equipo</div>
           <div class="value" id="kpi-venta">—</div>
-          <div class="sub">vs cuota del mes</div>
+          <div class="sub">ventas mes actual</div>
         </div>
         <div class="stat-card gold">
-          <div class="label">Cumplimiento</div>
+          <div class="label">Proyección cierre</div>
           <div class="value" id="kpi-cumpl">—</div>
-          <div class="sub">promedio equipo</div>
+          <div class="sub">% de cuota al ritmo actual</div>
         </div>
         <div class="stat-card amber">
-          <div class="label">Vendedores Activos</div>
+          <div class="label">% MD equipo</div>
           <div class="value" id="kpi-vend">—</div>
-          <div class="sub">con datos este mes</div>
+          <div class="sub">mercadeo dirigido general</div>
         </div>
         <div class="stat-card red">
-          <div class="label">Agotados Totales</div>
+          <div class="label">SKUs sin rotación</div>
           <div class="value" id="kpi-agot">—</div>
-          <div class="sub">en todas las tiendas</div>
-        </div>
-      </div>
-
-      <!-- 2 KPIs adicionales -->
-      <div class="grid-2" style="margin-top:-4px">
-        <div class="stat-card">
-          <div class="label">% MD General</div>
-          <div class="value" id="kpi-md-general">—</div>
-          <div class="sub" id="kpi-md-delta">&nbsp;</div>
-        </div>
-        <div class="stat-card">
-          <div class="label">Tendencia de Venta</div>
-          <div class="value" id="kpi-tend-dir" style="font-size:20px">—</div>
-          <div class="sub" id="kpi-tend-sub">&nbsp;</div>
+          <div class="sub">cobertura &gt; 6 semanas</div>
         </div>
       </div>
 
@@ -810,8 +796,9 @@ tbody td.right { text-align: right; }
                   <tr>
                     <th>#</th>
                     <th>Vendedor</th>
-                    <th class="right">Cumpl.</th>
-                    <th class="right">Estado</th>
+                    <th class="right">Acumulado</th>
+                    <th class="right">% Cuota</th>
+                    <th class="right">Proyección</th>
                   </tr>
                 </thead>
                 <tbody id="tbl-top-vendedores">
@@ -1689,60 +1676,36 @@ async function renderResumen(){
   const t = calcTotales();
   const totalV = t.totAcum;
   const totalQ = DATA.cuota_mes || (t.totChocQ + t.totConfQ + t.totPetQ);
-  const pctTotal = pct(totalV, totalQ);
+
+  // Días hábiles L-V del mes actual
+  var _hoy = new Date();
+  function _diasHab(d1, d2){ var n=0,c=new Date(d1); while(c<=d2){var dw=c.getDay();if(dw!==0&&dw!==6)n++;c.setDate(c.getDate()+1);} return n; }
+  var _ini = new Date(_hoy.getFullYear(), _hoy.getMonth(), 1);
+  var _fin = new Date(_hoy.getFullYear(), _hoy.getMonth()+1, 0);
+  var diasTrans = _diasHab(_ini, _hoy);
+  var diasTotal = _diasHab(_ini, _fin);
+  var proyTotal = diasTrans > 0 ? Math.round(totalV / diasTrans * diasTotal) : 0;
 
   document.getElementById('kpi-venta').textContent = fmt(totalV);
-  document.getElementById('kpi-cumpl').textContent = pctTotal+'%';
-  document.getElementById('kpi-vend').textContent = vr.length;
+  document.getElementById('kpi-cumpl').textContent = pct(proyTotal, totalQ) + '%';
 
-  // Agotados
-  let agot = 0;
-  if(inv && Array.isArray(inv)){
-    inv.forEach(r => { if(Number(r.inventario||0) === 0) agot++; });
-  }
-  document.getElementById('kpi-agot').textContent = agot;
-
-  // ── % MD General ──
+  // % MD equipo
   let mdNum = 0, mdDen = 0;
   if(inv && Array.isArray(inv)){
     inv.forEach(r => { mdDen += Number(r.inventario||0); mdNum += Number(r.inventario_md||r.md||0); });
   }
   const mdPct = mdDen > 0 ? Math.round(mdNum/mdDen*1000)/10 : null;
-  document.getElementById('kpi-md-general').textContent = mdPct != null ? mdPct+'%' : '—';
+  document.getElementById('kpi-vend').textContent = mdPct != null ? mdPct+'%' : '—';
+
+  // SKUs sin rotación (cobertura > 42 días)
+  let sinRot = 0;
+  if(inv && Array.isArray(inv)){
+    inv.forEach(r => { if(Number(r.cobertura||0) > 42) sinRot++; });
+  }
+  document.getElementById('kpi-agot').textContent = sinRot;
 
   var histFromSnap = await cargarHistoricoDesdeSnapshots();
   const hist = histFromSnap || normalizeHistorico();
-  if(hist && hist.length >= 2){
-    const cur = hist[hist.length-1], prev = hist[hist.length-2];
-    if(cur.pct_md != null && prev.pct_md != null){
-      const delta = Math.round((cur.pct_md - prev.pct_md)*10)/10;
-      // ↑ malo (rojo), ↓ bueno (verde) — menos MD es mejor
-      const color = delta > 0 ? 'var(--red)' : delta < 0 ? 'var(--verde)' : 'var(--text-3)';
-      const arrow = delta > 0 ? '↑' : delta < 0 ? '↓' : '→';
-      document.getElementById('kpi-md-delta').innerHTML =
-        '<span style="color:'+color+';font-weight:600">'+arrow+' '+(delta>0?'+':'')+delta+' pp vs '+prev.mes+'</span>';
-    } else {
-      document.getElementById('kpi-md-delta').textContent = 'sin datos previos';
-    }
-  } else {
-    document.getElementById('kpi-md-delta').textContent = 'sin datos previos';
-  }
-
-  // ── Tendencia de venta ──
-  if(hist && hist.length >= 2){
-    const cur = hist[hist.length-1], prev = hist[hist.length-2];
-    const vCur  = (cur.choc||0)+(cur.conf||0)+(cur.pet||0);
-    const vPrev = (prev.choc||0)+(prev.conf||0)+(prev.pet||0);
-    const pctD  = vPrev > 0 ? Math.round((vCur-vPrev)/vPrev*1000)/10 : 0;
-    const dir   = pctD > 3 ? '↑ Creciendo' : pctD < -3 ? '↓ Cayendo' : '→ Estable';
-    const color = pctD > 3 ? 'var(--verde)' : pctD < -3 ? 'var(--red)' : 'var(--text-3)';
-    document.getElementById('kpi-tend-dir').innerHTML = '<span style="color:'+color+'">'+dir+'</span>';
-    document.getElementById('kpi-tend-sub').innerHTML =
-      cur.mes+': <b>'+fmt(vCur)+'</b> &nbsp;|&nbsp; '+prev.mes+': <b>'+fmt(vPrev)+'</b>';
-  } else {
-    document.getElementById('kpi-tend-dir').textContent = '—';
-    document.getElementById('kpi-tend-sub').textContent = 'sin datos históricos';
-  }
 
   // Barras grupos
   function setGrupo(id, bar, det, v, q){
@@ -1761,7 +1724,8 @@ async function renderResumen(){
   const sorted = [...vr].map(v => {
     const tv = Number(v.acumulado||0);
     const tq = (DATA.cuota_por_vend && DATA.cuota_por_vend[v.vendedor]) || Number(v.choc_cuota||0);
-    return {...v, pctTotal: pct(tv,tq)};
+    const proyV = diasTrans > 0 ? Math.round(tv / diasTrans * diasTotal) : 0;
+    return {...v, pctTotal: pct(tv,tq), proyeccion: proyV};
   }).sort((a,b) => b.pctTotal - a.pctTotal);
 
   const tbody = document.getElementById('tbl-top-vendedores');
@@ -1769,8 +1733,9 @@ async function renderResumen(){
     <tr>
       <td class="mono">${i+1}</td>
       <td style="font-weight:600">${v.vendedor||'—'}</td>
+      <td class="right mono">$${Number(v.acumulado||0).toLocaleString('es-PA')}</td>
       <td class="right mono">${v.pctTotal}%</td>
-      <td>${chipEstado(v.pctTotal)}</td>
+      <td class="right mono">$${v.proyeccion.toLocaleString('es-PA')}</td>
     </tr>`).join('');
 
   // ── Gráfico de líneas por categoría ──
