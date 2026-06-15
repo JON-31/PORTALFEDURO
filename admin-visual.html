@@ -470,9 +470,16 @@ tbody td.right { text-align: right; }
   .grid-3 { grid-template-columns: repeat(1,1fr); }
   .grid-2 { grid-template-columns: 1fr; }
   .stat-card .value { font-size: 22px; }
+  .col-hide-mob { display: none; }
+  #tbl-top-vendedores td:nth-child(4),
+  #tbl-top-vendedores td:nth-child(5),
+  #tbl-top-vendedores td:nth-child(7),
+  #tbl-top-vendedores td:nth-child(8) { display: none; }
+  .tbl-wrap { overflow-x: auto; }
 }
 @media(max-width:480px){
   .grid-4 { grid-template-columns: 1fr; }
+  .stat-card { width: 100%; }
 }
 
 /* ── SNAPSHOTS ── */
@@ -797,11 +804,11 @@ tbody td.right { text-align: right; }
                     <th style="text-align:center;border-right:0.5px solid var(--color-border-tertiary)">#</th>
                     <th style="width:40px;max-width:40px;border-right:0.5px solid var(--color-border-tertiary)"></th>
                     <th style="border-right:0.5px solid var(--color-border-tertiary)">Vendedor</th>
-                    <th style="text-align:center;border-right:0.5px solid var(--color-border-tertiary)">Cuota</th>
-                    <th style="text-align:center;border-right:0.5px solid var(--color-border-tertiary)">Acumulado</th>
+                    <th class="col-hide-mob" style="text-align:center;border-right:0.5px solid var(--color-border-tertiary)">Cuota</th>
+                    <th class="col-hide-mob" style="text-align:center;border-right:0.5px solid var(--color-border-tertiary)">Acumulado</th>
                     <th style="text-align:center;border-right:0.5px solid var(--color-border-tertiary)">% Cuota</th>
-                    <th style="text-align:center;border-right:0.5px solid var(--color-border-tertiary)">Proyección</th>
-                    <th style="text-align:center">% Proy.</th>
+                    <th class="col-hide-mob" style="text-align:center;border-right:0.5px solid var(--color-border-tertiary)">Proyección</th>
+                    <th class="col-hide-mob" style="text-align:center">% Proy.</th>
                   </tr>
                 </thead>
                 <tbody id="tbl-top-vendedores">
