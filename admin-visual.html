@@ -678,6 +678,55 @@ tbody td.right { text-align: right; }
   .snap-kpi-grid { grid-template-columns: 1fr; }
   .snap-desglose-grid { flex-direction: column; }
 }
+
+/* ── TABLAS RESPONSIVE MÓVIL ── */
+@media(max-width:768px){
+
+  /* Vendedores: keep col 1 (Vendedor), 2 (Choc. Venta), 4 (% Choc) */
+  .tbl-vendedores-main th:nth-child(3),  .tbl-vendedores-main td:nth-child(3),
+  .tbl-vendedores-main th:nth-child(5),  .tbl-vendedores-main td:nth-child(5),
+  .tbl-vendedores-main th:nth-child(6),  .tbl-vendedores-main td:nth-child(6),
+  .tbl-vendedores-main th:nth-child(7),  .tbl-vendedores-main td:nth-child(7),
+  .tbl-vendedores-main th:nth-child(8),  .tbl-vendedores-main td:nth-child(8),
+  .tbl-vendedores-main th:nth-child(9),  .tbl-vendedores-main td:nth-child(9),
+  .tbl-vendedores-main th:nth-child(10), .tbl-vendedores-main td:nth-child(10),
+  .tbl-vendedores-main th:nth-child(11), .tbl-vendedores-main td:nth-child(11),
+  .tbl-vendedores-main th:nth-child(12), .tbl-vendedores-main td:nth-child(12) { display: none; }
+  .tbl-vendedores-main td:nth-child(1) { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Tiendas: keep col 1 (Tienda), 3 (Vendedor), 5 (Total Inv.) */
+  .tbl-tiendas-main th:nth-child(2),  .tbl-tiendas-main td:nth-child(2),
+  .tbl-tiendas-main th:nth-child(4),  .tbl-tiendas-main td:nth-child(4),
+  .tbl-tiendas-main th:nth-child(6),  .tbl-tiendas-main td:nth-child(6),
+  .tbl-tiendas-main th:nth-child(7),  .tbl-tiendas-main td:nth-child(7),
+  .tbl-tiendas-main th:nth-child(8),  .tbl-tiendas-main td:nth-child(8),
+  .tbl-tiendas-main th:nth-child(9),  .tbl-tiendas-main td:nth-child(9),
+  .tbl-tiendas-main th:nth-child(10), .tbl-tiendas-main td:nth-child(10),
+  .tbl-tiendas-main th:nth-child(11), .tbl-tiendas-main td:nth-child(11) { display: none; }
+  .tbl-tiendas-main td:nth-child(1) { min-width: 100px; word-break: break-word; white-space: normal; }
+  .tbl-tiendas-main td:nth-child(3) { max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* Productos: keep col 1 (icon), 2 (Producto), 3 (Total Inv), 5 (Agotado) */
+  #view-productos .tbl-wrap table th:nth-child(4),  #view-productos .tbl-wrap table td:nth-child(4),
+  #view-productos .tbl-wrap table th:nth-child(6),  #view-productos .tbl-wrap table td:nth-child(6),
+  #view-productos .tbl-wrap table th:nth-child(7),  #view-productos .tbl-wrap table td:nth-child(7),
+  #view-productos .tbl-wrap table th:nth-child(8),  #view-productos .tbl-wrap table td:nth-child(8),
+  #view-productos .tbl-wrap table th:nth-child(9),  #view-productos .tbl-wrap table td:nth-child(9),
+  #view-productos .tbl-wrap table th:nth-child(10), #view-productos .tbl-wrap table td:nth-child(10) { display: none; }
+  #view-productos .tbl-wrap table td:nth-child(2) { min-width: 100px; word-break: break-word; white-space: normal; }
+
+  /* Bodega por Producto: keep col 1 (Producto), 2 (Grupo), 3 (B8) */
+  table:has(#tbl-bodega-prod) th:nth-child(4), #tbl-bodega-prod td:nth-child(4),
+  table:has(#tbl-bodega-prod) th:nth-child(5), #tbl-bodega-prod td:nth-child(5),
+  table:has(#tbl-bodega-prod) th:nth-child(6), #tbl-bodega-prod td:nth-child(6) { display: none; }
+  #tbl-bodega-prod td:nth-child(1) { min-width: 100px; word-break: break-word; white-space: normal; }
+
+  /* Bodega por Tienda: keep col 1 (Tienda), 2 (Vendedor), 4 (Total Inventario) */
+  table:has(#tbl-bodega-tienda) th:nth-child(3), #tbl-bodega-tienda td:nth-child(3),
+  table:has(#tbl-bodega-tienda) th:nth-child(5), #tbl-bodega-tienda td:nth-child(5) { display: none; }
+  #tbl-bodega-tienda td:nth-child(1) { min-width: 100px; word-break: break-word; white-space: normal; }
+  #tbl-bodega-tienda td:nth-child(2) { max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
 </style>
 </head>
 <body>
