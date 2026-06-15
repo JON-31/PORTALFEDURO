@@ -918,6 +918,8 @@ function RecomendadosCard({ config }) {
           || (window.MACHETAZO_PRODUCTOS || []).find(c => nb(c.codigo).startsWith(rbc) || rbc.startsWith(nb(c.codigo)))
         : null;
       if(!catItem) { const kwP = kw2(r.producto); catItem = (window.MACHETAZO_PRODUCTOS || []).find(c => kw2(c.descripcion) === kwP); }
+      if(!catItem && r.barcode) { catItem = (window.CAT_DATA || []).find(c => nb(c.b) === rbc) || (window.CAT_DATA || []).find(c => nb(c.b).startsWith(rbc) || rbc.startsWith(nb(c.b))); }
+      if(!catItem) { const kwP = kw2(r.producto); catItem = (window.CAT_DATA || []).find(c => kw2(c.n) === kwP); }
     }
     const hasCat = !!catItem;
     const u = catItem?.u || 1;
